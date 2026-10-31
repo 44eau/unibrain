@@ -30,6 +30,7 @@ nav a.on,.chip.on{background:#2b2560;border-color:#6f62ff}
 .planet{display:flex;gap:14px;align-items:center;cursor:pointer;text-decoration:none;color:inherit}
 .planet:hover{border-color:#6f62ff}
 .orb{flex:none;width:58px;height:58px;border-radius:50%;box-shadow:inset -10px -8px 18px rgba(0,0,0,.55),0 0 22px -2px var(--c)}
+.topics{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 6px}.topics span{font-size:11.5px;padding:2px 9px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);color:#cfcdf0}
 .planet h2{margin:0 0 4px;font-size:18px}
 .meta{font-family:var(--mono);font-size:11.5px;color:var(--mute)}
 .ov{border-left:3px solid var(--cyan);padding-left:12px;line-height:1.6;font-size:14.5px;color:#d8d6f5}
@@ -112,13 +113,14 @@ function keyHTML() {
   <div class="label">Note colours</div><div class="key"><span class="k"><i style="background:var(--gold)"></i>★ Must know</span><span class="k"><i style="background:var(--cyan)"></i>🔗 Connections</span><span class="k"><i style="background:var(--pink)"></i>📝 Likely exam questions / equations</span><span class="k"><i style="background:var(--orange)"></i>⚠ Where marks are lost / exam tips</span><span class="k"><i style="background:var(--violet)"></i>📘 Definitions</span><span class="k"><i style="background:var(--green)"></i>❓ Test yourself</span></div>
   <div class="label">Formula ranks</div><div class="key"><span class="k"><span class="rk r3">★★★</span>essential</span><span class="k"><span class="rk r2">★★</span>often useful</span><span class="k"><span class="rk r1">★</span>reference</span></div>`;
 }
+const topicName = n => /^block\s*\d+$/i.test(n) ? n : n.replace(/^(w|wk|week|lec|lecture|l)\s*\d+\s*/i, '').replace(/^course introduction$/i, 'Intro').replace(/^extra notes$/i, '');
 function home() {
   let units = 0, pages = 0, eqs = 0;
   D.mods.forEach(m => m.secs.forEach(s => s.units.forEach(u => { units++; pages += u.pages; u.notes.forEach(n => eqs += n.eqs.length); })));
   let h = `<div class="card"><div class="row" style="justify-content:space-between"><div><div class="label" style="margin-top:0">The system</div><div style="font-size:15px;line-height:1.6"><span class="count">${D.mods.length}</span> modules · <span class="count">${units}</span> units · <span class="count">${pages}</span> pages of lecture notes · <span class="count">${eqs}</span> equations</div></div><div class="meta">Updated ${esc(D.updated)}</div></div></div><div class="planets">`;
   D.mods.forEach((m, i) => {
     const n = m.secs.reduce((a, s) => a + s.units.length, 0), dd = m.exam ? daysTo(m.exam) : null;
-    h += `<a class="card planet" href="#m${m.id}"><div class="orb" style="background:${PLANET[i % 4]};--c:${PCOL[i % 4]}"></div><div><h2>${esc(m.name)}</h2><div class="meta">${m.secs.map(s => esc(s.name)).join(' · ')}</div><div class="meta">${n} units${dd != null && dd >= 0 ? ` · 📅 exam in ${dd} days` : ''}</div></div></a>`;
+    h += `<a class="card planet" href="#m${m.id}"><div class="orb" style="background:${PLANET[i % 4]};--c:${PCOL[i % 4]}"></div><div><h2>${esc(m.name)}</h2><div class="topics">${m.secs.map(s => topicName(s.name)).filter(Boolean).map(t => `<span>${esc(t)}</span>`).join('')}</div><div class="meta">${n} units${dd != null && dd >= 0 ? ` · 📅 exam in ${dd} days` : ''}</div></div></a>`;
   });
   return h + `</div><div class="card">${keyHTML()}</div>`;
 }
