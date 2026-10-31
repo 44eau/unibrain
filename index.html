@@ -75,6 +75,9 @@ textarea{width:100%;margin-top:6px;padding:11px 12px;border-radius:12px;border:1
 .fb{margin-top:12px;padding:11px 13px;border-radius:12px;font-size:14px;line-height:1.5}.fb ul{margin:4px 0 0}
 .fb.warn{background:#22190a;border:1px solid #5a4318}.fb.ok{background:#0e1d15;border:1px solid #1f4d33}.fb.bad{background:#1f0e0e;border:1px solid #5a2222}
 .model{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;font-size:14.5px;line-height:1.55}
+.lbrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}.lbrow.me{background:#1b1840;border-radius:10px}
+.lbpos{width:28px;text-align:center;font-size:18px}.lbname{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis}.lbpts{font-family:var(--mono);color:var(--gold);font-size:17px;min-width:44px;text-align:right}
+@media(max-width:620px){.lbrow .meta{display:none}}
 @media(max-width:620px){.qrow{flex-direction:column;align-items:flex-start}}
 @media(max-width:620px){.fr{grid-template-columns:1fr}h1{font-size:19px}}
 </style>
@@ -105,7 +108,7 @@ const PCOL = ['#4b70dd', '#e2553d', '#d9a066', '#3fbfa8'];
 
 function nav() {
   const h = location.hash.slice(1) || 'home';
-  $('#nav').innerHTML = [['home', '☀️ Home'], ...D.mods.map((m, i) => ['m' + m.id, '🪐 ' + m.name]), ['quiz', '📝 Quiz'], ['formulas', '🧮 Formula sheets'], ['key', '🎨 Colour key']]
+  $('#nav').innerHTML = [['home', '☀️ Home'], ...D.mods.map((m, i) => ['m' + m.id, '🪐 ' + m.name]), ['quiz', '📝 Quiz'], ['leaderboard', '🏆 Leaderboard'], ['formulas', '🧮 Formula sheets'], ['key', '🎨 Colour key']]
     .map(([k, t]) => `<a href="#${k}" class="${h === k ? 'on' : ''}">${esc(t)}</a>`).join('');
 }
 function keyHTML() {
@@ -191,6 +194,7 @@ function render() {
   nav();
   const h = location.hash.slice(1) || 'home', q = $('#q').value.trim(), main = $('#main');
   if (q.length < 2 && h === 'quiz') return renderQuizMain();
+  if (q.length < 2 && h === 'leaderboard') return renderLeaderboard();
   if (q.length >= 2) main.innerHTML = searchView(q);
   else if (h === 'formulas') main.innerHTML = formulasView();
   else if (h === 'key') main.innerHTML = `<div class="card">${keyHTML()}</div>`;
@@ -201,7 +205,7 @@ function render() {
   const e = $('#ess'); if (e) e.onchange = () => { FORM.ess = e.checked; render(); };
 }
 let qt; $('#q').oninput = () => { clearTimeout(qt); qt = setTimeout(render, 250); };
-addEventListener('hashchange', () => { QZ.queue = []; $('#q').value = ''; render(); scrollTo(0, 0); });
+addEventListener('hashchange', () => { if (QZ.queue.length) submitSession(); QZ.queue = []; $('#q').value = ''; render(); scrollTo(0, 0); });
 fetch('data.json?v=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(d => {
   D = d; D.mods.forEach(m => { MODS[m.id] = m; m.secs.forEach(s => s.units.forEach(u => (UNITS[u.id] = u))); });
   $('#sub').textContent = `Engineering notes · view only · updated ${D.updated}`;
@@ -250,7 +254,7 @@ function reviewOf(q) {
   else { out.push(`Go back over ${q.u.name}`); (q.u.must || []).slice(0, 2).forEach(p => out.push(p)); }
   return out;
 }
-function record(q, o) { QS[q.id] = o; saveQS(); QZ.tally[o]++; }
+function record(q, o) { QS[q.id] = o; saveQS(); QZ.tally[o]++; noteResult(o, q); }
 function quizPicker() {
   const ms = D.mods.filter(m => !QZ.mod || QZ.mod === m.id);
   let total = 0, done = 0, h = '';
@@ -268,7 +272,7 @@ function quizPicker() {
   }
   return `<div class="card"><div class="row" style="justify-content:space-between"><div class="label" style="margin:0">📝 Quiz</div><div class="meta"><b style="color:var(--gold)">${total}</b> questions · ${done} attempted on this device</div></div>
     <div style="font-size:14px;line-height:1.55;margin-top:8px;color:#d8d6f5">Pick any unit. You get <b>two attempts</b>: miss the first and you're told what to review; miss again and you see the model answer, exactly what your answer was missing and what to revise.</div>
-    <div class="row" style="margin-top:10px"><button class="chip ${!QZ.mod ? 'on' : ''}" data-qmod="">All modules</button>${D.mods.map(m => `<button class="chip ${QZ.mod === m.id ? 'on' : ''}" data-qmod="${m.id}">${esc(m.name)}</button>`).join('')}</div></div>${h}`;
+    ${SB_ON && !ME.name ? `<div class="meta" style="margin-top:10px">🏆 Add your name to get on the leaderboard:</div>${nameBox()}` : SB_ON ? `<div class="meta" style="margin-top:8px">🏆 Playing as <b>${esc(ME.name)}</b> — <a href="#leaderboard">leaderboard</a></div>` : ''}<div class="row" style="margin-top:10px"><button class="chip ${!QZ.mod ? 'on' : ''}" data-qmod="">All modules</button>${D.mods.map(m => `<button class="chip ${QZ.mod === m.id ? 'on' : ''}" data-qmod="${m.id}">${esc(m.name)}</button>`).join('')}</div></div>${h}`;
 }
 function quizQuestion() {
   const q = QZ.queue[QZ.i], r = QZ.res, fin = r && r.final;
@@ -293,7 +297,9 @@ function quizDone() {
 }
 function renderQuizMain() {
   const main = $('#main');
+  if (QZ.queue.length && QZ.i >= QZ.queue.length) submitSession();
   main.innerHTML = !QZ.queue.length ? quizPicker() : QZ.i >= QZ.queue.length ? quizDone() : quizQuestion();
+  wireName(main, () => renderQuizMain());
   typeset(main);
   const on = (sel, fn) => main.querySelectorAll(sel).forEach(b => (b.onclick = () => fn(b)));
   on('[data-qmod]', b => { QZ.mod = b.dataset.qmod || null; renderQuizMain(); });
@@ -301,7 +307,7 @@ function renderQuizMain() {
   on('[data-qwrong]', b => startQuiz([UNITS[b.dataset.qwrong]], true));
   on('[data-qmix]', b => startQuiz(MODS[b.dataset.qmix].secs.flatMap(s => s.units)));
   on('[data-qpast]', b => startQuiz(MODS[b.dataset.qpast].secs.flatMap(s => s.units), false, true));
-  on('#qback', () => { QZ.queue = []; renderQuizMain(); });
+  on('#qback', () => { submitSession(); QZ.queue = []; renderQuizMain(); });
   const ta = $('#qa'); if (ta) { ta.oninput = () => (QZ.text = ta.value); }
   const q = QZ.queue[QZ.i];
   const submit = idk => {
@@ -315,7 +321,51 @@ function renderQuizMain() {
   on('#qcheck', () => submit(false));
   on('#qidk', () => submit(true));
   on('#qnext', () => { QZ.i++; QZ.att = 1; QZ.text = ''; QZ.res = null; renderQuizMain(); scrollTo(0, 0); });
-  on('#qflip', b => { const to = b.dataset.to, from = QS[q.id]; if (from) QZ.tally[from]--; record(q, to); QZ.res = { ...QZ.res, ok: to !== 'wrong' }; renderQuizMain(); });
+  on('#qflip', b => { const to = b.dataset.to, from = QS[q.id]; if (from) QZ.tally[from]--; SESSION.answered--; if (from !== 'wrong') SESSION.correct--; if (from === 'right') SESSION.first--; record(q, to); QZ.res = { ...QZ.res, ok: to !== 'wrong' }; renderQuizMain(); });
+}
+
+
+/* ---------- Leaderboard (Supabase, public read + insert only) ---------- */
+const SB = { url: 'https://qzxdkgrwukdasvsvanaq.supabase.co', key: 'sb_publishable_D9-vqcFaCADAkDwyjl4T5w_4hvUIGqL' };
+const SB_ON = !SB.url.startsWith('__');
+const ME = (() => { try { let id = localStorage.getItem('ub.pid'); if (!id) { id = 'p' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('ub.pid', id); } return { id, name: localStorage.getItem('ub.name') || '' }; } catch { return { id: 'p' + Math.random().toString(36).slice(2), name: '' }; } })();
+const setName = n => { ME.name = n; try { localStorage.setItem('ub.name', n); } catch {} };
+async function sb(path, opts = {}) {
+  const r = await fetch(`${SB.url}/rest/v1/${path}`, { ...opts, headers: { apikey: SB.key, ...(SB.key.startsWith('eyJ') ? { Authorization: `Bearer ${SB.key}` } : {}), 'Content-Type': 'application/json', ...(opts.headers || {}) } });
+  if (!r.ok) throw new Error(await r.text());
+  return r.status === 201 || r.status === 204 ? null : r.json();
+}
+const SESSION = { answered: 0, correct: 0, first: 0, module: '' };
+function noteResult(o, q) { SESSION.answered++; if (o !== 'wrong') SESSION.correct++; if (o === 'right') SESSION.first++; SESSION.module = SESSION.module && SESSION.module !== modOfUnit(q.u.id) ? 'Mixed' : modOfUnit(q.u.id); }
+const modOfUnit = id => { for (const m of D.mods) for (const s of m.secs) if (s.units.some(u => u.id === id)) return m.name; return ''; };
+async function submitSession() {
+  if (!SB_ON || !SESSION.answered || !ME.name) { Object.assign(SESSION, { answered: 0, correct: 0, first: 0, module: '' }); return; }
+  const row = { player: ME.name.slice(0, 20), player_id: ME.id, module: SESSION.module.slice(0, 60), answered: Math.min(40, SESSION.answered), correct: Math.min(SESSION.correct, 40), first_try: Math.min(SESSION.first, SESSION.correct, 40) };
+  Object.assign(SESSION, { answered: 0, correct: 0, first: 0, module: '' });
+  try { await sb('quiz_scores', { method: 'POST', body: JSON.stringify(row), headers: { Prefer: 'return=minimal' } }); } catch (e) { console.warn('leaderboard', e); }
+}
+function nameBox() {
+  return `<div class="row" style="margin-top:10px"><input id="lbName" class="search" style="margin:0;flex:1;min-width:160px" maxlength="20" placeholder="Your name for the leaderboard" value="${esc(ME.name)}"><button class="chip go" id="lbSave">${ME.name ? 'Update name' : 'Join leaderboard'}</button></div>`;
+}
+function wireName(root, after) {
+  const b = root.querySelector('#lbSave'); if (!b) return;
+  b.onclick = () => { const v = root.querySelector('#lbName').value.trim().replace(/\s+/g, ' '); if (v.length < 2) return; setName(v); after ? after() : null; };
+}
+let LB = { tab: 'week' };
+async function renderLeaderboard() {
+  const main = $('#main');
+  if (!SB_ON) { main.innerHTML = `<div class="card empty">The leaderboard is being set up — check back soon.</div>`; return; }
+  main.innerHTML = `<div class="card"><div class="row" style="justify-content:space-between"><div class="label" style="margin:0">🏆 Leaderboard</div><span class="row"><button class="chip ${LB.tab === 'week' ? 'on' : ''}" data-lb="week">This week</button><button class="chip ${LB.tab === 'all' ? 'on' : ''}" data-lb="all">All time</button></span></div>
+    <div style="font-size:13.5px;color:var(--mute);margin-top:8px;line-height:1.5">Points from the Quiz tab: <b style="color:var(--gold)">2</b> for a first-try answer, <b style="color:var(--gold)">1</b> for a second-try answer. Scores are sent when you finish or leave a quiz.</div>
+    ${nameBox()}<div id="lbList" style="margin-top:12px"><div class="empty">Loading…</div></div></div>`;
+  main.querySelectorAll('[data-lb]').forEach(b => b.onclick = () => { LB.tab = b.dataset.lb; renderLeaderboard(); });
+  wireName(main, () => renderLeaderboard());
+  try {
+    const rows = await sb(`${LB.tab === 'week' ? 'leaderboard_week' : 'leaderboard_all'}?select=*&order=points.desc&limit=50`);
+    const medal = i => ['🥇', '🥈', '🥉'][i] || `<span class="meta">${i + 1}</span>`;
+    $('#lbList').innerHTML = rows.length ? rows.map((r, i) => `<div class="lbrow ${r.player_id === ME.id ? 'me' : ''}"><span class="lbpos">${medal(i)}</span><span class="lbname">${esc(r.player)}${r.player_id === ME.id ? ' <span class="meta">(you)</span>' : ''}</span><span class="meta">${r.correct}/${r.answered} right · ${r.quizzes} quiz${r.quizzes == 1 ? '' : 'zes'}</span><b class="lbpts">${r.points}</b></div>`).join('')
+      : `<div class="empty">No scores ${LB.tab === 'week' ? 'this week' : 'yet'} — be the first: do a quiz!</div>`;
+  } catch { $('#lbList').innerHTML = '<div class="empty">Couldn\'t load the leaderboard right now.</div>'; }
 }
 
 </script>
