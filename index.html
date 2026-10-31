@@ -200,7 +200,7 @@ function render() {
 }
 let qt; $('#q').oninput = () => { clearTimeout(qt); qt = setTimeout(render, 250); };
 addEventListener('hashchange', () => { QZ.queue = []; $('#q').value = ''; render(); scrollTo(0, 0); });
-fetch('data.json').then(r => r.json()).then(d => {
+fetch('data.json?v=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(d => {
   D = d; D.mods.forEach(m => { MODS[m.id] = m; m.secs.forEach(s => s.units.forEach(u => (UNITS[u.id] = u))); });
   $('#sub').textContent = `Engineering notes · view only · updated ${D.updated}`;
   render();
