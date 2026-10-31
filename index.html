@@ -92,13 +92,21 @@ figure.dg{margin:10px 0;background:#06061a;border:1px solid var(--line);border-r
 .dgsvg svg{width:100%;height:auto;display:block}
 figure.dg figcaption{font-size:12.5px;color:var(--mute);line-height:1.45;margin-top:4px}figure.dg figcaption b{color:var(--text)}
 .dgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.sectabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;margin:6px 0 4px;scrollbar-width:none;position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 80%,transparent)}.sectabs::-webkit-scrollbar{display:none}.sectabs .chip{white-space:nowrap;flex:none}.cnt{font-family:var(--mono);font-size:11px;opacity:.7;margin-left:3px}
+details.chap{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin:8px 0}
+details.chap>summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;align-items:center;gap:10px}details.chap>summary::-webkit-details-marker{display:none}
+details.chap>summary b{flex:1;font-size:15px;min-width:0}details.chap .chev{font-size:20px;color:var(--mute);transition:transform .2s}details.chap[open] .chev{transform:rotate(90deg)}
+.cdots{display:flex;gap:3px;flex:none}.cdots i{width:9px;height:9px;border-radius:50%}
+.chapin{padding:0 10px 10px}.chip.sm{padding:4px 10px;font-size:12px}
+details.ovbox>summary{cursor:pointer;color:var(--cyan);font-size:14px;padding:6px 0}details.ovbox[open]>summary{margin-bottom:8px}
+@media(hover:hover){details.chap>summary:hover{background:#17163a;border-radius:14px}details.ovbox>summary:hover{color:#fff}}
 .modal{position:fixed;inset:0;z-index:50;background:rgba(2,2,10,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px}
 .mcard{width:100%;max-width:380px;background:linear-gradient(180deg,#14132e,#0b0b18);border:1px solid #3b3480;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 .lbrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}.lbrow.me{background:#1b1840;border-radius:10px}
 .lbpos{width:28px;text-align:center;font-size:18px}.lbname{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis}.lbpts{font-family:var(--mono);color:var(--gold);font-size:17px;min-width:44px;text-align:right}
 @media(max-width:620px){.lbrow .meta{display:none}}
 @media(max-width:620px){.qrow{flex-direction:column;align-items:flex-start}}
-@media(max-width:620px){.fr{grid-template-columns:1fr}h1{font-size:19px}}
+@media(max-width:620px){.fr{grid-template-columns:1fr}h1{font-size:19px}nav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-16px;margin-right:-16px;padding:0 16px}nav::-webkit-scrollbar{display:none}nav a{white-space:nowrap;flex:none}}
 </style>
 <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };</script>
 <script src="lib/tex-svg-full.js" defer></script>
@@ -177,17 +185,29 @@ function wireUnits(root) {
     d.addEventListener('toggle', fill); fill();
   });
 }
+const SECSEL = {}; let RERENDER = () => render();
+function packModule(m, rowFn, chapExtra) {
+  const si = Math.min(SECSEL[m.id] || 0, m.secs.length - 1), s = m.secs[si];
+  let h = '';
+  if (m.secs.length > 1) h += `<div class="sectabs">${m.secs.map((x, i) => `<button class="chip ${i === si ? 'on' : ''}" data-sec="${m.id}|${i}">${esc(topicName(x.name) || x.name)} <span class="cnt">${x.units.length}</span></button>`).join('')}</div>`;
+  const byId = Object.fromEntries(s.units.map(u => [u.id, u]));
+  if (s.chap && s.chap.length) h += s.chap.map((c, ci) => { const us = c.ids.map(id => byId[id]).filter(Boolean); return `<details class="chap"><summary><span class="cdots">${[...new Set(us.map(u => thColor(u.th)))].slice(0, 4).map(col => `<i style="background:${col}"></i>`).join('')}</span><b>${esc(c.name)}</b><span class="meta">${us.length} unit${us.length === 1 ? '' : 's'}</span>${chapExtra ? chapExtra(m, si, ci, us) : ''}<span class="chev">›</span></summary><div class="chapin">${us.map(rowFn).join('')}</div></details>`; }).join('');
+  else h += s.units.map(rowFn).join('');
+  return h;
+}
+function wirePack(root) {
+  root.querySelectorAll('[data-sec]').forEach(b => b.onclick = e => { e.preventDefault(); const [mid, i] = b.dataset.sec.split('|'); SECSEL[mid] = +i; RERENDER(); });
+}
 function moduleView(m) {
   const r = m.rep, dd = m.exam ? daysTo(m.exam) : null;
-  let h = `<div class="card"><div class="label" style="margin-top:0">Module${dd != null && dd >= 0 ? ` · 📅 exam in ${dd} days` : ''}</div><h2 style="margin:4px 0 10px">${esc(m.name)}</h2>`;
+  let h = `<div class="card"><div class="label" style="margin-top:0">Module${dd != null && dd >= 0 ? ` · 📅 exam in ${dd} days` : ''}</div><h2 style="margin:4px 0 6px">${esc(m.name)}</h2><details class="ovbox"><summary>📋 Module overview — must-know, exam questions, common mistakes</summary>`;
   if (r.ov) h += `<div class="ov">${esc(r.ov)}</div>`;
   if (r.must.length) h += `<div class="label l-must">★ Must know</div>${list(r.must, 'must')}`;
   if (r.conn.length) h += `<div class="label l-conn">🔗 Connections examiners like</div>${list(r.conn, 'conn')}`;
   if (r.exq.length) h += `<div class="label l-exq">📝 Likely exam questions</div>${list(r.exq, 'exq')}`;
   if (r.weak.length) h += `<div class="label l-weak">⚠ Where students lose marks</div>${list(r.weak, 'weak')}`;
-  h += `</div>`;
-  for (const s of m.secs) h += `<div class="sec">${esc(s.name)} · ${s.units.length} units</div>${s.units.map(u => unitRow(u)).join('')}`;
-  return h;
+  h += `</details></div>`;
+  return h + packModule(m, u => unitRow(u));
 }
 function formulasView() {
   let h = `<div class="row" style="margin:8px 0"><span class="chip ${FORM.mod === 'all' ? 'on' : ''}" data-fm="all">All</span>${D.mods.map(m => `<span class="chip ${FORM.mod === m.id ? 'on' : ''}" data-fm="${m.id}">${esc(m.name)}</span>`).join('')}<label class="chip"><input type="checkbox" id="ess" ${FORM.ess ? 'checked' : ''}> Essentials only</label></div>`;
@@ -224,7 +244,7 @@ function render() {
   else if (h === 'key') main.innerHTML = `<div class="card">${keyHTML()}</div>`;
   else if (h.startsWith('m') && MODS[h.slice(1)]) main.innerHTML = moduleView(MODS[h.slice(1)]);
   else main.innerHTML = home();
-  wireUnits(main); typeset(main);
+  wireUnits(main); typeset(main); RERENDER = render; wirePack(main);
   main.querySelectorAll('[data-fm]').forEach(b => b.onclick = () => { FORM.mod = b.dataset.fm; render(); });
   const e = $('#ess'); if (e) e.onchange = () => { FORM.ess = e.checked; render(); };
 }
@@ -280,23 +300,20 @@ function reviewOf(q) {
 }
 function record(q, o) { QS[q.id] = o; saveQS(); QZ.tally[o]++; noteResult(o, q); }
 function quizPicker() {
-  const ms = D.mods.filter(m => !QZ.mod || QZ.mod === m.id);
+  if (!QZ.mod || !MODS[QZ.mod]) QZ.mod = D.mods[0].id;
+  const ms = D.mods.filter(m => QZ.mod === m.id);
   let total = 0, done = 0, h = '';
   for (const m of ms) {
     const all = m.secs.flatMap(s => s.units), nPast = all.reduce((a, u) => a + (u.xq || []).filter(x => x[4]).length, 0);
-    h += `<div class="row" style="justify-content:space-between;margin:22px 0 6px"><h2 style="margin:0;font-size:18px">${esc(m.name)}</h2><span class="row" style="gap:6px">${nPast ? `<button class="chip" data-qpast="${m.id}">📄 Past papers (${nPast})</button>` : ''}<button class="chip" data-qmix="${m.id}">🎲 Mixed</button></span></div>`;
-    for (const s of m.secs) {
-      h += `<div class="sec">${esc(s.name)}</div>`;
-      for (const u of s.units) {
-        const sc = unitScore(u); total += sc.total; done += sc.done; if (!sc.total) continue;
-        const wrong = questionsOf(u).filter(q => QS[q.id] === 'wrong').length;
-        h += `<div class="qrow" style="--acc:${thColor(u.th)}"><div style="min-width:0"><b>${esc(u.name)}</b><div class="meta">${sc.total} questions · ${sc.done} done${sc.acc != null ? ` · <span style="color:${sc.acc >= .8 ? 'var(--green)' : sc.acc >= .5 ? 'var(--gold)' : 'var(--pink)'}">${Math.round(sc.acc * 100)}% right</span>` : ''}</div></div><span class="row" style="gap:6px;flex-wrap:nowrap">${wrong ? `<button class="chip" data-qwrong="${u.id}">Redo ${wrong} ✗</button>` : ''}<button class="chip go" data-qunit="${u.id}">Start</button></span></div>`;
-      }
-    }
+    h += `<div class="row" style="justify-content:space-between;margin:18px 0 8px"><h2 style="margin:0;font-size:18px">${esc(m.name)}</h2><span class="row" style="gap:6px">${nPast ? `<button class="chip" data-qpast="${m.id}">📄 Past papers (${nPast})</button>` : ''}<button class="chip" data-qmix="${m.id}">🎲 Mixed</button></span></div>`;
+    all.forEach(u => { const sc = unitScore(u); total += sc.total; done += sc.done; });
+    const row = u => { const sc = unitScore(u); if (!sc.total) return ''; const wrong = questionsOf(u).filter(q => QS[q.id] === 'wrong').length;
+      return `<div class="qrow" style="--acc:${thColor(u.th)}"><div style="min-width:0"><b>${esc(u.name)}</b><div class="meta">${sc.total} questions · ${sc.done} done${sc.acc != null ? ` · <span style="color:${sc.acc >= .8 ? 'var(--green)' : sc.acc >= .5 ? 'var(--gold)' : 'var(--pink)'}">${Math.round(sc.acc * 100)}% right</span>` : ''}</div></div><span class="row" style="gap:6px;flex-wrap:nowrap">${wrong ? `<button class="chip" data-qwrong="${u.id}">Redo ${wrong} ✗</button>` : ''}<button class="chip go" data-qunit="${u.id}">Start</button></span></div>`; };
+    h += packModule(m, row, (mm, si, ci) => `<button class="chip go sm" data-qchap="${mm.id}|${si}|${ci}">Quiz all</button>`);
   }
   return `<div class="card"><div class="row" style="justify-content:space-between"><div class="label" style="margin:0">📝 Quiz</div><div class="meta"><b style="color:var(--gold)">${total}</b> questions · ${done} attempted on this device</div></div>
     <div style="font-size:14px;line-height:1.55;margin-top:8px;color:#d8d6f5">Pick any unit. You get <b>two attempts</b>: miss the first and you're told what to review; miss again and you see the model answer, exactly what your answer was missing and what to revise.</div>
-    ${SB_ON && !ME.name ? `<div class="meta" style="margin-top:10px">🏆 Add your name to get on the leaderboard:</div>${nameBox()}` : SB_ON ? `<div class="meta" style="margin-top:8px">🏆 Playing as <b>${esc(ME.name)}</b> — <a href="#leaderboard">leaderboard</a></div>` : ''}<div class="row" style="margin-top:10px"><button class="chip ${!QZ.mod ? 'on' : ''}" data-qmod="">All modules</button>${D.mods.map(m => `<button class="chip ${QZ.mod === m.id ? 'on' : ''}" data-qmod="${m.id}">${esc(m.name)}</button>`).join('')}</div></div>${h}`;
+    ${SB_ON && !ME.name ? `<div class="meta" style="margin-top:10px">🏆 Add your name to get on the leaderboard:</div>${nameBox()}` : SB_ON ? `<div class="meta" style="margin-top:8px">🏆 Playing as <b>${esc(ME.name)}</b> — <a href="#leaderboard">leaderboard</a></div>` : ''}<div class="row" style="margin-top:10px">${D.mods.map(m => `<button class="chip ${QZ.mod === m.id ? 'on' : ''}" data-qmod="${m.id}">${esc(m.name)}</button>`).join('')}</div></div>${h}`;
 }
 function quizQuestion() {
   const q = QZ.queue[QZ.i], r = QZ.res, fin = r && r.final;
@@ -328,6 +345,8 @@ function renderQuizMain() {
   const on = (sel, fn) => main.querySelectorAll(sel).forEach(b => (b.onclick = () => fn(b)));
   on('[data-qmod]', b => { QZ.mod = b.dataset.qmod || null; renderQuizMain(); });
   on('[data-qunit]', b => startQuiz([UNITS[b.dataset.qunit]]));
+  main.querySelectorAll('[data-qchap]').forEach(b => b.onclick = e => { e.preventDefault(); e.stopPropagation(); const [mid, si, ci] = b.dataset.qchap.split('|'), s = MODS[mid].secs[+si]; startQuiz(s.chap[+ci].ids.map(id => UNITS[id]).filter(Boolean)); });
+  RERENDER = renderQuizMain; wirePack(main);
   on('[data-qwrong]', b => startQuiz([UNITS[b.dataset.qwrong]], true));
   on('[data-qmix]', b => startQuiz(MODS[b.dataset.qmix].secs.flatMap(s => s.units)));
   on('[data-qpast]', b => startQuiz(MODS[b.dataset.qpast].secs.flatMap(s => s.units), false, true));
