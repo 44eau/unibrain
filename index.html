@@ -88,6 +88,10 @@ details.rq summary:hover{color:#fff;text-decoration:underline}
 a:hover{color:#fff}
 }
 nav a:active,.chip:active,.planet:active{transform:scale(.97)}
+figure.dg{margin:10px 0;background:#06061a;border:1px solid var(--line);border-radius:12px;padding:10px 10px 8px;max-width:520px}
+.dgsvg svg{width:100%;height:auto;display:block}
+figure.dg figcaption{font-size:12.5px;color:var(--mute);line-height:1.45;margin-top:4px}figure.dg figcaption b{color:var(--text)}
+.dgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
 .modal{position:fixed;inset:0;z-index:50;background:rgba(2,2,10,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px}
 .mcard{width:100%;max-width:380px;background:linear-gradient(180deg,#14132e,#0b0b18);border:1px solid #3b3480;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 .lbrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}.lbrow.me{background:#1b1840;border-radius:10px}
@@ -142,13 +146,18 @@ function home() {
   });
   return h + `</div><div class="card">${keyHTML()}</div>`;
 }
+const isCirc = u => /electr|circuit/i.test(modOfUnit(u.id));
 function unitHTML(u) {
   let h = '';
+  const seen = new Set(), circ = isCirc(u), top = diagramsFor(u.name, seen, 2, circ);
+  let budget = 3 - top.length;
   if (u.ov) h += `<div class="ov" style="margin:6px 0 10px">${esc(u.ov)}</div>`;
   if (u.must.length) h += `<div class="label l-must">★ Must know</div>${list(u.must, 'must')}`;
   if (u.conn.length) h += `<div class="label l-conn">🔗 Connections</div>${list(u.conn, 'conn')}`;
+  if (top.length) h += `<div class="dgs">${top.map(diagramHTML).join('')}</div>`;
   for (const n of u.notes) {
     h += `<div class="pg"><h3>${esc(n.t)}<span>p.${n.p}</span></h3>`;
+    if (budget > 0) { const d = diagramsFor(n.t, seen, 1, circ); if (d.length) { budget--; h += `<div class="dgs">${d.map(diagramHTML).join('')}</div>`; } }
     if (n.pts.length) h += `<ul>${n.pts.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
     n.defs.forEach(([t, d]) => h += `<div class="def"><b>${esc(t)}</b> — ${esc(d)}</div>`);
     n.eqs.forEach(([nm, lx, v, isTex]) => h += `<div class="eq"><div class="n">${esc(nm)}</div>${isTex ? `<div>\\[${esc(lx)}\\]</div>` : `<div class="v">${esc(lx)}</div>`}${v ? `<div class="v">${esc(v)}</div>` : ''}</div>`);
@@ -297,7 +306,7 @@ function quizQuestion() {
   if (!fin) h += `<div class="meta" style="color:${QZ.att === 2 ? 'var(--gold)' : 'var(--mute)'}">Attempt ${QZ.att} of 2</div>
     <textarea id="qa" rows="4" placeholder="Type your answer…">${esc(QZ.text)}</textarea>
     <div class="row" style="margin-top:8px"><button class="chip go" id="qcheck">Check answer</button><button class="chip" id="qidk">I don't know</button><span style="flex:1"></span><button class="chip" id="qback">Back to units</button></div>`;
-  if (r && !fin) h += `<div class="fb warn">🟡 <b>Not quite — you have one more attempt.</b>${r.miss.length ? ` Your answer is missing some key ideas.` : ''}${r.hasNum && !r.numOk ? ' Check your numbers and units.' : ''}<div class="label" style="color:var(--gold)">Review this before you answer again</div><ul>${reviewOf(q).map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  if (r && !fin) h += `<div class="fb warn">🟡 <b>Not quite — you have one more attempt.</b>${r.miss.length ? ` Your answer is missing some key ideas.` : ''}${r.hasNum && !r.numOk ? ' Check your numbers and units.' : ''}<div class="label" style="color:var(--gold)">Review this before you answer again</div><ul>${reviewOf(q).map(x => `<li>${esc(x)}</li>`).join('')}</ul>${(() => { const d = diagramsFor(((q.n && q.n.t) || '') + ' ' + q.u.name, new Set(), 1, isCirc(q.u)); return d.length ? `<div class="dgs">${diagramHTML(d[0])}</div>` : ''; })()}</div>`;
   if (fin) {
     h += r.ok ? `<div class="fb ok">✅ <b>${r.second ? 'Correct on your second attempt' : 'Correct'}</b></div>`
       : `<div class="fb bad">❌ <b>Marked wrong.</b><div class="label" style="color:var(--pink)">How you went wrong</div><div>${r.idk ? 'No answer given.' : (r.miss.length ? `Your answer didn't include: <b>${r.miss.map(esc).join(', ')}</b>.` : '') + (r.hasNum && !r.numOk ? ' Your numerical value doesn\'t match the expected answer — check the method and units.' : '') || 'Your answer didn\'t match the key points of the model answer.'}</div><div class="label" style="color:var(--pink)">Review specifically</div><ul>${reviewOf(q).map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
@@ -404,6 +413,133 @@ async function renderLeaderboard() {
       : `<div class="empty">No scores ${LB.tab === 'week' ? 'this week' : 'yet'} — be the first: do a quiz!</div>`;
   } catch { $('#lbList').innerHTML = '<div class="empty">Couldn\'t load the leaderboard right now.</div>'; }
 }
+
+
+/* ---------- Diagrams: hand-drawn SVG visuals matched to units by topic (automatic for new notes) ---------- */
+const DG = (() => {
+  const C = '#e9e7ff', A = '#5ce1ff', P = '#ff7eb6', G = '#ffd60a', M = '#9a98c4', V = '#b9a8ff';
+  const sw = 'stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  const ln = (x1, y1, x2, y2, c = C) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" ${sw}/>`;
+  const pl = (pts, c = C, extra = '') => `<polyline points="${pts.map(p => p.join(',')).join(' ')}" stroke="${c}" ${sw} ${extra}/>`;
+  const tx = (x, y, s, o = {}) => `<text x="${x}" y="${y}" fill="${o.c || M}" font-size="${o.s || 11}" font-family="JetBrains Mono,monospace" text-anchor="${o.a || 'middle'}" ${o.b ? 'font-weight="700"' : ''}>${s}</text>`;
+  const dot = (x, y, c = C) => `<circle cx="${x}" cy="${y}" r="3.2" fill="${c}"/>`;
+  const arr = (x1, y1, x2, y2, c = A) => { const a = Math.atan2(y2 - y1, x2 - x1), h = 7; return ln(x1, y1, x2, y2, c) + `<polygon points="${x2},${y2} ${x2 - h * Math.cos(a - .45)},${y2 - h * Math.sin(a - .45)} ${x2 - h * Math.cos(a + .45)},${y2 - h * Math.sin(a + .45)}" fill="${c}"/>`; };
+  const zig = (x1, y, x2, c = A, w = 36) => { const m = (x1 + x2) / 2, a = m - w / 2, pts = [[x1, y], [a, y]]; for (let i = 0; i < 6; i++) pts.push([a + (i + .5) * w / 6, y + (i % 2 ? 7 : -7)]); pts.push([a + w, y], [x2, y]); return pl(pts.slice(0, 2), C) + pl(pts.slice(1, -1), c) + pl(pts.slice(-2), C); };
+  const zigV = (x, y1, y2, c = A, w = 36) => { const m = (y1 + y2) / 2, a = m - w / 2, pts = [[x, a]]; for (let i = 0; i < 6; i++) pts.push([x + (i % 2 ? 7 : -7), a + (i + .5) * w / 6]); pts.push([x, a + w]); return ln(x, y1, x, a) + pl(pts, c) + ln(x, a + w, x, y2); };
+  const cap = (x1, y, x2, c = A) => { const m = (x1 + x2) / 2; return ln(x1, y, m - 4, y) + ln(m - 4, y - 13, m - 4, y + 13, c) + ln(m + 4, y - 13, m + 4, y + 13, c) + ln(m + 4, y, x2, y); };
+  const capV = (x, y1, y2, c = A) => { const m = (y1 + y2) / 2; return ln(x, y1, x, m - 4) + ln(x - 13, m - 4, x + 13, m - 4, c) + ln(x - 13, m + 4, x + 13, m + 4, c) + ln(x, m + 4, x, y2); };
+  const ind = (x1, y, x2, c = A) => { const m = (x1 + x2) / 2, a = m - 20; let d = `M${a},${y}`; for (let i = 0; i < 4; i++) d += ` a5,6 0 0 1 10,0`; return ln(x1, y, a, y) + `<path d="${d}" stroke="${c}" ${sw}/>` + ln(a + 40, y, x2, y); };
+  const indV = (x, y1, y2, c = A) => { const m = (y1 + y2) / 2, a = m - 20; let d = `M${x},${a}`; for (let i = 0; i < 4; i++) d += ` a6,5 0 0 1 0,10`; return ln(x, y1, x, a) + `<path d="${d}" stroke="${c}" ${sw}/>` + ln(x, a + 40, x, y2); };
+  const bat = (x, y1, y2, lab = 'V', c = G) => { const m = (y1 + y2) / 2; return ln(x, y1, x, m - 5) + ln(x - 13, m - 5, x + 13, m - 5, c) + `<line x1="${x - 7}" y1="${m + 5}" x2="${x + 7}" y2="${m + 5}" stroke="${c}" stroke-width="4"/>` + ln(x, m + 5, x, y2) + tx(x - 22, m - 8, '+', { c, s: 12 }) + tx(x - 24, m + 10, lab, { c, b: 1 }); };
+  const ac = (x, y1, y2, lab = 'v', c = G) => { const m = (y1 + y2) / 2; return ln(x, y1, x, m - 15) + `<circle cx="${x}" cy="${m}" r="15" stroke="${c}" ${sw}/><path d="M${x - 9},${m} q4.5,-10 9,0 t9,0" stroke="${c}" ${sw}/>` + ln(x, m + 15, x, y2) + tx(x - 28, m + 4, lab, { c, b: 1 }); };
+  const isrc = (x, y1, y2, lab = 'I', c = G) => { const m = (y1 + y2) / 2; return ln(x, y1, x, m - 15) + `<circle cx="${x}" cy="${m}" r="15" stroke="${c}" ${sw}/>` + arr(x, m + 9, x, m - 9, c) + ln(x, m + 15, x, y2) + tx(x - 28, m + 4, lab, { c, b: 1 }); };
+  const term = (x, y, l, up) => `<circle cx="${x}" cy="${y}" r="4" fill="#04040c" stroke="${C}" stroke-width="2"/>` + (up ? tx(x, y - 10, l, { c: C }) : tx(x + 12, y + 4, l, { c: C, a: 'start' }));
+  const zigL = (x1, y1, x2, y2, c = A) => { const L = Math.hypot(x2 - x1, y2 - y1), deg = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI; return `<g transform="translate(${x1} ${y1}) rotate(${deg.toFixed(2)})">${zig(0, 0, L, c, Math.min(36, L * .6))}</g>`; };
+  const svg = (body, h = 190) => `<svg viewBox="0 0 340 ${h}" xmlns="http://www.w3.org/2000/svg" role="img">${body}</svg>`;
+  const wave = (x0, y0, w, amp, cyc, c = A, ph = 0) => { let d = ''; for (let i = 0; i <= 120; i++) { const t = i / 120, x = x0 + t * w, y = y0 - amp * Math.sin(2 * Math.PI * cyc * t + ph); d += (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); } return `<path d="${d}" stroke="${c}" ${sw}/>`; };
+  const axes = (x0, y0, w, h, xl = 't', yl = '', mid = false) => { const b = mid ? y0 + h / 2 : y0, t = mid ? y0 - h / 2 : y0 - h; return arr(x0, y0, x0 + w, y0, M) + arr(x0, b, x0, t, M) + tx(x0 + w + 2, y0 + 14, xl) + (yl ? tx(x0 - 4, t + 4, yl, { a: 'end' }) : ''); };
+
+  const D = [];
+  const add = (id, title, rx, body, cap) => D.push({ id, title, rx, svg: body, cap });
+
+  add('ohm', "Resistor & Ohm's law", /resist(or|ance)|ohm'?s? law|\bv\s*=\s*ir\b|voltage and current basics|conductor/i, svg(
+    `<rect x="110" y="30" width="120" height="34" rx="16" fill="#d9b382" stroke="${C}" stroke-width="1.5"/>` + ln(60, 47, 110, 47) + ln(230, 47, 280, 47) +
+    [130, 150, 170, 205].map((x, i) => `<rect x="${x}" y="31" width="8" height="32" fill="${['#8b4513', '#111', '#e53935', '#d4af37'][i]}"/>`).join('') +
+    tx(170, 82, 'real resistor (colour bands)') + zig(60, 125, 280) + arr(100, 150, 140, 150) + tx(120, 168, 'I', { c: A, b: 1 }) + tx(60, 118, '+', { c: G, s: 13 }) + tx(280, 118, '−', { c: G, s: 13 }) + tx(170, 107, 'R', { c: A, b: 1 }) + tx(250, 168, 'V = I·R', { c: G, b: 1, s: 13 })),
+    'Current flows from + to − through R; the voltage across it is V = IR.');
+  add('series', 'Resistors in series', /resistors? in series|series (circuit|resistor|combination|connection)|\bin series\b|equivalent resistance/i, svg(
+    bat(40, 40, 150) + zig(40, 40, 160) + zig(160, 40, 290) + zigV(290, 40, 150) + ln(290, 150, 40, 150) + tx(100, 28, 'R₁', { c: A, b: 1 }) + tx(225, 28, 'R₂', { c: A, b: 1 }) + tx(312, 99, 'R₃', { c: A, b: 1 }) + arr(70, 165, 120, 165) + tx(95, 182, 'same I everywhere', { c: A }) + tx(200, 105, 'R = R₁ + R₂ + R₃', { c: G, b: 1, s: 12 })),
+    'Same current through every resistor; resistances add.');
+  add('parallel', 'Resistors in parallel', /parallel (circuit|resistor|combination|branch|connection)|resistors? in parallel|\bin parallel\b|series.?parallel/i, svg(
+    bat(40, 40, 150) + ln(40, 40, 290, 40) + ln(40, 150, 290, 150) + zigV(130, 40, 150) + zigV(210, 40, 150) + zigV(290, 40, 150) +
+    dot(130, 40) + dot(210, 40) + dot(130, 150) + dot(210, 150) + tx(152, 99, 'R₁', { c: A, b: 1 }) + tx(232, 99, 'R₂', { c: A, b: 1 }) + tx(312, 99, 'R₃', { c: A, b: 1 }) + tx(170, 182, '1/R = 1/R₁ + 1/R₂ + 1/R₃', { c: G, b: 1, s: 12 }) + tx(170, 25, 'same V across each branch', { c: A })),
+    'Same voltage across every branch; conductances add.');
+  add('vdiv', 'Voltage divider', /voltage divider|potential divider|divider rule/i, svg(
+    bat(50, 30, 160, 'Vs') + ln(50, 30, 180, 30) + zigV(180, 30, 95) + zigV(180, 95, 160) + ln(180, 160, 50, 160) + dot(180, 95) + ln(180, 95, 250, 95) + term(250, 95, 'Vout') + dot(180, 160) + ln(180, 160, 250, 160) + term(250, 160, '0 V') +
+    tx(202, 66, 'R₁', { c: A, b: 1 }) + tx(202, 132, 'R₂', { c: A, b: 1 }) + tx(170, 185, 'Vout = Vs · R₂ / (R₁ + R₂)', { c: G, b: 1, s: 12 }), 195),
+    'Two series resistors split the supply in proportion to their resistance.');
+  add('idiv', 'Current divider', /current divider/i, svg(
+    isrc(50, 40, 150, 'I') + ln(50, 40, 250, 40) + ln(50, 150, 250, 150) + zigV(160, 40, 150) + zigV(250, 40, 150) + dot(160, 40) + dot(160, 150) + arr(160, 52, 160, 70, P) + arr(250, 52, 250, 70, P) + tx(185, 99, 'R₁', { c: A, b: 1 }) + tx(275, 99, 'R₂', { c: A, b: 1 }) + tx(145, 68, 'I₁', { c: P }) + tx(235, 68, 'I₂', { c: P }) + tx(170, 180, 'I₁ = I · R₂ / (R₁ + R₂)', { c: G, b: 1, s: 12 })),
+    'Current splits between parallel branches — more goes through the smaller resistance.');
+  add('kcl', "Kirchhoff's current law (KCL)", /kirch+of+.*current|\bkcl\b|node(s)?\b(?!.*voltage)|junction/i, svg(
+    dot(170, 95) + arr(60, 50, 160, 90, A) + arr(60, 140, 160, 100, A) + arr(180, 90, 280, 45, P) + arr(180, 100, 280, 145, P) + tx(70, 40, 'I₁ in', { c: A }) + tx(70, 165, 'I₂ in', { c: A }) + tx(282, 35, 'I₃ out', { c: P }) + tx(282, 170, 'I₄ out', { c: P }) + tx(170, 125, 'node', { c: C }) + tx(170, 185, 'I₁ + I₂ = I₃ + I₄   (Σ in = Σ out)', { c: G, b: 1, s: 12 }), 195),
+    'Charge is conserved: current into a node equals current out.');
+  add('kvl', "Kirchhoff's voltage law (KVL)", /kirch+of+.*voltage|\bkvl\b|loop|kirch+of+'?s laws/i, svg(
+    bat(40, 40, 150, 'Vs') + zig(40, 40, 170) + zig(170, 40, 300) + zigV(300, 40, 150) + ln(300, 150, 40, 150) + `<path d="M140,120 a40,30 0 1 1 60,0" stroke="${P}" ${sw}/>` + arr(198, 122, 192, 128, P) + tx(170, 100, 'loop', { c: P }) +
+    tx(105, 28, 'V₁', { c: A, b: 1 }) + tx(235, 28, 'V₂', { c: A, b: 1 }) + tx(322, 99, 'V₃', { c: A, b: 1 }) + tx(170, 178, 'Vs − V₁ − V₂ − V₃ = 0', { c: G, b: 1, s: 12 })),
+    'Going round any closed loop, the voltage rises and drops sum to zero.');
+  add('thevenin', 'Thévenin equivalent', /th[eé]venin|equivalent circuit|maximum power|max(imum)? power transfer/i, svg(
+    bat(50, 40, 150, 'Vth') + zig(50, 40, 180) + ln(180, 40, 230, 40) + term(230, 40, 'a') + ln(50, 150, 230, 150) + term(230, 150, 'b') + tx(115, 28, 'Rth', { c: A, b: 1 }) +
+    `<rect x="262" y="55" width="62" height="80" rx="8" stroke="${M}" stroke-dasharray="4 4" fill="none"/>` + zigV(293, 60, 130, P) + tx(293, 150, 'load RL', { c: P }) + arr(238, 95, 258, 95, M) +
+    tx(140, 182, 'max power when RL = Rth', { c: G, b: 1, s: 12 })),
+    'Any linear circuit seen from two terminals = one voltage source in series with one resistor.');
+  add('norton', 'Norton equivalent', /norton/i, svg(
+    isrc(60, 40, 150, 'IN') + ln(60, 40, 260, 40) + ln(60, 150, 260, 150) + zigV(170, 40, 150) + dot(170, 40) + dot(170, 150) + tx(195, 99, 'RN', { c: A, b: 1 }) + term(260, 40, 'a') + term(260, 150, 'b') + tx(170, 182, 'IN = Vth / Rth ,  RN = Rth', { c: G, b: 1, s: 12 })),
+    'A current source in parallel with a resistor — the dual of Thévenin.');
+  add('superpos', 'Superposition', /superposition/i, svg(
+    bat(40, 40, 150, 'V₁') + zig(40, 40, 170) + zig(170, 40, 300) + bat(300, 40, 150, 'V₂') + zigV(170, 40, 150) + dot(170, 40) + ln(40, 150, 300, 150) + dot(170, 150) +
+    tx(105, 28, 'R₁', { c: A, b: 1 }) + tx(235, 28, 'R₂', { c: A, b: 1 }) + tx(192, 99, 'R₃', { c: A, b: 1 }) + tx(170, 180, 'one source at a time, others zeroed → add', { c: G, b: 1, s: 11 })),
+    'Voltage sources → short circuit, current sources → open circuit, then add the results.');
+  add('mesh', 'Mesh analysis', /\bmesh|cramer|simultaneous equations?.*circuit/i, svg(
+    bat(40, 40, 150, 'V') + zig(40, 40, 170) + zig(170, 40, 300) + zigV(170, 40, 150) + zigV(300, 40, 150) + ln(40, 150, 300, 150) + dot(170, 40) + dot(170, 150) +
+    `<path d="M85,118 a22,22 0 1 1 30,0" stroke="${P}" ${sw}/>` + arr(113, 120, 108, 126, P) + tx(100, 100, 'I₁', { c: P, b: 1 }) + `<path d="M215,118 a22,22 0 1 1 30,0" stroke="${V}" ${sw}/>` + arr(243, 120, 238, 126, V) + tx(230, 100, 'I₂', { c: V, b: 1 }) +
+    tx(105, 28, 'R₁', { c: A, b: 1 }) + tx(235, 28, 'R₂', { c: A, b: 1 }) + tx(150, 99, 'R₃', { c: A, b: 1 }) + tx(170, 180, 'shared R₃ carries I₁ − I₂', { c: G, b: 1, s: 12 })),
+    'Give each window its own loop current; write KVL for each mesh.');
+  add('stardelta', 'Star (Y) – delta (Δ) conversion', /star.?delta|delta.?star|\bwye\b|bridge network/i, svg(
+    tx(85, 16, 'Star (Y)', { c: C }) + zigL(85, 100, 85, 46) + zigL(85, 100, 32, 140) + zigL(85, 100, 138, 140) + dot(85, 100) + term(85, 46, '1') + tx(22, 150, '2', { c: C }) + tx(148, 150, '3', { c: C }) + dot(32, 140) + dot(138, 140) +
+    tx(170, 100, '⇄', { c: G, s: 22 }) + tx(255, 16, 'Delta (Δ)', { c: C }) +
+    zigL(255, 38, 202, 140) + zigL(255, 38, 308, 140) + zigL(202, 140, 308, 140) + dot(255, 38) + dot(202, 140) + dot(308, 140) + tx(255, 165, 'Ra  Rb  Rc', { c: A }) + tx(85, 165, 'R₁  R₂  R₃', { c: A }) +
+    tx(170, 190, 'R_Y = (product of adjacent Δ) / (sum of Δ)', { c: G, s: 10 }), 198),
+    'Swap a Y for a Δ (or back) to untangle bridge circuits that are neither series nor parallel.');
+  add('cap', 'Capacitor & charging', /capacit/i, svg(
+    capV(60, 30, 120) + tx(85, 79, 'C', { c: A, b: 1 }) + tx(60, 145, 'symbol', { c: M }) + axes(130, 150, 190, 120, 't', 'v') + `<path d="M130,150 C160,70 200,48 310,42" stroke="${A}" ${sw}/>` + ln(130, 42, 315, 42, M) + tx(318, 38, 'Vs', { c: G, a: 'start' }) + ln(185, 150, 185, 70, M) + tx(185, 165, 'τ = RC', { c: G, b: 1 }) + tx(235, 120, 'v = Vs(1 − e^(−t/RC))', { c: C, s: 10 })),
+    'Charge builds up on the plates; voltage rises exponentially with time constant τ = RC. i = C dv/dt.');
+  add('ind', 'Inductor', /inductor|inductan|\brl\b|back e\.?m\.?f/i, svg(
+    indV(60, 30, 120) + tx(85, 79, 'L', { c: A, b: 1 }) + tx(60, 145, 'symbol', { c: M }) + axes(130, 150, 190, 120, 't', 'i') + `<path d="M130,150 C160,70 200,48 310,42" stroke="${P}" ${sw}/>` + ln(185, 150, 185, 70, M) + tx(185, 165, 'τ = L/R', { c: G, b: 1 }) + tx(240, 120, 'v = L di/dt', { c: C, s: 11 })),
+    'An inductor resists changes in current: v = L di/dt. Current builds up with τ = L/R.');
+  add('lpf', 'RC low-pass filter', /low.?pass|first.?order.*filter|cut.?off|crossover|filter/i, svg(
+    term(20, 50, 'in', 1) + zig(24, 50, 120) + ln(120, 50, 160, 50) + dot(120, 50) + capV(120, 50, 130) + ln(20, 130, 160, 130) + term(160, 50, 'out') + tx(72, 38, 'R', { c: A, b: 1 }) + tx(145, 95, 'C', { c: A, b: 1 }) +
+    axes(205, 130, 120, 90, 'f', '|H|') + `<path d="M205,60 L255,60 C275,62 285,90 320,118" stroke="${P}" ${sw}/>` + ln(262, 130, 262, 60, M) + tx(262, 145, 'fc', { c: G, b: 1 }) + tx(170, 180, 'fc = 1 / (2πRC)', { c: G, b: 1, s: 12 })),
+    'Passes low frequencies, blocks high ones. Swap R and C for a high-pass filter.');
+  add('hpf', 'RC high-pass filter', /high.?pass|tweeter/i, svg(
+    term(20, 50, 'in', 1) + cap(24, 50, 120) + ln(120, 50, 160, 50) + dot(120, 50) + zigV(120, 50, 130) + ln(20, 130, 160, 130) + term(160, 50, 'out') + tx(72, 32, 'C', { c: A, b: 1 }) + tx(145, 95, 'R', { c: A, b: 1 }) +
+    axes(205, 130, 120, 90, 'f', '|H|') + `<path d="M205,118 C240,90 250,62 270,60 L320,60" stroke="${P}" ${sw}/>` + ln(262, 130, 262, 60, M) + tx(262, 145, 'fc', { c: G, b: 1 }) + tx(170, 180, 'fc = 1 / (2πRC)', { c: G, b: 1, s: 12 })),
+    'Blocks low frequencies (and DC), passes high ones.');
+  add('sine', 'Sinusoid: amplitude, period, phase', /sinus|sine|cosine|period|frequency|angular|radian|waveform(?!.*square)|combining waves|phase(?! ?angle)/i, svg(
+    axes(30, 95, 290, 150, 't', 'v', true) + wave(30, 95, 280, 55, 1.5, A) + wave(30, 95, 280, 55, 1.5, P, -0.9) + ln(30, 40, 72, 40, G) + tx(52, 33, 'Vm', { c: G, b: 1 }) +
+    ln(58, 160, 245, 160, M) + tx(150, 175, 'period T = 1/f', { c: G, b: 1 }) + tx(300, 40, 'φ shift', { c: P }) + tx(170, 190, 'v(t) = Vm sin(ωt + φ),  ω = 2πf', { c: C, s: 11 }), 198),
+    'Amplitude Vm, period T, angular frequency ω = 2πf; the pink wave lags by phase φ.');
+  add('square', 'Non-sinusoidal waveforms', /square|sawtooth|triangle wave|non.?sinusoid|harmonic/i, svg(
+    axes(30, 60, 290, 80, 't', '', true) + pl([[30, 60], [30, 30], [80, 30], [80, 90], [130, 90], [130, 30], [180, 30], [180, 90], [230, 90], [230, 30], [280, 30], [280, 60]], A) + tx(300, 35, 'square', { c: A, a: 'end' }) +
+    axes(30, 150, 290, 80, 't', '', true) + pl([[30, 150], [100, 120], [100, 180], [170, 120], [170, 180], [240, 120], [240, 180], [300, 150]], P) + tx(300, 125, 'sawtooth', { c: P, a: 'end' }), 195),
+    'Made of a fundamental plus harmonics — the sharp edges are what sound "harsh".');
+  add('phasor', 'Phasor diagram', /phasor|phase angle|leading|lagging|power factor/i, svg(
+    arr(40, 150, 320, 150, M) + arr(60, 175, 60, 15, M) + tx(318, 166, 'Re') + tx(72, 18, 'Im', { a: 'start' }) + arr(60, 150, 250, 60, G) + tx(260, 55, 'V', { c: G, b: 1, s: 13 }) + arr(60, 150, 260, 120, A) + tx(272, 122, 'I', { c: A, b: 1, s: 13 }) +
+    `<path d="M120,150 A60,60 0 0 0 117,128" stroke="${P}" ${sw}/>` + tx(140, 140, 'φ', { c: P, b: 1, s: 13 }) + tx(200, 185, 'here I lags V by φ (inductive)', { c: C, s: 11 }), 195),
+    'A sinusoid as a rotating arrow: length = amplitude, angle = phase.');
+  add('imped', 'Impedance triangle', /impedance|reactance|admittance|complex impedance/i, svg(
+    pl([[60, 160], [280, 160], [280, 40], [60, 160]], C) + ln(60, 160, 280, 160, A) + ln(280, 160, 280, 40, P) + ln(60, 160, 280, 40, G) + tx(170, 178, 'R (resistance)', { c: A }) + tx(318, 104, 'X', { c: P, b: 1 }) + tx(150, 90, '|Z|', { c: G, b: 1, s: 13 }) +
+    `<path d="M110,160 A50,50 0 0 0 104,137" stroke="${M}" ${sw}/>` + tx(125, 150, 'θ', { c: C }) + tx(170, 22, 'Z = R + jX,  XL = ωL,  XC = −1/(ωC)', { c: C, s: 11 }), 190),
+    'Impedance combines resistance and reactance: |Z| = √(R² + X²), θ = tan⁻¹(X/R).');
+  add('rlc', 'Series RLC circuit', /\brlc\b|resonan/i, svg(
+    ac(40, 40, 150, 'vs') + zig(40, 40, 140) + ind(140, 40, 230) + ln(230, 40, 300, 40) + capV(300, 40, 150) + ln(300, 150, 40, 150) + tx(90, 28, 'R', { c: A, b: 1 }) + tx(185, 28, 'L', { c: A, b: 1 }) + tx(322, 99, 'C', { c: A, b: 1 }) + tx(170, 180, 'resonance: f₀ = 1 / (2π√(LC))', { c: G, b: 1, s: 12 })),
+    'At resonance XL = XC, so the impedance is just R and the current peaks.');
+  add('opamp', 'Op-amp: inverting amplifier', /op.?amp|operational amplifier/i, svg(
+    `<polygon points="170,50 170,140 250,95" stroke="${A}" ${sw}/>` + tx(180, 78, '−', { c: C, s: 14 }) + tx(180, 122, '+', { c: C, s: 14 }) + term(20, 74, 'vin', 1) + zig(24, 74, 120) + ln(120, 74, 170, 74) + dot(140, 74) + ln(140, 74, 140, 30) + zig(140, 30, 270) + ln(270, 30, 270, 95) + ln(250, 95, 300, 95) + dot(270, 95) + term(300, 95, 'vout') +
+    ln(170, 116, 150, 116) + ln(150, 116, 150, 150) + ln(138, 150, 162, 150) + ln(142, 155, 158, 155) + ln(146, 160, 154, 160) + tx(72, 62, 'Rin', { c: P, b: 1 }) + tx(205, 20, 'Rf', { c: P, b: 1 }) + tx(170, 185, 'vout / vin = −Rf / Rin', { c: G, b: 1, s: 12 }), 195),
+    'Negative feedback sets the gain; the inverting input sits at virtual earth (0 V).');
+  add('argand', 'Argand diagram (complex plane)', /complex number|argand|modulus|argument|euler|polar form|de moivre|imaginary/i, svg(
+    arr(30, 120, 320, 120, M) + arr(170, 165, 170, 12, M) + tx(318, 136, 'Re') + tx(182, 16, 'Im', { a: 'start' }) + arr(170, 120, 270, 45, G) + dot(270, 45, G) + tx(262, 30, 'z = x + jy', { c: G, b: 1, a: 'end' }) +
+    ln(270, 45, 270, 120, M) + ln(170, 45, 270, 45, M) + tx(270, 135, 'x', { c: A }) + tx(160, 49, 'y', { c: A }) + tx(208, 72, 'r', { c: G, b: 1 }) + `<path d="M205,120 A35,35 0 0 0 198,100" stroke="${P}" ${sw}/>` + tx(214, 110, 'θ', { c: P, b: 1 }) +
+    tx(170, 190, 'z = r(cos θ + j sin θ) = r e^(jθ)', { c: C, s: 11 }), 198),
+    'Modulus r = |z| is the length; argument θ is the angle from the positive real axis.');
+  const MATH = new Set(['sine', 'argand', 'square']);
+  const GENERAL = new Set(['ohm', 'series', 'parallel', 'sine']);
+  const used = (s, circ) => D.filter(d => (circ || MATH.has(d.id)) && d.rx.test(s)).sort((a, b) => GENERAL.has(a.id) - GENERAL.has(b.id));
+  return { all: D, match: used };
+})();
+function diagramHTML(d) { return `<figure class="dg"><div class="dgsvg">${d.svg}</div><figcaption><b>${esc(d.title)}</b>${d.cap ? ' — ' + esc(d.cap) : ''}</figcaption></figure>`; }
+function diagramsFor(text, seen, max = 2, circ = true) { const out = []; for (const d of DG.match(text, circ)) { if (seen.has(d.id)) continue; seen.add(d.id); out.push(d); if (out.length >= max) break; } return out; }
 
 </script>
 </body>
