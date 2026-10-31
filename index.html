@@ -75,6 +75,19 @@ textarea{width:100%;margin-top:6px;padding:11px 12px;border-radius:12px;border:1
 .fb{margin-top:12px;padding:11px 13px;border-radius:12px;font-size:14px;line-height:1.5}.fb ul{margin:4px 0 0}
 .fb.warn{background:#22190a;border:1px solid #5a4318}.fb.ok{background:#0e1d15;border:1px solid #1f4d33}.fb.bad{background:#1f0e0e;border:1px solid #5a2222}
 .model{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;font-size:14.5px;line-height:1.55}
+/* hover: everything clickable lights up */
+nav a,.chip,.planet,details.unit>summary,details.rq summary,.qrow,a{transition:background .15s,border-color .15s,color .15s,box-shadow .15s,transform .15s}
+@media(hover:hover){
+nav a:hover,.chip:hover{background:#2b2560;border-color:#8b7dff;color:#fff}
+.chip.go:hover{background:#8b7dff;border-color:#8b7dff;box-shadow:0 0 18px -4px #8b7dff}
+.planet:hover{border-color:#8b7dff;box-shadow:0 0 28px -8px #8b7dff;transform:translateY(-2px)}
+details.unit>summary:hover{background:color-mix(in srgb,var(--acc) 14%,transparent);border-radius:12px}
+details.unit>summary:hover b{color:#fff}
+details.rq summary:hover{color:#fff;text-decoration:underline}
+.qrow:hover{background:color-mix(in srgb,var(--acc) 12%,var(--panel));border-color:color-mix(in srgb,var(--acc) 60%,transparent)}
+a:hover{color:#fff}
+}
+nav a:active,.chip:active,.planet:active{transform:scale(.97)}
 .modal{position:fixed;inset:0;z-index:50;background:rgba(2,2,10,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px}
 .mcard{width:100%;max-width:380px;background:linear-gradient(180deg,#14132e,#0b0b18);border:1px solid #3b3480;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 .lbrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}.lbrow.me{background:#1b1840;border-radius:10px}
