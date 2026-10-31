@@ -75,6 +75,8 @@ textarea{width:100%;margin-top:6px;padding:11px 12px;border-radius:12px;border:1
 .fb{margin-top:12px;padding:11px 13px;border-radius:12px;font-size:14px;line-height:1.5}.fb ul{margin:4px 0 0}
 .fb.warn{background:#22190a;border:1px solid #5a4318}.fb.ok{background:#0e1d15;border:1px solid #1f4d33}.fb.bad{background:#1f0e0e;border:1px solid #5a2222}
 .model{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;font-size:14.5px;line-height:1.55}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(2,2,10,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px}
+.mcard{width:100%;max-width:380px;background:linear-gradient(180deg,#14132e,#0b0b18);border:1px solid #3b3480;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 .lbrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}.lbrow.me{background:#1b1840;border-radius:10px}
 .lbpos{width:28px;text-align:center;font-size:18px}.lbname{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis}.lbpts{font-family:var(--mono);color:var(--gold);font-size:17px;min-width:44px;text-align:right}
 @media(max-width:620px){.lbrow .meta{display:none}}
@@ -209,7 +211,7 @@ addEventListener('hashchange', () => { if (QZ.queue.length) submitSession(); QZ.
 fetch('data.json?v=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(d => {
   D = d; D.mods.forEach(m => { MODS[m.id] = m; m.secs.forEach(s => s.units.forEach(u => (UNITS[u.id] = u))); });
   $('#sub').textContent = `Engineering notes · view only · updated ${D.updated}`;
-  render();
+  render(); welcome();
 }).catch(() => { $('#main').innerHTML = '<div class="empty">Could not load the notes.</div>'; });
 
 /* ---------- Quiz: two attempts, works on any static host, no login ---------- */
@@ -349,7 +351,29 @@ function nameBox() {
 }
 function wireName(root, after) {
   const b = root.querySelector('#lbSave'); if (!b) return;
-  b.onclick = () => { const v = root.querySelector('#lbName').value.trim().replace(/\s+/g, ' '); if (v.length < 2) return; setName(v); after ? after() : null; };
+  b.onclick = async () => { const v = root.querySelector('#lbName').value.trim().replace(/\s+/g, ' '); if (v.length < 2) return; await register(v); after ? after() : null; };
+}
+async function register(name) {
+  setName(name);
+  if (!SB_ON) return;
+  try { await sb('quiz_scores', { method: 'POST', body: JSON.stringify({ player: name.slice(0, 20), player_id: ME.id, module: 'Joined', answered: 0, correct: 0, first_try: 0 }), headers: { Prefer: 'return=minimal' } }); try { localStorage.setItem('ub.reg', name); } catch {} } catch (e) { console.warn('register', e); }
+}
+function welcome() {
+  let reg = ''; try { reg = localStorage.getItem('ub.reg') || ''; } catch {}
+  if (!SB_ON) return;
+  if (ME.name && reg !== ME.name) { register(ME.name); return; }
+  if (ME.name) return;
+  const box = document.createElement('div'); box.className = 'modal';
+  box.innerHTML = `<div class="mcard"><div class="sun" style="margin:0 auto 12px"></div><h2 style="margin:0 0 6px;text-align:center">Welcome to Uni Brain</h2>
+    <div style="text-align:center;color:var(--mute);font-size:14px;line-height:1.5">Engineering notes, formula sheets and quizzes. Enter your name to join the 🏆 leaderboard — quiz points are added automatically.</div>
+    <input id="wName" class="search" maxlength="20" placeholder="Your name" autocomplete="nickname" style="margin-top:14px">
+    <button class="chip go" id="wGo" style="width:100%;margin-top:10px;padding:11px">Join the leaderboard</button>
+    <button class="chip" id="wLater" style="width:100%;margin-top:8px;background:none;border:0;color:var(--mute)">Maybe later</button></div>`;
+  document.body.appendChild(box);
+  const inp = box.querySelector('#wName'); setTimeout(() => inp.focus(), 50);
+  const go = async () => { const v = inp.value.trim().replace(/\s+/g, ' '); if (v.length < 2) { inp.focus(); inp.style.borderColor = 'var(--pink)'; return; } box.querySelector('#wGo').textContent = 'Joining…'; await register(v); box.remove(); render(); };
+  box.querySelector('#wGo').onclick = go; inp.onkeydown = e => { if (e.key === 'Enter') go(); };
+  box.querySelector('#wLater').onclick = () => box.remove();
 }
 let LB = { tab: 'week' };
 async function renderLeaderboard() {
