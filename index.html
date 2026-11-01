@@ -100,6 +100,43 @@ details.chap>summary b{flex:1;font-size:15px;min-width:0}details.chap .chev{font
 .chapin{padding:0 10px 10px}.chip.sm{padding:4px 10px;font-size:12px}
 details.ovbox>summary{cursor:pointer;color:var(--cyan);font-size:14px;padding:6px 0}details.ovbox[open]>summary{margin-bottom:8px}
 @media(hover:hover){details.chap>summary:hover{background:#17163a;border-radius:14px}details.ovbox>summary:hover{color:#fff}}
+.hero{background:radial-gradient(120% 140% at 0% 0%,#2b2560 0%,#0d0d1c 60%)}
+.lvl{width:62px;height:62px;flex:none;border-radius:18px;background:linear-gradient(135deg,#ffd60a,#ff7eb6);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1b1030;box-shadow:0 8px 24px -8px #ff7eb6}
+.lvl b{font-size:24px;line-height:1}.lvl span{font-size:9px;font-family:var(--mono);letter-spacing:.12em}
+.xpbar{height:9px;border-radius:9px;background:#1d1b3a;overflow:hidden;margin:7px 0 5px}.xpbar i{display:block;height:100%;background:linear-gradient(90deg,#ffd60a,#ff7eb6,#b9a8ff);border-radius:9px;transition:width .6s}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:14px 0 6px}
+.mode{border:0;border-radius:16px;padding:12px;text-align:left;color:#fff;cursor:pointer;display:flex;flex-direction:column;gap:2px;font:inherit;transition:transform .15s,box-shadow .15s}
+.mode b{font-size:22px}.mode span{font-weight:700;font-size:15px}.mode i{font-style:normal;font-size:12px;opacity:.85}
+.mode.m1{background:linear-gradient(135deg,#6f62ff,#b05cff)}.mode.m2{background:linear-gradient(135deg,#0ea5a4,#5ce1ff)}.mode.m3{background:linear-gradient(135deg,#ff5f7e,#ffb347)}.mode.m4{background:linear-gradient(135deg,#d97706,#ffd60a);color:#1b1030}
+.mode:disabled{opacity:.35;cursor:default}
+@media(hover:hover){.mode:not(:disabled):hover{transform:translateY(-3px);box-shadow:0 10px 24px -10px #000}}
+.ring{width:46px;height:46px;flex:none;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),#23234a 0);display:flex;align-items:center;justify-content:center}
+.ring span{width:36px;height:36px;border-radius:50%;background:var(--panel);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10.5px;color:var(--text)}
+.qrow{gap:12px}
+.hud{position:sticky;top:0;z-index:6;background:linear-gradient(var(--bg) 85%,transparent);padding:6px 0 10px}
+.hudbar{height:8px;border-radius:8px;background:#1d1b3a;overflow:hidden;margin-bottom:8px}.hudbar i{display:block;height:100%;background:linear-gradient(90deg,#5ce1ff,#6f62ff,#ff7eb6);transition:width .5s}
+.pill{font-family:var(--mono);font-size:12px;padding:4px 10px;border-radius:99px;background:var(--panel);border:1px solid var(--line)}.pill.hot{background:linear-gradient(90deg,#ff5f7e,#ffb347);color:#fff;border:0;animation:pulse 1s infinite}
+.qcard{border:1px solid color-mix(in srgb,var(--acc) 45%,var(--line));box-shadow:0 0 40px -18px var(--acc);animation:rise .3s ease}
+.qcard.win{box-shadow:0 0 50px -12px #7cffb2;border-color:#3d8f5f}
+.qkind{font-size:11.5px;padding:3px 10px;border-radius:99px;font-weight:600}
+.qtext{font-size:19px;line-height:1.5;font-weight:600;margin:14px 0 12px}
+.att{display:flex;align-items:center;gap:6px;margin-bottom:4px}.att span{width:10px;height:10px;border-radius:50%;background:#2a2950}.att span.on{background:var(--gold);box-shadow:0 0 8px var(--gold)}.att span.used{background:var(--pink)}.att em{font-style:normal;font-size:12px;color:var(--mute);font-family:var(--mono)}
+.chip.big{padding:10px 18px;font-size:15px}
+.fb.pop{animation:pop .35s ease;font-size:16px}.gain{display:inline-block;margin-left:8px;font-family:var(--mono);font-size:13px;color:var(--gold);animation:float 1.2s ease}
+.shake{animation:shake .4s}
+.done{text-align:center;background:radial-gradient(120% 100% at 50% 0%,#2b2560 0%,#0d0d1c 70%)}
+.trophy{font-size:64px;animation:pop .5s ease}.stars{font-size:34px;letter-spacing:6px}.stars span{color:#2a2950}.stars span.on{color:var(--gold);display:inline-block;animation:pop .4s both;text-shadow:0 0 14px #ffd60a}
+.done .pct{font-size:52px;font-weight:800;background:linear-gradient(90deg,#ffd60a,#ff7eb6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.stats div{background:#15152a;border-radius:12px;padding:8px 4px}.stats b{display:block;font-size:15px}.stats span{font-size:10.5px;color:var(--mute);font-family:var(--mono)}
+@media(max-width:620px){.stats{grid-template-columns:repeat(3,1fr)}.qtext{font-size:17px}}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden}.confetti i{position:absolute;top:-12px;width:8px;height:13px;border-radius:2px;animation:fall 1.4s cubic-bezier(.2,.6,.4,1) forwards}
+.tst{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#1b1b2b;border:1px solid var(--line);padding:10px 14px;border-radius:10px;z-index:80}
+@keyframes fall{to{transform:translate(var(--dx),105vh) rotate(var(--r));opacity:.9}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes float{0%{opacity:0;transform:translateY(8px)}30%{opacity:1}100%{transform:translateY(-4px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+@keyframes rise{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+@keyframes pulse{50%{filter:brightness(1.25)}}
 .modal{position:fixed;inset:0;z-index:50;background:rgba(2,2,10,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px}
 .mcard{width:100%;max-width:380px;background:linear-gradient(180deg,#14132e,#0b0b18);border:1px solid #3b3480;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 .lbrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}.lbrow.me{background:#1b1840;border-radius:10px}
@@ -282,14 +319,30 @@ function questionsOf(u) {
   return qs;
 }
 function unitScore(u) { const qs = questionsOf(u); let done = 0, ok = 0; qs.forEach(q => { const s = QS[q.id]; if (s) { done++; if (s !== 'wrong') ok++; } }); return { total: qs.length, done, acc: done ? ok / done : null }; }
-const QZ = { queue: [], i: 0, att: 1, text: '', res: null, tally: { right: 0, second: 0, wrong: 0 }, mod: null };
+const QZ = { queue: [], i: 0, att: 1, text: '', res: null, tally: { right: 0, second: 0, wrong: 0 }, mod: null, streak: 0, bestRun: 0, xpRun: 0, units: [], gain: 0 };
+/* ---- game layer: XP, levels, streaks, confetti ---- */
+const PL = (() => { try { return JSON.parse(localStorage.getItem('ub.player') || '{}'); } catch { return {}; } })();
+PL.xp = PL.xp || 0; PL.best = PL.best || 0;
+const savePL = () => { try { localStorage.setItem('ub.player', JSON.stringify(PL)); } catch {} };
+const LEVELS = ['Rookie', 'Apprentice', 'Technician', 'Engineer', 'Senior Engineer', 'Chartered', 'Chief Engineer', 'Professor', 'Legend'];
+const lvl = xp => { const n = Math.floor(Math.sqrt(xp / 40)); const lo = 40 * n * n, hi = 40 * (n + 1) * (n + 1); return { n: n + 1, name: LEVELS[Math.min(n, LEVELS.length - 1)], pct: (xp - lo) / (hi - lo), toNext: hi - xp }; };
+const medal = sc => sc.done < 3 || sc.acc == null ? '' : sc.acc >= .9 ? '🥇' : sc.acc >= .75 ? '🥈' : sc.acc >= .5 ? '🥉' : '';
+function ring(sc, col) { const p = sc.acc == null ? 0 : Math.round(sc.acc * 100), d = sc.total ? Math.round(sc.done / sc.total * 100) : 0; return `<div class="ring" style="--p:${d};--c:${col}" title="${d}% attempted"><span>${sc.acc == null ? '–' : p + '%'}</span></div>`; }
+function toast(m) { const t = document.createElement('div'); t.className = 'tst'; t.textContent = m; document.body.appendChild(t); setTimeout(() => t.remove(), 2200); }
+function confetti() {
+  const box = document.createElement('div'); box.className = 'confetti';
+  const cols = ['#ffd60a', '#5ce1ff', '#ff7eb6', '#7cffb2', '#b9a8ff', '#ffb347'];
+  for (let i = 0; i < 36; i++) { const s = document.createElement('i'); s.style.left = (10 + Math.random() * 80) + '%'; s.style.background = cols[i % cols.length]; s.style.animationDelay = (Math.random() * .25) + 's'; s.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px'); s.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg'); box.appendChild(s); }
+  document.body.appendChild(box); setTimeout(() => box.remove(), 1600);
+}
 function startQuiz(units, onlyWrong, onlyPast) {
   let pool = units.flatMap(u => questionsOf(u).map(q => ({ ...q, u })));
   if (onlyPast) pool = pool.filter(q => q.past);
   if (onlyWrong) pool = pool.filter(q => QS[q.id] === 'wrong');
   const band = q => !QS[q.id] ? 0 : QS[q.id] === 'wrong' ? 1 : 2;
   pool.forEach(q => (q.r = Math.random())); pool.sort((a, b) => band(a) - band(b) || a.r - b.r);
-  Object.assign(QZ, { queue: pool.slice(0, 40), i: 0, att: 1, text: '', res: null, tally: { right: 0, second: 0, wrong: 0 } });
+  QZ.doneCf = 0; Object.assign(QZ, { queue: pool.slice(0, QZ.quick ? 10 : 40), i: 0, att: 1, text: '', res: null, tally: { right: 0, second: 0, wrong: 0 }, streak: 0, bestRun: 0, xpRun: 0, units, gain: 0, again: [units, onlyWrong, onlyPast] }); QZ.quick = false;
+  if (!QZ.queue.length) { toast('No questions here yet'); return; }
   renderQuizMain(); scrollTo(0, 0);
 }
 function reviewOf(q) {
@@ -298,43 +351,56 @@ function reviewOf(q) {
   else { out.push(`Go back over ${q.u.name}`); (q.u.must || []).slice(0, 2).forEach(p => out.push(p)); }
   return out;
 }
-function record(q, o) { QS[q.id] = o; saveQS(); QZ.tally[o]++; noteResult(o, q); }
+function record(q, o) {
+  QS[q.id] = o; saveQS(); QZ.tally[o]++; noteResult(o, q);
+  if (o === 'wrong') { QZ.streak = 0; QZ.gain = 0; return; }
+  QZ.streak++; QZ.bestRun = Math.max(QZ.bestRun, QZ.streak);
+  const g = (o === 'right' ? 10 : 5) + Math.min(QZ.streak - 1, 5) * 2; QZ.gain = g; QZ.xpRun += g; PL.xp += g; PL.best = Math.max(PL.best, QZ.streak); savePL();
+}
 function quizPicker() {
   if (!QZ.mod || !MODS[QZ.mod]) QZ.mod = D.mods[0].id;
   const ms = D.mods.filter(m => QZ.mod === m.id);
   let total = 0, done = 0, h = '';
   for (const m of ms) {
     const all = m.secs.flatMap(s => s.units), nPast = all.reduce((a, u) => a + (u.xq || []).filter(x => x[4]).length, 0);
-    h += `<div class="row" style="justify-content:space-between;margin:18px 0 8px"><h2 style="margin:0;font-size:18px">${esc(m.name)}</h2><span class="row" style="gap:6px">${nPast ? `<button class="chip" data-qpast="${m.id}">📄 Past papers (${nPast})</button>` : ''}<button class="chip" data-qmix="${m.id}">🎲 Mixed</button></span></div>`;
+    const nWrong = all.reduce((a, u) => a + questionsOf(u).filter(q => QS[q.id] === 'wrong').length, 0);
+    h += `<div class="modes"><button class="mode m1" data-qquick="${m.id}"><b>⚡</b><span>Quick 10</span><i>random mix</i></button><button class="mode m2" data-qmix="${m.id}"><b>🎲</b><span>Marathon</span><i>whole module</i></button><button class="mode m3" data-qmistakes="${m.id}" ${nWrong ? '' : 'disabled'}><b>🔁</b><span>Mistakes</span><i>${nWrong} to fix</i></button>${nPast ? `<button class="mode m4" data-qpast="${m.id}"><b>📄</b><span>Past papers</span><i>${nPast} Qs</i></button>` : ''}</div>`;
     all.forEach(u => { const sc = unitScore(u); total += sc.total; done += sc.done; });
     const row = u => { const sc = unitScore(u); if (!sc.total) return ''; const wrong = questionsOf(u).filter(q => QS[q.id] === 'wrong').length;
-      return `<div class="qrow" style="--acc:${thColor(u.th)}"><div style="min-width:0"><b>${esc(u.name)}</b><div class="meta">${sc.total} questions · ${sc.done} done${sc.acc != null ? ` · <span style="color:${sc.acc >= .8 ? 'var(--green)' : sc.acc >= .5 ? 'var(--gold)' : 'var(--pink)'}">${Math.round(sc.acc * 100)}% right</span>` : ''}</div></div><span class="row" style="gap:6px;flex-wrap:nowrap">${wrong ? `<button class="chip" data-qwrong="${u.id}">Redo ${wrong} ✗</button>` : ''}<button class="chip go" data-qunit="${u.id}">Start</button></span></div>`; };
+      return `<div class="qrow" style="--acc:${thColor(u.th)}">${ring(sc, thColor(u.th))}<div style="min-width:0;flex:1"><b>${esc(u.name)} ${medal(sc)}</b><div class="meta">${sc.total} questions · ${sc.done} done</div></div><span class="row" style="gap:6px;flex-wrap:nowrap">${wrong ? `<button class="chip" data-qwrong="${u.id}">🔁 ${wrong}</button>` : ''}<button class="chip go" data-qunit="${u.id}">▶ Play</button></span></div>`; };
     h += packModule(m, row, (mm, si, ci) => `<button class="chip go sm" data-qchap="${mm.id}|${si}|${ci}">Quiz all</button>`);
   }
-  return `<div class="card"><div class="row" style="justify-content:space-between"><div class="label" style="margin:0">📝 Quiz</div><div class="meta"><b style="color:var(--gold)">${total}</b> questions · ${done} attempted on this device</div></div>
-    <div style="font-size:14px;line-height:1.55;margin-top:8px;color:#d8d6f5">Pick any unit. You get <b>two attempts</b>: miss the first and you're told what to review; miss again and you see the model answer, exactly what your answer was missing and what to revise.</div>
+  const L = lvl(PL.xp);
+  return `<div class="card hero"><div class="row" style="gap:14px;flex-wrap:nowrap"><div class="lvl"><b>${L.n}</b><span>LEVEL</span></div><div style="flex:1;min-width:0"><div style="font-size:18px;font-weight:700">${esc(ME.name || 'Player')} · <span style="color:var(--gold)">${L.name}</span></div><div class="xpbar"><i style="width:${Math.round(L.pct * 100)}%"></i></div><div class="meta">⭐ ${PL.xp} XP · ${L.toNext} XP to level ${L.n + 1} · 🔥 best streak ${PL.best}</div></div></div>
+    <div class="meta" style="margin-top:10px"><b style="color:var(--gold)">${total}</b> questions · ${done} attempted · two attempts each — miss once and you get a hint, miss twice and you see exactly what to fix.</div>
     ${SB_ON && !ME.name ? `<div class="meta" style="margin-top:10px">🏆 Add your name to get on the leaderboard:</div>${nameBox()}` : SB_ON ? `<div class="meta" style="margin-top:8px">🏆 Playing as <b>${esc(ME.name)}</b> — <a href="#leaderboard">leaderboard</a></div>` : ''}<div class="row" style="margin-top:10px">${D.mods.map(m => `<button class="chip ${QZ.mod === m.id ? 'on' : ''}" data-qmod="${m.id}">${esc(m.name)}</button>`).join('')}</div></div>${h}`;
 }
 function quizQuestion() {
-  const q = QZ.queue[QZ.i], r = QZ.res, fin = r && r.final;
-  let h = `<div class="card" style="border-left:4px solid ${thColor(q.u.th)}">
-    <div class="row" style="justify-content:space-between"><span class="meta">${esc(q.u.name)} · ${esc(q.kind)}</span><span class="meta">Q${QZ.i + 1}/${QZ.queue.length} · ✅${QZ.tally.right} 🟡${QZ.tally.second} ❌${QZ.tally.wrong}</span></div>
-    <div style="font-size:17px;line-height:1.5;font-weight:500;margin:12px 0">${esc(q.q)}</div>`;
-  if (!fin) h += `<div class="meta" style="color:${QZ.att === 2 ? 'var(--gold)' : 'var(--mute)'}">Attempt ${QZ.att} of 2</div>
+  const q = QZ.queue[QZ.i], r = QZ.res, fin = r && r.final, col = thColor(q.u.th);
+  let h = `<div class="hud"><div class="hudbar"><i style="width:${Math.round(QZ.i / QZ.queue.length * 100)}%"></i></div><div class="row" style="justify-content:space-between"><span class="pill">Q ${QZ.i + 1}/${QZ.queue.length}</span><span class="pill ${QZ.streak >= 3 ? 'hot' : ''}">🔥 ${QZ.streak}</span><span class="pill">⭐ ${QZ.xpRun} XP</span><button class="chip sm" id="qback">✕ Quit</button></div></div>
+    <div class="card qcard ${r && !fin ? 'shake' : ''} ${fin && r.ok ? 'win' : ''}" style="--acc:${col}">
+    <div class="row" style="justify-content:space-between"><span class="qkind" style="background:color-mix(in srgb,${col} 20%,transparent);color:${col}">${esc(q.kind)}</span><span class="meta" style="max-width:55%;text-align:right">${esc(q.u.name)}</span></div>
+    <div class="qtext">${esc(q.q)}</div>`;
+  if (!fin) h += `<div class="att"><span class="${QZ.att === 1 ? 'on' : 'used'}"></span><span class="${QZ.att === 2 ? 'on' : ''}"></span><em>Attempt ${QZ.att} of 2</em></div>
     <textarea id="qa" rows="4" placeholder="Type your answer…">${esc(QZ.text)}</textarea>
-    <div class="row" style="margin-top:8px"><button class="chip go" id="qcheck">Check answer</button><button class="chip" id="qidk">I don't know</button><span style="flex:1"></span><button class="chip" id="qback">Back to units</button></div>`;
-  if (r && !fin) h += `<div class="fb warn">🟡 <b>Not quite — you have one more attempt.</b>${r.miss.length ? ` Your answer is missing some key ideas.` : ''}${r.hasNum && !r.numOk ? ' Check your numbers and units.' : ''}<div class="label" style="color:var(--gold)">Review this before you answer again</div><ul>${reviewOf(q).map(x => `<li>${esc(x)}</li>`).join('')}</ul>${(() => { const d = diagramsFor(((q.n && q.n.t) || '') + ' ' + q.u.name, new Set(), 1, isCirc(q.u)); return d.length ? `<div class="dgs">${diagramHTML(d[0])}</div>` : ''; })()}</div>`;
+    <div class="row" style="margin-top:10px"><button class="chip go big" id="qcheck">Check answer</button><button class="chip" id="qidk">I don't know</button></div>`;
+  if (r && !fin) h += `<div class="fb warn">🟡 <b>So close — one more go!</b>${r.miss.length ? ` Your answer is missing some key ideas.` : ''}${r.hasNum && !r.numOk ? ' Check your numbers and units.' : ''}<div class="label" style="color:var(--gold)">💡 Hint: review this first</div><ul>${reviewOf(q).map(x => `<li>${esc(x)}</li>`).join('')}</ul>${(() => { const d = diagramsFor(((q.n && q.n.t) || '') + ' ' + q.u.name, new Set(), 1, isCirc(q.u)); return d.length ? `<div class="dgs">${diagramHTML(d[0])}</div>` : ''; })()}</div>`;
   if (fin) {
-    h += r.ok ? `<div class="fb ok">✅ <b>${r.second ? 'Correct on your second attempt' : 'Correct'}</b></div>`
-      : `<div class="fb bad">❌ <b>Marked wrong.</b><div class="label" style="color:var(--pink)">How you went wrong</div><div>${r.idk ? 'No answer given.' : (r.miss.length ? `Your answer didn't include: <b>${r.miss.map(esc).join(', ')}</b>.` : '') + (r.hasNum && !r.numOk ? ' Your numerical value doesn\'t match the expected answer — check the method and units.' : '') || 'Your answer didn\'t match the key points of the model answer.'}</div><div class="label" style="color:var(--pink)">Review specifically</div><ul>${reviewOf(q).map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+    h += r.ok ? `<div class="fb ok pop">${r.second ? '👏 <b>Got it on the second try!</b>' : ['🎯', '🔥', '⚡', '🚀', '💯'][QZ.i % 5] + ' <b>' + ['Spot on!', 'Nailed it!', 'Correct!', 'Brilliant!', 'Perfect!'][QZ.i % 5] + '</b>'}<span class="gain">+${QZ.gain} XP${QZ.streak >= 3 ? ` · ${QZ.streak} in a row!` : ''}</span></div>`
+      : `<div class="fb bad">❌ <b>Not this time.</b><div class="label" style="color:var(--pink)">How you went wrong</div><div>${r.idk ? 'No answer given.' : (r.miss.length ? `Your answer didn't include: <b>${r.miss.map(esc).join(', ')}</b>.` : '') + (r.hasNum && !r.numOk ? ' Your numerical value doesn\'t match the expected answer — check the method and units.' : '') || 'Your answer didn\'t match the key points of the model answer.'}</div><div class="label" style="color:var(--pink)">Review specifically</div><ul>${reviewOf(q).map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
     h += `<div class="model"><div class="label">Model answer</div><div>${esc(q.a)}</div>${q.sol && q.sol.length ? `<ol>${q.sol.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}</div>
-      <div class="row" style="margin-top:10px"><button class="chip go" id="qnext">${QZ.i + 1 < QZ.queue.length ? 'Next question →' : 'Finish'}</button>${r.ok ? `<button class="chip" id="qflip" data-to="wrong">Actually I got it wrong</button>` : `<button class="chip" id="qflip" data-to="${QZ.att === 2 ? 'second' : 'right'}">I was actually right</button>`}<span style="flex:1"></span><button class="chip" id="qback">Back to units</button></div>`;
+      <div class="row" style="margin-top:12px"><button class="chip go big" id="qnext">${QZ.i + 1 < QZ.queue.length ? 'Next question →' : 'See results 🏁'}</button>${r.ok ? `<button class="chip sm" id="qflip" data-to="wrong">Actually I got it wrong</button>` : `<button class="chip sm" id="qflip" data-to="${QZ.att === 2 ? 'second' : 'right'}">I was actually right</button>`}</div>`;
   }
-  return h + `</div><div class="meta" style="text-align:center">Marking checks your answer against the key ideas of the model answer — use the buttons to correct it if it misjudges you.</div>`;
+  return h + `</div><div class="meta" style="text-align:center">Marking compares your answer with the key ideas of the model answer — use the buttons if it misjudges you.</div>`;
 }
 function quizDone() {
-  const t = QZ.tally, n = t.right + t.second + t.wrong;
-  return `<div class="card" style="text-align:center"><div style="font-size:44px;font-weight:700;color:var(--gold)">${n ? Math.round((t.right + t.second) / n * 100) : 0}%</div><div style="margin-top:6px">✅ ${t.right} first try · 🟡 ${t.second} second try · ❌ ${t.wrong} wrong</div><div class="row" style="justify-content:center;margin-top:12px"><button class="chip go" id="qback">Back to units</button></div></div>`;
+  const t = QZ.tally, n = t.right + t.second + t.wrong, p = n ? Math.round((t.right + t.second) / n * 100) : 0;
+  const stars = p >= 90 ? 3 : p >= 70 ? 2 : p >= 40 ? 1 : 0, L = lvl(PL.xp);
+  return `<div class="card done"><div class="trophy">${p >= 90 ? '🏆' : p >= 70 ? '🥈' : p >= 40 ? '🥉' : '💪'}</div><div class="stars">${[0, 1, 2].map(i => `<span class="${i < stars ? 'on' : ''}" style="animation-delay:${i * .18}s">★</span>`).join('')}</div>
+    <div class="pct">${p}%</div><div class="meta" style="margin:4px 0 12px">${p >= 90 ? 'Outstanding — exam ready!' : p >= 70 ? 'Great work — nearly there.' : p >= 40 ? 'Good progress — redo the misses.' : 'Every miss is a lesson — go again!'}</div>
+    <div class="stats"><div><b>✅ ${t.right}</b><span>first try</span></div><div><b>🟡 ${t.second}</b><span>second try</span></div><div><b>❌ ${t.wrong}</b><span>wrong</span></div><div><b>⭐ +${QZ.xpRun}</b><span>XP</span></div><div><b>🔥 ${QZ.bestRun}</b><span>best streak</span></div></div>
+    <div class="xpbar" style="margin:14px auto 4px;max-width:320px"><i style="width:${Math.round(L.pct * 100)}%"></i></div><div class="meta">Level ${L.n} · ${L.name} · ${L.toNext} XP to next level</div>
+    <div class="row" style="justify-content:center;margin-top:14px"><button class="chip go big" id="qagain">Play again</button>${t.wrong ? `<button class="chip" id="qfix">🔁 Fix my ${t.wrong} mistake${t.wrong === 1 ? '' : 's'}</button>` : ''}<button class="chip" id="qback">Back</button></div></div>`;
 }
 function renderQuizMain() {
   const main = $('#main');
@@ -351,6 +417,12 @@ function renderQuizMain() {
   on('[data-qmix]', b => startQuiz(MODS[b.dataset.qmix].secs.flatMap(s => s.units)));
   on('[data-qpast]', b => startQuiz(MODS[b.dataset.qpast].secs.flatMap(s => s.units), false, true));
   on('#qback', () => { submitSession(); QZ.queue = []; renderQuizMain(); });
+  on('#qagain', () => { const [u, w, p] = QZ.again; startQuiz(u, w, p); });
+  on('#qfix', () => startQuiz(QZ.units, true));
+  on('[data-qquick]', b => { QZ.quick = true; startQuiz(MODS[b.dataset.qquick].secs.flatMap(s => s.units)); });
+  on('[data-qmistakes]', b => startQuiz(MODS[b.dataset.qmistakes].secs.flatMap(s => s.units), true));
+  if (QZ.res && QZ.res.final && QZ.res.ok && !QZ.res.cf) { QZ.res.cf = 1; confetti(); }
+  if (QZ.queue.length && QZ.i >= QZ.queue.length && !QZ.doneCf) { QZ.doneCf = 1; if (QZ.tally.right + QZ.tally.second >= QZ.tally.wrong) confetti(); }
   const ta = $('#qa'); if (ta) { ta.oninput = () => (QZ.text = ta.value); }
   const q = QZ.queue[QZ.i];
   const submit = idk => {
