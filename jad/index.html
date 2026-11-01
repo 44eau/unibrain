@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Uni Brain — free, view-only Global Sustainable Development and Philosophy 1 revision notes: unit summaries, key definitions, exam questions and quizzes. Works on phone and desktop.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://44eau.github.io/unibrain/jad/">
+<meta property="og:type" content="website"><meta property="og:title" content="Uni Brain — Global Sustainable Development notes">
+<meta property="og:description" content="View-only revision notes, quizzes and exam calendar for first-year Global Sustainable Development and Philosophy 1.">
+<meta property="og:url" content="https://44eau.github.io/unibrain/jad/"><meta name="theme-color" content="#05050c">
+<title>Uni Brain — Global Sustainable Development</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04040c;--panel:#0d0d1c;--panel2:#13132a;--line:#23234a;--text:#e9e7ff;--mute:#9a98c4;--gold:#ffd60a;--cyan:#5ce1ff;--pink:#ff7eb6;--orange:#ffb347;--violet:#b9a8ff;--green:#7cffb2;--sans:'Space Grotesk',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:radial-gradient(1px 1px at 8% 12%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 21% 64%,#dfe8ff 50%,transparent 51%),radial-gradient(1.6px 1.6px at 37% 28%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 52% 86%,#fff3d6 50%,transparent 51%),radial-gradient(1.3px 1.3px at 63% 9%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 74% 47%,#cfe0ff 50%,transparent 51%),radial-gradient(1.8px 1.8px at 86% 22%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 92% 78%,#ffe6f2 50%,transparent 51%),radial-gradient(ellipse 60% 40% at 75% 10%,rgba(88,60,200,.22),transparent 70%),radial-gradient(ellipse 50% 35% at 10% 80%,rgba(200,60,140,.13),transparent 70%);
+  background-size:180px 180px,230px 230px,310px 310px,270px 270px,200px 200px,350px 350px,400px 400px,260px 260px,100% 100%,100% 100%}
+a{color:var(--cyan)}
+.wrap{max-width:980px;margin:0 auto;padding:20px 16px 80px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px}
+.sun{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff6c2,#ffb703 45%,#ff7a00 80%);box-shadow:0 0 30px 6px rgba(255,183,3,.45)}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+.sub{font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 6px}
+nav a,.chip{font-size:13.5px;text-decoration:none;color:var(--text);padding:7px 13px;border-radius:99px;background:var(--panel);border:1px solid var(--line);cursor:pointer}
+nav a.on,.chip.on{background:#2b2560;border-color:#6f62ff}
+.search{width:100%;margin:10px 0 4px;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit;font-size:15px}
+.card{background:linear-gradient(180deg,var(--panel),#0a0a17);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:12px 0}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:14px 0 6px}
+.planets{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.planet{display:flex;gap:14px;align-items:center;cursor:pointer;text-decoration:none;color:inherit}
+.planet:hover{border-color:#6f62ff}
+.orb{flex:none;width:58px;height:58px;border-radius:50%;box-shadow:inset -10px -8px 18px rgba(0,0,0,.55),0 0 22px -2px var(--c)}
+.topics{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 6px}.topics span{font-size:11.5px;padding:2px 9px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);color:#cfcdf0}
+.planet h2{margin:0 0 4px;font-size:18px}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--mute)}
+.ov{border-left:3px solid var(--cyan);padding-left:12px;line-height:1.6;font-size:14.5px;color:#d8d6f5}
+ol,ul{padding-left:22px;line-height:1.55;font-size:14.5px}
+li{margin:3px 0}
+.must li::marker{color:var(--gold);font-weight:700}.conn li::marker{color:var(--cyan);font-weight:700}.exq li::marker{color:var(--pink);font-weight:700}.weak li::marker{color:var(--orange);font-weight:700}
+.l-must{color:var(--gold)}.l-conn{color:var(--cyan)}.l-exq{color:var(--pink)}.l-weak{color:var(--orange)}
+.sec{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--violet);margin:22px 0 6px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+details.unit{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:12px;margin:7px 0}
+details.unit>summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+details.unit>summary::-webkit-details-marker{display:none}
+details.unit>summary b{color:var(--acc);font-weight:600}
+.tag{font-family:var(--mono);font-size:10.5px;padding:2px 8px;border-radius:99px;border:1px solid color-mix(in srgb,var(--acc) 50%,transparent);color:var(--acc);white-space:nowrap}
+.inner{padding:2px 16px 14px}
+.pg{border-left:2px solid color-mix(in srgb,var(--acc) 35%,transparent);padding-left:12px;margin:14px 0}
+.pg h3{margin:0 0 4px;font-size:15.5px;color:var(--acc)}
+.pg h3 span{font-family:var(--mono);font-size:10.5px;color:var(--mute);font-weight:400;margin-left:6px}
+.def{border-left:3px solid var(--violet);background:var(--panel2);padding:8px 11px;border-radius:0 9px 9px 0;font-size:14px;margin:6px 0;line-height:1.45}
+.def b{color:var(--violet)}
+.eq{border:1px solid #3a1d2e;background:#120b11;padding:9px 12px;border-radius:10px;margin:6px 0;overflow-x:auto}
+.eq .n{font-size:12.5px;color:var(--pink);font-weight:600}
+.eq .v{font-size:12px;color:var(--mute);font-family:var(--mono)}
+.tip{font-size:13.5px;padding:7px 10px;background:#1a1407;border:1px solid #3d2e0b;border-radius:9px;margin:6px 0;color:#fde68a}
+details.rq{margin:5px 0;font-size:13.5px}details.rq summary{cursor:pointer;color:var(--green)}details.rq div{color:var(--mute);margin:4px 0 0 16px}
+.key{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.k{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 10px;border-radius:99px;background:var(--panel2);border:1px solid var(--line)}
+.k i{width:10px;height:10px;border-radius:50%}
+.ft{margin:8px 0 14px}.ft h4{margin:12px 0 6px;font-size:15px;color:var(--cyan)}
+.fr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:10px;padding:9px 0;border-top:1px solid var(--line);align-items:center}
+.fr .nm{font-size:13.5px;font-weight:500}.fr .use,.fr .vars{font-size:12px;color:var(--mute)}
+.fr .mx{overflow-x:auto}
+.rk{font-family:var(--mono);font-size:11px;margin-right:4px}.r3{color:var(--gold)}.r2{color:var(--cyan)}.r1{color:var(--mute)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.empty{color:var(--mute);text-align:center;padding:30px}
+.foot{margin-top:40px;font-size:12px;color:var(--mute);text-align:center;line-height:1.6}
+.count{font-family:var(--mono);color:var(--gold)}
+mjx-container{color:inherit}
+.qrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;margin:6px 0;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:12px}
+.qrow b{color:var(--acc);font-weight:600;font-size:14.5px}
+.chip{font:inherit;font-size:13px}.chip.go{background:#6f62ff;border-color:#6f62ff;color:#fff;font-weight:600}
+textarea{width:100%;margin-top:6px;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:#0a0a17;color:var(--text);font:inherit;font-size:15px;resize:vertical}
+.fb{margin-top:12px;padding:11px 13px;border-radius:12px;font-size:14px;line-height:1.5}.fb ul{margin:4px 0 0}
+.fb.warn{background:#22190a;border:1px solid #5a4318}.fb.ok{background:#0e1d15;border:1px solid #1f4d33}.fb.bad{background:#1f0e0e;border:1px solid #5a2222}
+.model{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;font-size:14.5px;line-height:1.55}
+/* hover: everything clickable lights up */
+nav a,.chip,.planet,details.unit>summary,details.rq summary,.qrow,a{transition:background .15s,border-color .15s,color .15s,box-shadow .15s,transform .15s}
+@media(hover:hover){
+nav a:hover,.chip:hover{background:#2b2560;border-color:#8b7dff;color:#fff}
+.chip.go:hover{background:#8b7dff;border-color:#8b7dff;box-shadow:0 0 18px -4px #8b7dff}
+.planet:hover{border-color:#8b7dff;box-shadow:0 0 28px -8px #8b7dff;transform:translateY(-2px)}
+details.unit>summary:hover{background:color-mix(in srgb,var(--acc) 14%,transparent);border-radius:12px}
+details.unit>summary:hover b{color:#fff}
+details.rq summary:hover{color:#fff;text-decoration:underline}
+.qrow:hover{background:color-mix(in srgb,var(--acc) 12%,var(--panel));border-color:color-mix(in srgb,var(--acc) 60%,transparent)}
+a:hover{color:#fff}
+}
+nav a:active,.chip:active,.planet:active{transform:scale(.97)}
+figure.dg{margin:10px 0;background:#06061a;border:1px solid var(--line);border-radius:12px;padding:10px 10px 8px;max-width:520px}
+.dgsvg svg{width:100%;height:auto;display:block}
+figure.dg figcaption{font-size:12.5px;color:var(--mute);line-height:1.45;margin-top:4px}figure.dg figcaption b{color:var(--text)}
+.dgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.sectabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;margin:6px 0 4px;scrollbar-width:none;position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 80%,transparent)}.sectabs::-webkit-scrollbar{display:none}.sectabs .chip{white-space:nowrap;flex:none}.cnt{font-family:var(--mono);font-size:11px;opacity:.7;margin-left:3px}
+details.chap{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin:8px 0}
+details.chap>summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;align-items:center;gap:10px}details.chap>summary::-webkit-details-marker{display:none}
+details.chap>summary b{flex:1;font-size:15px;min-width:0}details.chap .chev{font-size:20px;color:var(--mute);transition:transform .2s}details.chap[open] .chev{transform:rotate(90deg)}
+.cdots{display:flex;gap:3px;flex:none}.cdots i{width:9px;height:9px;border-radius:50%}
+.chapin{padding:0 10px 10px}.chip.sm{padding:4px 10px;font-size:12px}
+details.ovbox>summary{cursor:pointer;color:var(--cyan);font-size:14px;padding:6px 0}details.ovbox[open]>summary{margin-bottom:8px}
+@media(hover:hover){details.chap>summary:hover{background:#17163a;border-radius:14px}details.ovbox>summary:hover{color:#fff}}
+.hero{background:radial-gradient(120% 140% at 0% 0%,#2b2560 0%,#0d0d1c 60%)}
+.lvl{width:62px;height:62px;flex:none;border-radius:18px;background:linear-gradient(135deg,#ffd60a,#ff7eb6);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1b1030;box-shadow:0 8px 24px -8px #ff7eb6}
+.lvl b{font-size:24px;line-height:1}.lvl span{font-size:9px;font-family:var(--mono);letter-spacing:.12em}
+.xpbar{height:9px;border-radius:9px;background:#1d1b3a;overflow:hidden;margin:7px 0 5px}.xpbar i{display:block;height:100%;background:linear-gradient(90deg,#ffd60a,#ff7eb6,#b9a8ff);border-radius:9px;transition:width .6s}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:14px 0 6px}
+.mode{border:0;border-radius:16px;padding:12px;text-align:left;color:#fff;cursor:pointer;display:flex;flex-direction:column;gap:2px;font:inherit;transition:transform .15s,box-shadow .15s}
+.mode b{font-size:22px}.mode span{font-weight:700;font-size:15px}.mode i{font-style:normal;font-size:12px;opacity:.85}
+.mode.m1{background:linear-gradient(135deg,#6f62ff,#b05cff)}.mode.m2{background:linear-gradient(135deg,#0ea5a4,#5ce1ff)}.mode.m3{background:linear-gradient(135deg,#ff5f7e,#ffb347)}.mode.m4{background:linear-gradient(135deg,#d97706,#ffd60a);color:#1b1030}
+.mode:disabled{opacity:.35;cursor:default}
+@media(hover:hover){.mode:not(:disabled):hover{transform:translateY(-3px);box-shadow:0 10px 24px -10px #000}}
+.ring{width:46px;height:46px;flex:none;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),#23234a 0);display:flex;align-items:center;justify-content:center}
+.ring span{width:36px;height:36px;border-radius:50%;background:var(--panel);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10.5px;color:var(--text)}
+.qrow{gap:12px}
+.hud{position:sticky;top:0;z-index:6;background:linear-gradient(var(--bg) 85%,transparent);padding:6px 0 10px}
+.hudbar{height:8px;border-radius:8px;background:#1d1b3a;overflow:hidden;margin-bottom:8px}.hudbar i{display:block;height:100%;background:linear-gradient(90deg,#5ce1ff,#6f62ff,#ff7eb6);transition:width .5s}
+.pill{font-family:var(--mono);font-size:12px;padding:4px 10px;border-radius:99px;background:var(--panel);border:1px solid var(--line)}.pill.hot{background:linear-gradient(90deg,#ff5f7e,#ffb347);color:#fff;border:0;animation:pulse 1s infinite}
+.qcard{border:1px solid color-mix(in srgb,var(--acc) 45%,var(--line));box-shadow:0 0 40px -18px var(--acc);animation:rise .3s ease}
+.qcard.win{box-shadow:0 0 50px -12px #7cffb2;border-color:#3d8f5f}
+.qkind{font-size:11.5px;padding:3px 10px;border-radius:99px;font-weight:600}
+.qtext{font-size:19px;line-height:1.5;font-weight:600;margin:14px 0 12px}
+.att{display:flex;align-items:center;gap:6px;margin-bottom:4px}.att span{width:10px;height:10px;border-radius:50%;background:#2a2950}.att span.on{background:var(--gold);box-shadow:0 0 8px var(--gold)}.att span.used{background:var(--pink)}.att em{font-style:normal;font-size:12px;color:var(--mute);font-family:var(--mono)}
+.chip.big{padding:10px 18px;font-size:15px}
+.fb.pop{animation:pop .35s ease;font-size:16px}.gain{display:inline-block;margin-left:8px;font-family:var(--mono);font-size:13px;color:var(--gold);animation:float 1.2s ease}
+.shake{animation:shake .4s}
+.done{text-align:center;background:radial-gradient(120% 100% at 50% 0%,#2b2560 0%,#0d0d1c 70%)}
+.trophy{font-size:64px;animation:pop .5s ease}.stars{font-size:34px;letter-spacing:6px}.stars span{color:#2a2950}.stars span.on{color:var(--gold);display:inline-block;animation:pop .4s both;text-shadow:0 0 14px #ffd60a}
+.done .pct{font-size:52px;font-weight:800;background:linear-gradient(90deg,#ffd60a,#ff7eb6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.stats div{background:#15152a;border-radius:12px;padding:8px 4px}.stats b{display:block;font-size:15px}.stats span{font-size:10.5px;color:var(--mute);font-family:var(--mono)}
+@media(max-width:620px){.stats{grid-template-columns:repeat(3,1fr)}.qtext{font-size:17px}}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden}.confetti i{position:absolute;top:-12px;width:8px;height:13px;border-radius:2px;animation:fall 1.4s cubic-bezier(.2,.6,.4,1) forwards}
+.tst{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#1b1b2b;border:1px solid var(--line);padding:10px 14px;border-radius:10px;z-index:80}
+@keyframes fall{to{transform:translate(var(--dx),105vh) rotate(var(--r));opacity:.9}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes float{0%{opacity:0;transform:translateY(8px)}30%{opacity:1}100%{transform:translateY(-4px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+@keyframes rise{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+@keyframes pulse{50%{filter:brightness(1.25)}}
+.exgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:12px}@media(max-width:900px){.exgrid{grid-template-columns:1fr}}
+.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}.cdh{font-family:var(--mono);font-size:10.5px;color:var(--mute);text-align:center;padding:4px 0}
+.cd{min-height:58px;border-radius:10px;background:#0b0b18;border:1px solid var(--line);padding:4px;display:flex;flex-direction:column;gap:2px;overflow:hidden}.cd.empty{background:none;border:0}
+.cd .dn{font-family:var(--mono);font-size:11px;color:var(--mute)}.cd.today{border-color:#8b7dff;box-shadow:inset 0 0 0 1px #8b7dff}.cd.today .dn{color:#fff;font-weight:700}.cd.has{cursor:pointer}
+.evt{font-style:normal;font-size:10px;line-height:1.25;padding:2px 4px;border-radius:5px;background:color-mix(in srgb,var(--c) 30%,transparent);border-left:3px solid var(--c);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:620px){.cd{min-height:46px}.evt{font-size:0;padding:0;height:7px;border-radius:4px;border:0;background:var(--c)}}
+.exli{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;margin:4px 0;border:1px solid transparent}.exli i{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);flex:none}
+.exli span{flex:1;min-width:0;font-size:14px}.exli small{display:block;font-family:var(--mono);font-size:11px;color:var(--mute)}.exli em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--c)}
+.exli.on{background:#17163a;border-color:var(--line)}@media(hover:hover){.exli:hover{background:#17163a;border-color:var(--line)}}
+a.exhome{display:block;text-decoration:none;color:inherit}
+.exdet{border-top:4px solid var(--c)}.cdown{width:70px;height:70px;border-radius:18px;background:linear-gradient(135deg,var(--c),#1b1030);display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none}.cdown b{font-size:26px;line-height:1}.cdown span{font-family:var(--mono);font-size:10px}
+.essf{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}.essf>div{background:#0b0b18;border:1px solid var(--line);border-radius:10px;padding:8px 10px;overflow-x:auto}
+.exsecs{display:flex;flex-wrap:wrap;gap:6px}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(2,2,10,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px}
+.mcard{width:100%;max-width:380px;background:linear-gradient(180deg,#14132e,#0b0b18);border:1px solid #3b3480;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.lbrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}.lbrow.me{background:#1b1840;border-radius:10px}
+.lbpos{width:28px;text-align:center;font-size:18px}.lbname{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis}.lbpts{font-family:var(--mono);color:var(--gold);font-size:17px;min-width:44px;text-align:right}
+@media(max-width:620px){.lbrow .meta{display:none}}
+@media(max-width:620px){.qrow{flex-direction:column;align-items:flex-start}}
+@media(max-width:620px){.fr{grid-template-columns:1fr}h1{font-size:19px}nav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-16px;margin-right:-16px;padding:0 16px}nav::-webkit-scrollbar{display:none}nav a{white-space:nowrap;flex:none}}
+</style>
+<script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };</script>
+<script src="lib/tex-svg-full.js" defer></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><div class="sun"></div><div><h1>Uni Brain</h1><div class="sub" id="sub">Global Sustainable Development · view only</div></div></div>
+  </header>
+  <nav id="nav"></nav>
+  <input class="search" id="q" placeholder="Search every unit, definition and formula…" autocomplete="off">
+  <main id="main"><div class="empty">Loading the solar system…</div></main>
+  <div class="foot">Summaries, key ideas and practice questions generated from first-year Global Sustainable Development lecture notes with Notes Crawler.<br>View only · notes keep growing through the year.</div>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let D = null, MODS = {}, FORM = { mod: 'all', ess: false };
+function typeset(el) { const go = () => window.MathJax && MathJax.typesetPromise ? MathJax.typesetPromise([el]).catch(() => {}) : setTimeout(go, 300); go(); }
+const thColor = i => (D.themes[i] || {}).color || '#7aa2f7';
+const thName = i => (D.themes[i] || {}).name || '';
+const daysTo = d => Math.ceil((new Date(d + 'T09:00:00') - Date.now()) / 864e5);
+const list = (a, cls) => a && a.length ? `<ol class="${cls}">${a.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : '';
+const PLANET = ['radial-gradient(circle at 32% 30%,#cfe3ff,#4b70dd 45%,#14215c 85%)', 'radial-gradient(circle at 32% 30%,#ffd9c2,#e2553d 45%,#5c160c 85%)', 'radial-gradient(circle at 32% 30%,#fff2cf,#d9a066 45%,#5a3510 85%)', 'radial-gradient(circle at 32% 30%,#d8fff6,#3fbfa8 45%,#0d4a40 85%)', 'radial-gradient(circle at 32% 30%,#f0dcff,#a35ce6 45%,#3a1460 85%)', 'radial-gradient(circle at 32% 30%,#e6ffd6,#7fc94a 45%,#24470f 85%)'];
+const PCOL = ['#4b70dd', '#e2553d', '#d9a066', '#3fbfa8', '#a35ce6', '#7fc94a'];
+
+function nav() {
+  const h = location.hash.slice(1) || 'home';
+  $('#nav').innerHTML = [['home', '☀️ Home'], ...D.mods.map((m, i) => ['m' + m.id, '🪐 ' + m.name]), ['calendar', '📅 Exams'], ['quiz', '📝 Quiz'], ...(D.mods.some(m => (m.sheet || []).length) ? [['formulas', '🧮 Formula sheets']] : []), ['key', '🎨 Colour key']]
+    .map(([k, t]) => `<a href="#${k}" class="${h === k ? 'on' : ''}">${esc(t)}</a>`).join('');
+}
+function keyHTML() {
+  return `<div class="label">Unit colour = topic (same colour = related topic, even across modules)</div><div class="key">${D.themes.map(t => `<span class="k"><i style="background:${t.color}"></i>${esc(t.name)}</span>`).join('')}</div>
+  <div class="label">Note colours</div><div class="key"><span class="k"><i style="background:var(--gold)"></i>★ Must know</span><span class="k"><i style="background:var(--cyan)"></i>🔗 Connections</span><span class="k"><i style="background:var(--pink)"></i>📝 Likely exam questions / equations</span><span class="k"><i style="background:var(--orange)"></i>⚠ Where marks are lost / exam tips</span><span class="k"><i style="background:var(--violet)"></i>📘 Definitions</span><span class="k"><i style="background:var(--green)"></i>❓ Test yourself</span></div>
+  <div class="label" style="display:none">Formula ranks</div><div class="key" style="display:none"><span class="k"><span class="rk r3">★★★</span>essential</span><span class="k"><span class="rk r2">★★</span>often useful</span><span class="k"><span class="rk r1">★</span>reference</span></div>`;
+}
+const topicName = n => /^block\s*\d+$/i.test(n) ? n : n.replace(/^((w|wk|week|lec|lecture|l)\s*)?\d+[\s.:)-]+/i, '').replace(/^course introduction$/i, 'Intro').replace(/^extra notes$/i, '');
+function home() {
+  let units = 0, pages = 0, eqs = 0;
+  D.mods.forEach(m => m.secs.forEach(s => s.units.forEach(u => { units++; pages += u.pages; u.notes.forEach(n => eqs += n.eqs.length); })));
+  let h = `<div class="card"><div class="row" style="justify-content:space-between"><div><div class="label" style="margin-top:0">The system</div><div style="font-size:15px;line-height:1.6"><span class="count">${D.mods.length}</span> modules · <span class="count">${units}</span> units · <span class="count">${pages}</span> pages of lecture notes${eqs ? ` · <span class="count">${eqs}</span> equations` : ''}</div></div><div class="meta">Updated ${esc(D.updated)}</div></div></div><div class="planets">`;
+  D.mods.forEach((m, i) => {
+    const n = m.secs.reduce((a, s) => a + s.units.length, 0), dd = m.exam ? daysTo(m.exam) : null;
+    h += `<a class="card planet" href="#m${m.id}"><div class="orb" style="background:${PLANET[i % PLANET.length]};--c:${PCOL[i % PCOL.length]}"></div><div><h2>${esc(m.name)}</h2><div class="topics">${m.secs.map(s => topicName(s.name)).filter(Boolean).map(t => `<span>${esc(t)}</span>`).join('')}</div><div class="meta">${n} units${dd != null && dd >= 0 ? ` · 📅 exam in ${dd} days` : ''}</div></div></a>`;
+  });
+  const nx = (D.exams || []).filter(e => MODS[e.mod] && exTs(e) > Date.now() - 864e5).slice(0, 4);
+  return h + `</div>${nx.length ? `<a class="card exhome" href="#calendar"><div class="label" style="margin-top:0">📅 Upcoming exams</div>${nx.map(e => { const n = exDays(e); return `<div class="exli" style="--c:${modCol(e.mod)}"><i></i><span><b>${esc(MODS[e.mod].name)}</b> · ${esc(e.title)}<small>${new Date(exTs(e)).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</small></span><em>${n <= 0 ? 'today' : n === 1 ? 'tomorrow' : n + 'd'}</em></div>`; }).join('')}</a>` : ''}<div class="card">${keyHTML()}</div>`;
+}
+const isCirc = u => /electr|circuit/i.test(modOfUnit(u.id));
+function unitHTML(u) {
+  let h = '';
+  const seen = new Set(), circ = isCirc(u), top = diagramsFor(u.name, seen, 2, circ);
+  let budget = 3 - top.length;
+  if (u.ov) h += `<div class="ov" style="margin:6px 0 10px">${esc(u.ov)}</div>`;
+  if (u.must.length) h += `<div class="label l-must">★ Must know</div>${list(u.must, 'must')}`;
+  if (u.conn.length) h += `<div class="label l-conn">🔗 Connections</div>${list(u.conn, 'conn')}`;
+  if (top.length) h += `<div class="dgs">${top.map(diagramHTML).join('')}</div>`;
+  for (const n of u.notes) {
+    h += `<div class="pg"><h3>${esc(n.t)}<span>p.${n.p}</span></h3>`;
+    if (budget > 0) { const d = diagramsFor(n.t, seen, 1, circ); if (d.length) { budget--; h += `<div class="dgs">${d.map(diagramHTML).join('')}</div>`; } }
+    if (n.pts.length) h += `<ul>${n.pts.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+    n.defs.forEach(([t, d]) => h += `<div class="def"><b>${esc(t)}</b> — ${esc(d)}</div>`);
+    n.eqs.forEach(([nm, lx, v, isTex]) => h += `<div class="eq"><div class="n">${esc(nm)}</div>${isTex ? `<div>\\[${esc(lx)}\\]</div>` : `<div class="v">${esc(lx)}</div>`}${v ? `<div class="v">${esc(v)}</div>` : ''}</div>`);
+    n.tips.forEach(t => h += `<div class="tip">⚠ ${esc(t)}</div>`);
+    if (n.rq.length) h += n.rq.map(([q, a]) => `<details class="rq"><summary>❓ ${esc(q)}</summary><div>${esc(a)}</div></details>`).join('');
+    h += `</div>`;
+  }
+  if (u.exq.length) h += `<div class="label l-exq">📝 Likely exam questions</div>${list(u.exq, 'exq')}`;
+  return h || '<div class="meta">No notes yet.</div>';
+}
+function unitRow(u, open) {
+  return `<details class="unit" style="--acc:${thColor(u.th)}" data-u="${u.id}" ${open ? 'open' : ''}><summary><b>${esc(u.name)}</b><span class="row" style="gap:6px;flex-wrap:nowrap">${thName(u.th) ? `<span class="tag">${esc(thName(u.th))}</span>` : ''}<span class="meta">${u.pages} pp</span></span></summary><div class="inner"></div></details>`;
+}
+function wireUnits(root) {
+  root.querySelectorAll('details.unit').forEach(d => {
+    const fill = () => { const inner = d.querySelector('.inner'); if (d.open && !inner.dataset.ok) { inner.dataset.ok = 1; inner.innerHTML = unitHTML(UNITS[d.dataset.u]); typeset(inner); } };
+    d.addEventListener('toggle', fill); fill();
+  });
+}
+const SECSEL = {}; let RERENDER = () => render();
+function packModule(m, rowFn, chapExtra) {
+  const si = Math.min(SECSEL[m.id] || 0, m.secs.length - 1), s = m.secs[si];
+  let h = '';
+  if (m.secs.length > 1) h += `<div class="sectabs">${m.secs.map((x, i) => `<button class="chip ${i === si ? 'on' : ''}" data-sec="${m.id}|${i}">${esc(topicName(x.name) || x.name)} <span class="cnt">${x.units.length}</span></button>`).join('')}</div>`;
+  const byId = Object.fromEntries(s.units.map(u => [u.id, u]));
+  if (s.chap && s.chap.length) h += s.chap.map((c, ci) => { const us = c.ids.map(id => byId[id]).filter(Boolean); return `<details class="chap"><summary><span class="cdots">${[...new Set(us.map(u => thColor(u.th)))].slice(0, 4).map(col => `<i style="background:${col}"></i>`).join('')}</span><b>${esc(c.name)}</b><span class="meta">${us.length} unit${us.length === 1 ? '' : 's'}</span>${chapExtra ? chapExtra(m, si, ci, us) : ''}<span class="chev">›</span></summary><div class="chapin">${us.map(rowFn).join('')}</div></details>`; }).join('');
+  else h += s.units.map(rowFn).join('');
+  return h;
+}
+function wirePack(root) {
+  root.querySelectorAll('[data-sec]').forEach(b => b.onclick = e => { e.preventDefault(); const [mid, i] = b.dataset.sec.split('|'); SECSEL[mid] = +i; RERENDER(); });
+}
+function moduleView(m) {
+  const r = m.rep, dd = m.exam ? daysTo(m.exam) : null;
+  let h = `<div class="card"><div class="label" style="margin-top:0">Module${dd != null && dd >= 0 ? ` · 📅 exam in ${dd} days` : ''}</div><h2 style="margin:4px 0 6px">${esc(m.name)}</h2><details class="ovbox"><summary>📋 Module overview — must-know, exam questions, common mistakes</summary>`;
+  if (r.ov) h += `<div class="ov">${esc(r.ov)}</div>`;
+  if (r.must.length) h += `<div class="label l-must">★ Must know</div>${list(r.must, 'must')}`;
+  if (r.conn.length) h += `<div class="label l-conn">🔗 Connections examiners like</div>${list(r.conn, 'conn')}`;
+  if (r.exq.length) h += `<div class="label l-exq">📝 Likely exam questions</div>${list(r.exq, 'exq')}`;
+  if (r.weak.length) h += `<div class="label l-weak">⚠ Where students lose marks</div>${list(r.weak, 'weak')}`;
+  h += `</details></div>`;
+  return h + packModule(m, u => unitRow(u));
+}
+function formulasView() {
+  let h = `<div class="row" style="margin:8px 0"><span class="chip ${FORM.mod === 'all' ? 'on' : ''}" data-fm="all">All</span>${D.mods.map(m => `<span class="chip ${FORM.mod === m.id ? 'on' : ''}" data-fm="${m.id}">${esc(m.name)}</span>`).join('')}<label class="chip"><input type="checkbox" id="ess" ${FORM.ess ? 'checked' : ''}> Essentials only</label></div>`;
+  for (const m of D.mods) {
+    if (FORM.mod !== 'all' && FORM.mod !== m.id) continue;
+    h += `<div class="card"><h2 style="margin:0 0 4px">${esc(m.name)}</h2>`;
+    for (const s of m.sheet) {
+      const tops = s.topics.map(t => ({ ...t, formulas: t.formulas.filter(f => !FORM.ess || f.rank === 3) })).filter(t => t.formulas.length);
+      if (!tops.length) continue;
+      h += `<div class="sec">${esc(s.name)}</div>`;
+      for (const t of tops) h += `<div class="ft"><h4>${esc(t.topic)}</h4>${t.formulas.map(f => `<div class="fr"><div><div class="nm"><span class="rk r${f.rank}">${'★'.repeat(f.rank)}</span>${esc(f.name)}</div>${f.use ? `<div class="use">${esc(f.use)}</div>` : ''}</div><div><div class="mx">\\(\\displaystyle ${esc(f.latex)}\\)</div>${f.vars ? `<div class="vars">${esc(f.vars)}</div>` : ''}</div></div>`).join('')}</div>`;
+    }
+    h += `</div>`;
+  }
+  return h;
+}
+function searchView(q) {
+  const t = q.toLowerCase(), hits = [];
+  for (const m of D.mods) for (const s of m.secs) for (const u of s.units) {
+    const hay = [u.name, u.ov, ...u.must, ...u.notes.flatMap(n => [n.t, ...n.pts, ...n.defs.flat(), ...n.eqs.map(e => e[0])])].join(' ').toLowerCase();
+    if (hay.includes(t)) hits.push({ m, u });
+  }
+  if (!hits.length) return `<div class="empty">Nothing matches “${esc(q)}”.</div>`;
+  return `<div class="label">${hits.length} unit${hits.length === 1 ? '' : 's'} mention “${esc(q)}”</div>` + hits.slice(0, 60).map(({ m, u }) => `<div class="meta" style="margin:10px 0 2px">${esc(m.name)}</div>${unitRow(u)}`).join('');
+}
+const UNITS = {};
+function render() {
+  nav();
+  const h = location.hash.slice(1) || 'home', q = $('#q').value.trim(), main = $('#main');
+  if (q.length < 2 && h === 'calendar') { main.innerHTML = calendarView(); typeset(main); wireCalendar(main); return; }
+  if (q.length < 2 && h === 'quiz') return renderQuizMain();
+  if (q.length < 2 && h === 'leaderboard') return renderLeaderboard();
+  if (q.length >= 2) main.innerHTML = searchView(q);
+  else if (h === 'formulas') main.innerHTML = formulasView();
+  else if (h === 'key') main.innerHTML = `<div class="card">${keyHTML()}</div>`;
+  else if (h.startsWith('m') && MODS[h.slice(1)]) main.innerHTML = moduleView(MODS[h.slice(1)]);
+  else main.innerHTML = home();
+  wireUnits(main); typeset(main); RERENDER = render; wirePack(main);
+  main.querySelectorAll('[data-fm]').forEach(b => b.onclick = () => { FORM.mod = b.dataset.fm; render(); });
+  const e = $('#ess'); if (e) e.onchange = () => { FORM.ess = e.checked; render(); };
+}
+let qt; $('#q').oninput = () => { clearTimeout(qt); qt = setTimeout(render, 250); };
+addEventListener('hashchange', () => { if (QZ.queue.length) submitSession(); QZ.queue = []; $('#q').value = ''; render(); scrollTo(0, 0); });
+fetch('data.json?v=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(d => {
+  D = d; D.mods.forEach(m => { MODS[m.id] = m; m.secs.forEach(s => s.units.forEach(u => (UNITS[u.id] = u))); });
+  $('#sub').textContent = `Global Sustainable Development notes · view only · updated ${D.updated}`;
+  render(); welcome();
+}).catch(() => { $('#main').innerHTML = '<div class="empty">Could not load the notes.</div>'; });
+
+/* ---------- Quiz: two attempts, works on any static host, no login ---------- */
+const STOP = new Set('the a an and or of to in on at for by with from is are was were be been it its this that these those as into than then so if when which what why how does do can will would should there their they them we you your our not no but also such each per using use used about between over under more most less very just only same other both any all way ways write written compact give gives given make makes called known means thing things one two often usually simply etc'.split(' '));
+const words = s => String(s || '').toLowerCase().replace(/\\[a-z]+/g, ' ').replace(/[^a-z0-9.\s]/g, ' ').split(/\s+/).filter(w => w && !STOP.has(w));
+const nums = s => (String(s || '').replace(/,/g, '').match(/-?\d+(\.\d+)?/g) || []).map(Number);
+const stem = w => w.replace(/(ing|ed|es|s|ly)$/, '');
+function check(user, model) {
+  const key = [...new Set(words(model).filter(w => w.length >= 3 && !/^\d/.test(w)).map(stem))];
+  const got = new Set(words(user).map(stem));
+  const hit = key.filter(k => got.has(k)), miss = key.filter(k => !got.has(k)).sort((x, y) => y.length - x.length);
+  const mn = nums(model).filter(n => n !== 0), un = nums(user);
+  const numOk = !mn.length || mn.some(n => un.some(u => Math.abs(u - n) <= Math.abs(n) * 0.03 + 1e-9));
+  const need = Math.min(key.length, 5), score = need ? Math.min(1, hit.length / need) : (mn.length ? 1 : 0);
+  return { ok: numOk && (score >= 0.6 || (mn.length && numOk && score >= 0.3)), miss: miss.slice(0, 6), numOk, hasNum: mn.length > 0 };
+}
+const QS = (() => { try { return JSON.parse(localStorage.getItem('ubg.quiz') || '{}'); } catch { return {}; } })();
+const saveQS = () => { try { localStorage.setItem('ubg.quiz', JSON.stringify(QS)); } catch {} };
+function questionsOf(u) {
+  const qs = [];
+  for (const n of u.notes) {
+    n.rq.forEach(([q, a], i) => qs.push({ id: `${u.id}|r${n.p}.${i}`, kind: 'Why / how', q, a, n }));
+    n.defs.forEach(([t, d], i) => qs.push({ id: `${u.id}|d${n.p}.${i}`, kind: 'Definition', q: `Define: ${t}`, a: d, n }));
+  }
+  (u.xq || []).forEach(([q, a, sol, marks, src], i) => qs.push({ id: `${u.id}|x${i}`, kind: src ? '📄 ' + src : 'Exam question', q, a, sol, marks, past: !!src }));
+  return qs;
+}
+function unitScore(u) { const qs = questionsOf(u); let done = 0, ok = 0; qs.forEach(q => { const s = QS[q.id]; if (s) { done++; if (s !== 'wrong') ok++; } }); return { total: qs.length, done, acc: done ? ok / done : null }; }
+const QZ = { queue: [], i: 0, att: 1, text: '', res: null, tally: { right: 0, second: 0, wrong: 0 }, mod: null, streak: 0, bestRun: 0, xpRun: 0, units: [], gain: 0 };
+/* ---- game layer: XP, levels, streaks, confetti ---- */
+const PL = (() => { try { return JSON.parse(localStorage.getItem('ubg.player') || '{}'); } catch { return {}; } })();
+PL.xp = PL.xp || 0; PL.best = PL.best || 0;
+const savePL = () => { try { localStorage.setItem('ubg.player', JSON.stringify(PL)); } catch {} };
+const LEVELS = ['Rookie', 'Explorer', 'Analyst', 'Researcher', 'Advocate', 'Strategist', 'Change-maker', 'Professor', 'Legend'];
+const lvl = xp => { const n = Math.floor(Math.sqrt(xp / 40)); const lo = 40 * n * n, hi = 40 * (n + 1) * (n + 1); return { n: n + 1, name: LEVELS[Math.min(n, LEVELS.length - 1)], pct: (xp - lo) / (hi - lo), toNext: hi - xp }; };
+const medal = sc => sc.done < 3 || sc.acc == null ? '' : sc.acc >= .9 ? '🥇' : sc.acc >= .75 ? '🥈' : sc.acc >= .5 ? '🥉' : '';
+function ring(sc, col) { const p = sc.acc == null ? 0 : Math.round(sc.acc * 100), d = sc.total ? Math.round(sc.done / sc.total * 100) : 0; return `<div class="ring" style="--p:${d};--c:${col}" title="${d}% attempted"><span>${sc.acc == null ? '–' : p + '%'}</span></div>`; }
+function toast(m) { const t = document.createElement('div'); t.className = 'tst'; t.textContent = m; document.body.appendChild(t); setTimeout(() => t.remove(), 2200); }
+function confetti() {
+  const box = document.createElement('div'); box.className = 'confetti';
+  const cols = ['#ffd60a', '#5ce1ff', '#ff7eb6', '#7cffb2', '#b9a8ff', '#ffb347'];
+  for (let i = 0; i < 36; i++) { const s = document.createElement('i'); s.style.left = (10 + Math.random() * 80) + '%'; s.style.background = cols[i % cols.length]; s.style.animationDelay = (Math.random() * .25) + 's'; s.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px'); s.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg'); box.appendChild(s); }
+  document.body.appendChild(box); setTimeout(() => box.remove(), 1600);
+}
+function startQuiz(units, onlyWrong, onlyPast) {
+  let pool = units.flatMap(u => questionsOf(u).map(q => ({ ...q, u })));
+  if (onlyPast) pool = pool.filter(q => q.past);
+  if (onlyWrong) pool = pool.filter(q => QS[q.id] === 'wrong');
+  const band = q => !QS[q.id] ? 0 : QS[q.id] === 'wrong' ? 1 : 2;
+  pool.forEach(q => (q.r = Math.random())); pool.sort((a, b) => band(a) - band(b) || a.r - b.r);
+  QZ.doneCf = 0; Object.assign(QZ, { queue: pool.slice(0, QZ.quick ? 10 : 40), i: 0, att: 1, text: '', res: null, tally: { right: 0, second: 0, wrong: 0 }, streak: 0, bestRun: 0, xpRun: 0, units, gain: 0, again: [units, onlyWrong, onlyPast] }); QZ.quick = false;
+  if (!QZ.queue.length) { toast('No questions here yet'); return; }
+  renderQuizMain(); scrollTo(0, 0);
+}
+function reviewOf(q) {
+  const out = [];
+  if (q.n) { out.push(`Re-read “${q.n.t}” (${q.u.name}, p.${q.n.p})`); q.n.pts.slice(0, 2).forEach(p => out.push(p)); }
+  else { out.push(`Go back over ${q.u.name}`); (q.u.must || []).slice(0, 2).forEach(p => out.push(p)); }
+  return out;
+}
+function record(q, o) {
+  QS[q.id] = o; saveQS(); QZ.tally[o]++; noteResult(o, q);
+  if (o === 'wrong') { QZ.streak = 0; QZ.gain = 0; return; }
+  QZ.streak++; QZ.bestRun = Math.max(QZ.bestRun, QZ.streak);
+  const g = (o === 'right' ? 10 : 5) + Math.min(QZ.streak - 1, 5) * 2; QZ.gain = g; QZ.xpRun += g; PL.xp += g; PL.best = Math.max(PL.best, QZ.streak); savePL();
+}
+function quizPicker() {
+  if (!QZ.mod || !MODS[QZ.mod]) QZ.mod = D.mods[0].id;
+  const ms = D.mods.filter(m => QZ.mod === m.id);
+  let total = 0, done = 0, h = '';
+  for (const m of ms) {
+    const all = m.secs.flatMap(s => s.units), nPast = all.reduce((a, u) => a + (u.xq || []).filter(x => x[4]).length, 0);
+    const nWrong = all.reduce((a, u) => a + questionsOf(u).filter(q => QS[q.id] === 'wrong').length, 0);
+    h += `<div class="modes"><button class="mode m1" data-qquick="${m.id}"><b>⚡</b><span>Quick 10</span><i>random mix</i></button><button class="mode m2" data-qmix="${m.id}"><b>🎲</b><span>Marathon</span><i>whole module</i></button><button class="mode m3" data-qmistakes="${m.id}" ${nWrong ? '' : 'disabled'}><b>🔁</b><span>Mistakes</span><i>${nWrong} to fix</i></button>${nPast ? `<button class="mode m4" data-qpast="${m.id}"><b>📄</b><span>Past papers</span><i>${nPast} Qs</i></button>` : ''}</div>`;
+    all.forEach(u => { const sc = unitScore(u); total += sc.total; done += sc.done; });
+    const row = u => { const sc = unitScore(u); if (!sc.total) return ''; const wrong = questionsOf(u).filter(q => QS[q.id] === 'wrong').length;
+      return `<div class="qrow" style="--acc:${thColor(u.th)}">${ring(sc, thColor(u.th))}<div style="min-width:0;flex:1"><b>${esc(u.name)} ${medal(sc)}</b><div class="meta">${sc.total} questions · ${sc.done} done</div></div><span class="row" style="gap:6px;flex-wrap:nowrap">${wrong ? `<button class="chip" data-qwrong="${u.id}">🔁 ${wrong}</button>` : ''}<button class="chip go" data-qunit="${u.id}">▶ Play</button></span></div>`; };
+    h += packModule(m, row, (mm, si, ci) => `<button class="chip go sm" data-qchap="${mm.id}|${si}|${ci}">Quiz all</button>`);
+  }
+  const L = lvl(PL.xp);
+  return `<div class="card hero"><div class="row" style="gap:14px;flex-wrap:nowrap"><div class="lvl"><b>${L.n}</b><span>LEVEL</span></div><div style="flex:1;min-width:0"><div style="font-size:18px;font-weight:700">${esc(ME.name || 'Player')} · <span style="color:var(--gold)">${L.name}</span></div><div class="xpbar"><i style="width:${Math.round(L.pct * 100)}%"></i></div><div class="meta">⭐ ${PL.xp} XP · ${L.toNext} XP to level ${L.n + 1} · 🔥 best streak ${PL.best}</div></div></div>
+    <div class="meta" style="margin-top:10px"><b style="color:var(--gold)">${total}</b> questions · ${done} attempted · two attempts each — miss once and you get a hint, miss twice and you see exactly what to fix.</div>
+    ${SB_ON && !ME.name ? `<div class="meta" style="margin-top:10px">🏆 Add your name to get on the leaderboard:</div>${nameBox()}` : SB_ON ? `<div class="meta" style="margin-top:8px">🏆 Playing as <b>${esc(ME.name)}</b> — <a href="#leaderboard">leaderboard</a></div>` : ''}<div class="row" style="margin-top:10px">${D.mods.map(m => `<button class="chip ${QZ.mod === m.id ? 'on' : ''}" data-qmod="${m.id}">${esc(m.name)}</button>`).join('')}</div></div>${h}`;
+}
+function quizQuestion() {
+  const q = QZ.queue[QZ.i], r = QZ.res, fin = r && r.final, col = thColor(q.u.th);
+  let h = `<div class="hud"><div class="hudbar"><i style="width:${Math.round(QZ.i / QZ.queue.length * 100)}%"></i></div><div class="row" style="justify-content:space-between"><span class="pill">Q ${QZ.i + 1}/${QZ.queue.length}</span><span class="pill ${QZ.streak >= 3 ? 'hot' : ''}">🔥 ${QZ.streak}</span><span class="pill">⭐ ${QZ.xpRun} XP</span><button class="chip sm" id="qback">✕ Quit</button></div></div>
+    <div class="card qcard ${r && !fin ? 'shake' : ''} ${fin && r.ok ? 'win' : ''}" style="--acc:${col}">
+    <div class="row" style="justify-content:space-between"><span class="qkind" style="background:color-mix(in srgb,${col} 20%,transparent);color:${col}">${esc(q.kind)}</span><span class="meta" style="max-width:55%;text-align:right">${esc(q.u.name)}</span></div>
+    <div class="qtext">${esc(q.q)}</div>`;
+  if (!fin) h += `<div class="att"><span class="${QZ.att === 1 ? 'on' : 'used'}"></span><span class="${QZ.att === 2 ? 'on' : ''}"></span><em>Attempt ${QZ.att} of 2</em></div>
+    <textarea id="qa" rows="4" placeholder="Type your answer…">${esc(QZ.text)}</textarea>
+    <div class="row" style="margin-top:10px"><button class="chip go big" id="qcheck">Check answer</button><button class="chip" id="qidk">I don't know</button></div>`;
+  if (r && !fin) h += `<div class="fb warn">🟡 <b>So close — one more go!</b>${r.miss.length ? ` Your answer is missing some key ideas.` : ''}${r.hasNum && !r.numOk ? ' Check your numbers and units.' : ''}<div class="label" style="color:var(--gold)">💡 Hint: review this first</div><ul>${reviewOf(q).map(x => `<li>${esc(x)}</li>`).join('')}</ul>${(() => { const d = diagramsFor(((q.n && q.n.t) || '') + ' ' + q.u.name, new Set(), 1, isCirc(q.u)); return d.length ? `<div class="dgs">${diagramHTML(d[0])}</div>` : ''; })()}</div>`;
+  if (fin) {
+    h += r.ok ? `<div class="fb ok pop">${r.second ? '👏 <b>Got it on the second try!</b>' : ['🎯', '🔥', '⚡', '🚀', '💯'][QZ.i % 5] + ' <b>' + ['Spot on!', 'Nailed it!', 'Correct!', 'Brilliant!', 'Perfect!'][QZ.i % 5] + '</b>'}<span class="gain">+${QZ.gain} XP${QZ.streak >= 3 ? ` · ${QZ.streak} in a row!` : ''}</span></div>`
+      : `<div class="fb bad">❌ <b>Not this time.</b><div class="label" style="color:var(--pink)">How you went wrong</div><div>${r.idk ? 'No answer given.' : (r.miss.length ? `Your answer didn't include: <b>${r.miss.map(esc).join(', ')}</b>.` : '') + (r.hasNum && !r.numOk ? ' Your numerical value doesn\'t match the expected answer — check the method and units.' : '') || 'Your answer didn\'t match the key points of the model answer.'}</div><div class="label" style="color:var(--pink)">Review specifically</div><ul>${reviewOf(q).map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+    h += `<div class="model"><div class="label">Model answer</div><div>${esc(q.a)}</div>${q.sol && q.sol.length ? `<ol>${q.sol.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}</div>
+      <div class="row" style="margin-top:12px"><button class="chip go big" id="qnext">${QZ.i + 1 < QZ.queue.length ? 'Next question →' : 'See results 🏁'}</button>${r.ok ? `<button class="chip sm" id="qflip" data-to="wrong">Actually I got it wrong</button>` : `<button class="chip sm" id="qflip" data-to="${QZ.att === 2 ? 'second' : 'right'}">I was actually right</button>`}</div>`;
+  }
+  return h + `</div><div class="meta" style="text-align:center">Marking compares your answer with the key ideas of the model answer — use the buttons if it misjudges you.</div>`;
+}
+function quizDone() {
+  const t = QZ.tally, n = t.right + t.second + t.wrong, p = n ? Math.round((t.right + t.second) / n * 100) : 0;
+  const stars = p >= 90 ? 3 : p >= 70 ? 2 : p >= 40 ? 1 : 0, L = lvl(PL.xp);
+  return `<div class="card done"><div class="trophy">${p >= 90 ? '🏆' : p >= 70 ? '🥈' : p >= 40 ? '🥉' : '💪'}</div><div class="stars">${[0, 1, 2].map(i => `<span class="${i < stars ? 'on' : ''}" style="animation-delay:${i * .18}s">★</span>`).join('')}</div>
+    <div class="pct">${p}%</div><div class="meta" style="margin:4px 0 12px">${p >= 90 ? 'Outstanding — exam ready!' : p >= 70 ? 'Great work — nearly there.' : p >= 40 ? 'Good progress — redo the misses.' : 'Every miss is a lesson — go again!'}</div>
+    <div class="stats"><div><b>✅ ${t.right}</b><span>first try</span></div><div><b>🟡 ${t.second}</b><span>second try</span></div><div><b>❌ ${t.wrong}</b><span>wrong</span></div><div><b>⭐ +${QZ.xpRun}</b><span>XP</span></div><div><b>🔥 ${QZ.bestRun}</b><span>best streak</span></div></div>
+    <div class="xpbar" style="margin:14px auto 4px;max-width:320px"><i style="width:${Math.round(L.pct * 100)}%"></i></div><div class="meta">Level ${L.n} · ${L.name} · ${L.toNext} XP to next level</div>
+    <div class="row" style="justify-content:center;margin-top:14px"><button class="chip go big" id="qagain">Play again</button>${t.wrong ? `<button class="chip" id="qfix">🔁 Fix my ${t.wrong} mistake${t.wrong === 1 ? '' : 's'}</button>` : ''}<button class="chip" id="qback">Back</button></div></div>`;
+}
+function renderQuizMain() {
+  const main = $('#main');
+  if (QZ.queue.length && QZ.i >= QZ.queue.length) submitSession();
+  main.innerHTML = !QZ.queue.length ? quizPicker() : QZ.i >= QZ.queue.length ? quizDone() : quizQuestion();
+  wireName(main, () => renderQuizMain());
+  typeset(main);
+  const on = (sel, fn) => main.querySelectorAll(sel).forEach(b => (b.onclick = () => fn(b)));
+  on('[data-qmod]', b => { QZ.mod = b.dataset.qmod || null; renderQuizMain(); });
+  on('[data-qunit]', b => startQuiz([UNITS[b.dataset.qunit]]));
+  main.querySelectorAll('[data-qchap]').forEach(b => b.onclick = e => { e.preventDefault(); e.stopPropagation(); const [mid, si, ci] = b.dataset.qchap.split('|'), s = MODS[mid].secs[+si]; startQuiz(s.chap[+ci].ids.map(id => UNITS[id]).filter(Boolean)); });
+  RERENDER = renderQuizMain; wirePack(main);
+  on('[data-qwrong]', b => startQuiz([UNITS[b.dataset.qwrong]], true));
+  on('[data-qmix]', b => startQuiz(MODS[b.dataset.qmix].secs.flatMap(s => s.units)));
+  on('[data-qpast]', b => startQuiz(MODS[b.dataset.qpast].secs.flatMap(s => s.units), false, true));
+  on('#qback', () => { submitSession(); QZ.queue = []; renderQuizMain(); });
+  on('#qagain', () => { const [u, w, p] = QZ.again; startQuiz(u, w, p); });
+  on('#qfix', () => startQuiz(QZ.units, true));
+  on('[data-qquick]', b => { QZ.quick = true; startQuiz(MODS[b.dataset.qquick].secs.flatMap(s => s.units)); });
+  on('[data-qmistakes]', b => startQuiz(MODS[b.dataset.qmistakes].secs.flatMap(s => s.units), true));
+  if (QZ.res && QZ.res.final && QZ.res.ok && !QZ.res.cf) { QZ.res.cf = 1; confetti(); }
+  if (QZ.queue.length && QZ.i >= QZ.queue.length && !QZ.doneCf) { QZ.doneCf = 1; if (QZ.tally.right + QZ.tally.second >= QZ.tally.wrong) confetti(); }
+  const ta = $('#qa'); if (ta) { ta.oninput = () => (QZ.text = ta.value); }
+  const q = QZ.queue[QZ.i];
+  const submit = idk => {
+    if (!idk && !QZ.text.trim()) { ta.focus(); return; }
+    const c = idk ? { ok: false, miss: [], idk: true } : check(QZ.text, q.a + ' ' + (q.sol || []).join(' '));
+    if (c.ok) { record(q, QZ.att === 1 ? 'right' : 'second'); QZ.res = { ...c, final: true, second: QZ.att === 2 }; }
+    else if (QZ.att === 1 && !idk) { QZ.att = 2; QZ.res = c; }
+    else { record(q, 'wrong'); QZ.res = { ...c, final: true }; }
+    renderQuizMain();
+  };
+  on('#qcheck', () => submit(false));
+  on('#qidk', () => submit(true));
+  on('#qnext', () => { QZ.i++; QZ.att = 1; QZ.text = ''; QZ.res = null; renderQuizMain(); scrollTo(0, 0); });
+  on('#qflip', b => { const to = b.dataset.to, from = QS[q.id]; if (from) QZ.tally[from]--; SESSION.answered--; if (from !== 'wrong') SESSION.correct--; if (from === 'right') SESSION.first--; record(q, to); QZ.res = { ...QZ.res, ok: to !== 'wrong' }; renderQuizMain(); });
+}
+
+
+/* ---------- Leaderboard (Supabase, public read + insert only) ---------- */
+const SB = { url: '__SB_URL__', key: '__SB_KEY__' };
+const SB_ON = !SB.url.startsWith('__');
+const ME = (() => { try { let id = localStorage.getItem('ub.pid'); if (!id) { id = 'p' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('ub.pid', id); } return { id, name: localStorage.getItem('ub.name') || '' }; } catch { return { id: 'p' + Math.random().toString(36).slice(2), name: '' }; } })();
+const setName = n => { ME.name = n; try { localStorage.setItem('ub.name', n); } catch {} };
+async function sb(path, opts = {}) {
+  const r = await fetch(`${SB.url}/rest/v1/${path}`, { ...opts, headers: { apikey: SB.key, ...(SB.key.startsWith('eyJ') ? { Authorization: `Bearer ${SB.key}` } : {}), 'Content-Type': 'application/json', ...(opts.headers || {}) } });
+  if (!r.ok) throw new Error(await r.text());
+  return r.status === 201 || r.status === 204 ? null : r.json();
+}
+const SESSION = { answered: 0, correct: 0, first: 0, module: '' };
+function noteResult(o, q) { SESSION.answered++; if (o !== 'wrong') SESSION.correct++; if (o === 'right') SESSION.first++; SESSION.module = SESSION.module && SESSION.module !== modOfUnit(q.u.id) ? 'Mixed' : modOfUnit(q.u.id); }
+const modOfUnit = id => { for (const m of D.mods) for (const s of m.secs) if (s.units.some(u => u.id === id)) return m.name; return ''; };
+async function submitSession() {
+  if (!SB_ON || !SESSION.answered || !ME.name) { Object.assign(SESSION, { answered: 0, correct: 0, first: 0, module: '' }); return; }
+  const row = { player: ME.name.slice(0, 20), player_id: ME.id, module: SESSION.module.slice(0, 60), answered: Math.min(40, SESSION.answered), correct: Math.min(SESSION.correct, 40), first_try: Math.min(SESSION.first, SESSION.correct, 40) };
+  Object.assign(SESSION, { answered: 0, correct: 0, first: 0, module: '' });
+  try { await sb('quiz_scores', { method: 'POST', body: JSON.stringify(row), headers: { Prefer: 'return=minimal' } }); } catch (e) { console.warn('leaderboard', e); }
+}
+function nameBox() {
+  return `<div class="row" style="margin-top:10px"><input id="lbName" class="search" style="margin:0;flex:1;min-width:160px" maxlength="20" placeholder="Your name for the leaderboard" value="${esc(ME.name)}"><button class="chip go" id="lbSave">${ME.name ? 'Update name' : 'Join leaderboard'}</button></div>`;
+}
+function wireName(root, after) {
+  const b = root.querySelector('#lbSave'); if (!b) return;
+  b.onclick = async () => { const v = root.querySelector('#lbName').value.trim().replace(/\s+/g, ' '); if (v.length < 2) return; await register(v); after ? after() : null; };
+}
+async function register(name) {
+  setName(name);
+  if (!SB_ON) return;
+  try { await sb('quiz_scores', { method: 'POST', body: JSON.stringify({ player: name.slice(0, 20), player_id: ME.id, module: 'Joined', answered: 0, correct: 0, first_try: 0 }), headers: { Prefer: 'return=minimal' } }); try { localStorage.setItem('ub.reg', name); } catch {} } catch (e) { console.warn('register', e); }
+}
+function welcome() {
+  let reg = ''; try { reg = localStorage.getItem('ub.reg') || ''; } catch {}
+  if (!SB_ON) return;
+  if (ME.name && reg !== ME.name) { register(ME.name); return; }
+  if (ME.name) return;
+  const box = document.createElement('div'); box.className = 'modal';
+  box.innerHTML = `<div class="mcard"><div class="sun" style="margin:0 auto 12px"></div><h2 style="margin:0 0 6px;text-align:center">Welcome to Uni Brain</h2>
+    <div style="text-align:center;color:var(--mute);font-size:14px;line-height:1.5">Global Sustainable Development notes and quizzes. Enter your name to join the 🏆 leaderboard — quiz points are added automatically.</div>
+    <input id="wName" class="search" maxlength="20" placeholder="Your name" autocomplete="nickname" style="margin-top:14px">
+    <button class="chip go" id="wGo" style="width:100%;margin-top:10px;padding:11px">Join the leaderboard</button>
+    <button class="chip" id="wLater" style="width:100%;margin-top:8px;background:none;border:0;color:var(--mute)">Maybe later</button></div>`;
+  document.body.appendChild(box);
+  const inp = box.querySelector('#wName'); setTimeout(() => inp.focus(), 50);
+  const go = async () => { const v = inp.value.trim().replace(/\s+/g, ' '); if (v.length < 2) { inp.focus(); inp.style.borderColor = 'var(--pink)'; return; } box.querySelector('#wGo').textContent = 'Joining…'; await register(v); box.remove(); render(); };
+  box.querySelector('#wGo').onclick = go; inp.onkeydown = e => { if (e.key === 'Enter') go(); };
+  box.querySelector('#wLater').onclick = () => box.remove();
+}
+let LB = { tab: 'week' };
+async function renderLeaderboard() {
+  const main = $('#main');
+  if (!SB_ON) { main.innerHTML = `<div class="card empty">The leaderboard is being set up — check back soon.</div>`; return; }
+  main.innerHTML = `<div class="card"><div class="row" style="justify-content:space-between"><div class="label" style="margin:0">🏆 Leaderboard</div><span class="row"><button class="chip ${LB.tab === 'week' ? 'on' : ''}" data-lb="week">This week</button><button class="chip ${LB.tab === 'all' ? 'on' : ''}" data-lb="all">All time</button></span></div>
+    <div style="font-size:13.5px;color:var(--mute);margin-top:8px;line-height:1.5">Points from the Quiz tab: <b style="color:var(--gold)">2</b> for a first-try answer, <b style="color:var(--gold)">1</b> for a second-try answer. Scores are sent when you finish or leave a quiz.</div>
+    ${nameBox()}<div id="lbList" style="margin-top:12px"><div class="empty">Loading…</div></div></div>`;
+  main.querySelectorAll('[data-lb]').forEach(b => b.onclick = () => { LB.tab = b.dataset.lb; renderLeaderboard(); });
+  wireName(main, () => renderLeaderboard());
+  try {
+    const rows = await sb(`${LB.tab === 'week' ? 'leaderboard_week' : 'leaderboard_all'}?select=*&order=points.desc&limit=50`);
+    const medal = i => ['🥇', '🥈', '🥉'][i] || `<span class="meta">${i + 1}</span>`;
+    $('#lbList').innerHTML = rows.length ? rows.map((r, i) => `<div class="lbrow ${r.player_id === ME.id ? 'me' : ''}"><span class="lbpos">${medal(i)}</span><span class="lbname">${esc(r.player)}${r.player_id === ME.id ? ' <span class="meta">(you)</span>' : ''}</span><span class="meta">${r.correct}/${r.answered} right · ${r.quizzes} quiz${r.quizzes == 1 ? '' : 'zes'}</span><b class="lbpts">${r.points}</b></div>`).join('')
+      : `<div class="empty">No scores ${LB.tab === 'week' ? 'this week' : 'yet'} — be the first: do a quiz!</div>`;
+  } catch { $('#lbList').innerHTML = '<div class="empty">Couldn\'t load the leaderboard right now.</div>'; }
+}
+
+
+/* ---------- Diagrams: hand-drawn SVG visuals matched to units by topic (automatic for new notes) ---------- */
+const DG = (() => {
+  const C = '#e9e7ff', A = '#5ce1ff', P = '#ff7eb6', G = '#ffd60a', M = '#9a98c4', V = '#b9a8ff';
+  const sw = 'stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  const ln = (x1, y1, x2, y2, c = C) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" ${sw}/>`;
+  const pl = (pts, c = C, extra = '') => `<polyline points="${pts.map(p => p.join(',')).join(' ')}" stroke="${c}" ${sw} ${extra}/>`;
+  const tx = (x, y, s, o = {}) => `<text x="${x}" y="${y}" fill="${o.c || M}" font-size="${o.s || 11}" font-family="JetBrains Mono,monospace" text-anchor="${o.a || 'middle'}" ${o.b ? 'font-weight="700"' : ''}>${s}</text>`;
+  const dot = (x, y, c = C) => `<circle cx="${x}" cy="${y}" r="3.2" fill="${c}"/>`;
+  const arr = (x1, y1, x2, y2, c = A) => { const a = Math.atan2(y2 - y1, x2 - x1), h = 7; return ln(x1, y1, x2, y2, c) + `<polygon points="${x2},${y2} ${x2 - h * Math.cos(a - .45)},${y2 - h * Math.sin(a - .45)} ${x2 - h * Math.cos(a + .45)},${y2 - h * Math.sin(a + .45)}" fill="${c}"/>`; };
+  const zig = (x1, y, x2, c = A, w = 36) => { const m = (x1 + x2) / 2, a = m - w / 2, pts = [[x1, y], [a, y]]; for (let i = 0; i < 6; i++) pts.push([a + (i + .5) * w / 6, y + (i % 2 ? 7 : -7)]); pts.push([a + w, y], [x2, y]); return pl(pts.slice(0, 2), C) + pl(pts.slice(1, -1), c) + pl(pts.slice(-2), C); };
+  const zigV = (x, y1, y2, c = A, w = 36) => { const m = (y1 + y2) / 2, a = m - w / 2, pts = [[x, a]]; for (let i = 0; i < 6; i++) pts.push([x + (i % 2 ? 7 : -7), a + (i + .5) * w / 6]); pts.push([x, a + w]); return ln(x, y1, x, a) + pl(pts, c) + ln(x, a + w, x, y2); };
+  const cap = (x1, y, x2, c = A) => { const m = (x1 + x2) / 2; return ln(x1, y, m - 4, y) + ln(m - 4, y - 13, m - 4, y + 13, c) + ln(m + 4, y - 13, m + 4, y + 13, c) + ln(m + 4, y, x2, y); };
+  const capV = (x, y1, y2, c = A) => { const m = (y1 + y2) / 2; return ln(x, y1, x, m - 4) + ln(x - 13, m - 4, x + 13, m - 4, c) + ln(x - 13, m + 4, x + 13, m + 4, c) + ln(x, m + 4, x, y2); };
+  const ind = (x1, y, x2, c = A) => { const m = (x1 + x2) / 2, a = m - 20; let d = `M${a},${y}`; for (let i = 0; i < 4; i++) d += ` a5,6 0 0 1 10,0`; return ln(x1, y, a, y) + `<path d="${d}" stroke="${c}" ${sw}/>` + ln(a + 40, y, x2, y); };
+  const indV = (x, y1, y2, c = A) => { const m = (y1 + y2) / 2, a = m - 20; let d = `M${x},${a}`; for (let i = 0; i < 4; i++) d += ` a6,5 0 0 1 0,10`; return ln(x, y1, x, a) + `<path d="${d}" stroke="${c}" ${sw}/>` + ln(x, a + 40, x, y2); };
+  const bat = (x, y1, y2, lab = 'V', c = G) => { const m = (y1 + y2) / 2; return ln(x, y1, x, m - 5) + ln(x - 13, m - 5, x + 13, m - 5, c) + `<line x1="${x - 7}" y1="${m + 5}" x2="${x + 7}" y2="${m + 5}" stroke="${c}" stroke-width="4"/>` + ln(x, m + 5, x, y2) + tx(x - 22, m - 8, '+', { c, s: 12 }) + tx(x - 24, m + 10, lab, { c, b: 1 }); };
+  const ac = (x, y1, y2, lab = 'v', c = G) => { const m = (y1 + y2) / 2; return ln(x, y1, x, m - 15) + `<circle cx="${x}" cy="${m}" r="15" stroke="${c}" ${sw}/><path d="M${x - 9},${m} q4.5,-10 9,0 t9,0" stroke="${c}" ${sw}/>` + ln(x, m + 15, x, y2) + tx(x - 28, m + 4, lab, { c, b: 1 }); };
+  const isrc = (x, y1, y2, lab = 'I', c = G) => { const m = (y1 + y2) / 2; return ln(x, y1, x, m - 15) + `<circle cx="${x}" cy="${m}" r="15" stroke="${c}" ${sw}/>` + arr(x, m + 9, x, m - 9, c) + ln(x, m + 15, x, y2) + tx(x - 28, m + 4, lab, { c, b: 1 }); };
+  const term = (x, y, l, up) => `<circle cx="${x}" cy="${y}" r="4" fill="#04040c" stroke="${C}" stroke-width="2"/>` + (up ? tx(x, y - 10, l, { c: C }) : tx(x + 12, y + 4, l, { c: C, a: 'start' }));
+  const zigL = (x1, y1, x2, y2, c = A) => { const L = Math.hypot(x2 - x1, y2 - y1), deg = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI; return `<g transform="translate(${x1} ${y1}) rotate(${deg.toFixed(2)})">${zig(0, 0, L, c, Math.min(36, L * .6))}</g>`; };
+  const svg = (body, h = 190) => `<svg viewBox="0 0 340 ${h}" xmlns="http://www.w3.org/2000/svg" role="img">${body}</svg>`;
+  const wave = (x0, y0, w, amp, cyc, c = A, ph = 0) => { let d = ''; for (let i = 0; i <= 120; i++) { const t = i / 120, x = x0 + t * w, y = y0 - amp * Math.sin(2 * Math.PI * cyc * t + ph); d += (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); } return `<path d="${d}" stroke="${c}" ${sw}/>`; };
+  const axes = (x0, y0, w, h, xl = 't', yl = '', mid = false) => { const b = mid ? y0 + h / 2 : y0, t = mid ? y0 - h / 2 : y0 - h; return arr(x0, y0, x0 + w, y0, M) + arr(x0, b, x0, t, M) + tx(x0 + w + 2, y0 + 14, xl) + (yl ? tx(x0 - 4, t + 4, yl, { a: 'end' }) : ''); };
+
+  const D = [];
+  const add = (id, title, rx, body, cap) => D.push({ id, title, rx, svg: body, cap });
+
+  add('ohm', "Resistor & Ohm's law", /resist(or|ance)|ohm'?s? law|\bv\s*=\s*ir\b|voltage and current basics|conductor/i, svg(
+    `<rect x="110" y="30" width="120" height="34" rx="16" fill="#d9b382" stroke="${C}" stroke-width="1.5"/>` + ln(60, 47, 110, 47) + ln(230, 47, 280, 47) +
+    [130, 150, 170, 205].map((x, i) => `<rect x="${x}" y="31" width="8" height="32" fill="${['#8b4513', '#111', '#e53935', '#d4af37'][i]}"/>`).join('') +
+    tx(170, 82, 'real resistor (colour bands)') + zig(60, 125, 280) + arr(100, 150, 140, 150) + tx(120, 168, 'I', { c: A, b: 1 }) + tx(60, 118, '+', { c: G, s: 13 }) + tx(280, 118, '−', { c: G, s: 13 }) + tx(170, 107, 'R', { c: A, b: 1 }) + tx(250, 168, 'V = I·R', { c: G, b: 1, s: 13 })),
+    'Current flows from + to − through R; the voltage across it is V = IR.');
+  add('series', 'Resistors in series', /resistors? in series|series (circuit|resistor|combination|connection)|\bin series\b|equivalent resistance/i, svg(
+    bat(40, 40, 150) + zig(40, 40, 160) + zig(160, 40, 290) + zigV(290, 40, 150) + ln(290, 150, 40, 150) + tx(100, 28, 'R₁', { c: A, b: 1 }) + tx(225, 28, 'R₂', { c: A, b: 1 }) + tx(312, 99, 'R₃', { c: A, b: 1 }) + arr(70, 165, 120, 165) + tx(95, 182, 'same I everywhere', { c: A }) + tx(200, 105, 'R = R₁ + R₂ + R₃', { c: G, b: 1, s: 12 })),
+    'Same current through every resistor; resistances add.');
+  add('parallel', 'Resistors in parallel', /parallel (circuit|resistor|combination|branch|connection)|resistors? in parallel|\bin parallel\b|series.?parallel/i, svg(
+    bat(40, 40, 150) + ln(40, 40, 290, 40) + ln(40, 150, 290, 150) + zigV(130, 40, 150) + zigV(210, 40, 150) + zigV(290, 40, 150) +
+    dot(130, 40) + dot(210, 40) + dot(130, 150) + dot(210, 150) + tx(152, 99, 'R₁', { c: A, b: 1 }) + tx(232, 99, 'R₂', { c: A, b: 1 }) + tx(312, 99, 'R₃', { c: A, b: 1 }) + tx(170, 182, '1/R = 1/R₁ + 1/R₂ + 1/R₃', { c: G, b: 1, s: 12 }) + tx(170, 25, 'same V across each branch', { c: A })),
+    'Same voltage across every branch; conductances add.');
+  add('vdiv', 'Voltage divider', /voltage divider|potential divider|divider rule/i, svg(
+    bat(50, 30, 160, 'Vs') + ln(50, 30, 180, 30) + zigV(180, 30, 95) + zigV(180, 95, 160) + ln(180, 160, 50, 160) + dot(180, 95) + ln(180, 95, 250, 95) + term(250, 95, 'Vout') + dot(180, 160) + ln(180, 160, 250, 160) + term(250, 160, '0 V') +
+    tx(202, 66, 'R₁', { c: A, b: 1 }) + tx(202, 132, 'R₂', { c: A, b: 1 }) + tx(170, 185, 'Vout = Vs · R₂ / (R₁ + R₂)', { c: G, b: 1, s: 12 }), 195),
+    'Two series resistors split the supply in proportion to their resistance.');
+  add('idiv', 'Current divider', /current divider/i, svg(
+    isrc(50, 40, 150, 'I') + ln(50, 40, 250, 40) + ln(50, 150, 250, 150) + zigV(160, 40, 150) + zigV(250, 40, 150) + dot(160, 40) + dot(160, 150) + arr(160, 52, 160, 70, P) + arr(250, 52, 250, 70, P) + tx(185, 99, 'R₁', { c: A, b: 1 }) + tx(275, 99, 'R₂', { c: A, b: 1 }) + tx(145, 68, 'I₁', { c: P }) + tx(235, 68, 'I₂', { c: P }) + tx(170, 180, 'I₁ = I · R₂ / (R₁ + R₂)', { c: G, b: 1, s: 12 })),
+    'Current splits between parallel branches — more goes through the smaller resistance.');
+  add('kcl', "Kirchhoff's current law (KCL)", /kirch+of+.*current|\bkcl\b|node(s)?\b(?!.*voltage)|junction/i, svg(
+    dot(170, 95) + arr(60, 50, 160, 90, A) + arr(60, 140, 160, 100, A) + arr(180, 90, 280, 45, P) + arr(180, 100, 280, 145, P) + tx(70, 40, 'I₁ in', { c: A }) + tx(70, 165, 'I₂ in', { c: A }) + tx(282, 35, 'I₃ out', { c: P }) + tx(282, 170, 'I₄ out', { c: P }) + tx(170, 125, 'node', { c: C }) + tx(170, 185, 'I₁ + I₂ = I₃ + I₄   (Σ in = Σ out)', { c: G, b: 1, s: 12 }), 195),
+    'Charge is conserved: current into a node equals current out.');
+  add('kvl', "Kirchhoff's voltage law (KVL)", /kirch+of+.*voltage|\bkvl\b|loop|kirch+of+'?s laws/i, svg(
+    bat(40, 40, 150, 'Vs') + zig(40, 40, 170) + zig(170, 40, 300) + zigV(300, 40, 150) + ln(300, 150, 40, 150) + `<path d="M140,120 a40,30 0 1 1 60,0" stroke="${P}" ${sw}/>` + arr(198, 122, 192, 128, P) + tx(170, 100, 'loop', { c: P }) +
+    tx(105, 28, 'V₁', { c: A, b: 1 }) + tx(235, 28, 'V₂', { c: A, b: 1 }) + tx(322, 99, 'V₃', { c: A, b: 1 }) + tx(170, 178, 'Vs − V₁ − V₂ − V₃ = 0', { c: G, b: 1, s: 12 })),
+    'Going round any closed loop, the voltage rises and drops sum to zero.');
+  add('thevenin', 'Thévenin equivalent', /th[eé]venin|equivalent circuit|maximum power|max(imum)? power transfer/i, svg(
+    bat(50, 40, 150, 'Vth') + zig(50, 40, 180) + ln(180, 40, 230, 40) + term(230, 40, 'a') + ln(50, 150, 230, 150) + term(230, 150, 'b') + tx(115, 28, 'Rth', { c: A, b: 1 }) +
+    `<rect x="262" y="55" width="62" height="80" rx="8" stroke="${M}" stroke-dasharray="4 4" fill="none"/>` + zigV(293, 60, 130, P) + tx(293, 150, 'load RL', { c: P }) + arr(238, 95, 258, 95, M) +
+    tx(140, 182, 'max power when RL = Rth', { c: G, b: 1, s: 12 })),
+    'Any linear circuit seen from two terminals = one voltage source in series with one resistor.');
+  add('norton', 'Norton equivalent', /norton/i, svg(
+    isrc(60, 40, 150, 'IN') + ln(60, 40, 260, 40) + ln(60, 150, 260, 150) + zigV(170, 40, 150) + dot(170, 40) + dot(170, 150) + tx(195, 99, 'RN', { c: A, b: 1 }) + term(260, 40, 'a') + term(260, 150, 'b') + tx(170, 182, 'IN = Vth / Rth ,  RN = Rth', { c: G, b: 1, s: 12 })),
+    'A current source in parallel with a resistor — the dual of Thévenin.');
+  add('superpos', 'Superposition', /superposition/i, svg(
+    bat(40, 40, 150, 'V₁') + zig(40, 40, 170) + zig(170, 40, 300) + bat(300, 40, 150, 'V₂') + zigV(170, 40, 150) + dot(170, 40) + ln(40, 150, 300, 150) + dot(170, 150) +
+    tx(105, 28, 'R₁', { c: A, b: 1 }) + tx(235, 28, 'R₂', { c: A, b: 1 }) + tx(192, 99, 'R₃', { c: A, b: 1 }) + tx(170, 180, 'one source at a time, others zeroed → add', { c: G, b: 1, s: 11 })),
+    'Voltage sources → short circuit, current sources → open circuit, then add the results.');
+  add('mesh', 'Mesh analysis', /\bmesh|cramer|simultaneous equations?.*circuit/i, svg(
+    bat(40, 40, 150, 'V') + zig(40, 40, 170) + zig(170, 40, 300) + zigV(170, 40, 150) + zigV(300, 40, 150) + ln(40, 150, 300, 150) + dot(170, 40) + dot(170, 150) +
+    `<path d="M85,118 a22,22 0 1 1 30,0" stroke="${P}" ${sw}/>` + arr(113, 120, 108, 126, P) + tx(100, 100, 'I₁', { c: P, b: 1 }) + `<path d="M215,118 a22,22 0 1 1 30,0" stroke="${V}" ${sw}/>` + arr(243, 120, 238, 126, V) + tx(230, 100, 'I₂', { c: V, b: 1 }) +
+    tx(105, 28, 'R₁', { c: A, b: 1 }) + tx(235, 28, 'R₂', { c: A, b: 1 }) + tx(150, 99, 'R₃', { c: A, b: 1 }) + tx(170, 180, 'shared R₃ carries I₁ − I₂', { c: G, b: 1, s: 12 })),
+    'Give each window its own loop current; write KVL for each mesh.');
+  add('stardelta', 'Star (Y) – delta (Δ) conversion', /star.?delta|delta.?star|\bwye\b|bridge network/i, svg(
+    tx(85, 16, 'Star (Y)', { c: C }) + zigL(85, 100, 85, 46) + zigL(85, 100, 32, 140) + zigL(85, 100, 138, 140) + dot(85, 100) + term(85, 46, '1') + tx(22, 150, '2', { c: C }) + tx(148, 150, '3', { c: C }) + dot(32, 140) + dot(138, 140) +
+    tx(170, 100, '⇄', { c: G, s: 22 }) + tx(255, 16, 'Delta (Δ)', { c: C }) +
+    zigL(255, 38, 202, 140) + zigL(255, 38, 308, 140) + zigL(202, 140, 308, 140) + dot(255, 38) + dot(202, 140) + dot(308, 140) + tx(255, 165, 'Ra  Rb  Rc', { c: A }) + tx(85, 165, 'R₁  R₂  R₃', { c: A }) +
+    tx(170, 190, 'R_Y = (product of adjacent Δ) / (sum of Δ)', { c: G, s: 10 }), 198),
+    'Swap a Y for a Δ (or back) to untangle bridge circuits that are neither series nor parallel.');
+  add('cap', 'Capacitor & charging', /capacit/i, svg(
+    capV(60, 30, 120) + tx(85, 79, 'C', { c: A, b: 1 }) + tx(60, 145, 'symbol', { c: M }) + axes(130, 150, 190, 120, 't', 'v') + `<path d="M130,150 C160,70 200,48 310,42" stroke="${A}" ${sw}/>` + ln(130, 42, 315, 42, M) + tx(318, 38, 'Vs', { c: G, a: 'start' }) + ln(185, 150, 185, 70, M) + tx(185, 165, 'τ = RC', { c: G, b: 1 }) + tx(235, 120, 'v = Vs(1 − e^(−t/RC))', { c: C, s: 10 })),
+    'Charge builds up on the plates; voltage rises exponentially with time constant τ = RC. i = C dv/dt.');
+  add('ind', 'Inductor', /inductor|inductan|\brl\b|back e\.?m\.?f/i, svg(
+    indV(60, 30, 120) + tx(85, 79, 'L', { c: A, b: 1 }) + tx(60, 145, 'symbol', { c: M }) + axes(130, 150, 190, 120, 't', 'i') + `<path d="M130,150 C160,70 200,48 310,42" stroke="${P}" ${sw}/>` + ln(185, 150, 185, 70, M) + tx(185, 165, 'τ = L/R', { c: G, b: 1 }) + tx(240, 120, 'v = L di/dt', { c: C, s: 11 })),
+    'An inductor resists changes in current: v = L di/dt. Current builds up with τ = L/R.');
+  add('lpf', 'RC low-pass filter', /low.?pass|first.?order.*filter|cut.?off|crossover|filter/i, svg(
+    term(20, 50, 'in', 1) + zig(24, 50, 120) + ln(120, 50, 160, 50) + dot(120, 50) + capV(120, 50, 130) + ln(20, 130, 160, 130) + term(160, 50, 'out') + tx(72, 38, 'R', { c: A, b: 1 }) + tx(145, 95, 'C', { c: A, b: 1 }) +
+    axes(205, 130, 120, 90, 'f', '|H|') + `<path d="M205,60 L255,60 C275,62 285,90 320,118" stroke="${P}" ${sw}/>` + ln(262, 130, 262, 60, M) + tx(262, 145, 'fc', { c: G, b: 1 }) + tx(170, 180, 'fc = 1 / (2πRC)', { c: G, b: 1, s: 12 })),
+    'Passes low frequencies, blocks high ones. Swap R and C for a high-pass filter.');
+  add('hpf', 'RC high-pass filter', /high.?pass|tweeter/i, svg(
+    term(20, 50, 'in', 1) + cap(24, 50, 120) + ln(120, 50, 160, 50) + dot(120, 50) + zigV(120, 50, 130) + ln(20, 130, 160, 130) + term(160, 50, 'out') + tx(72, 32, 'C', { c: A, b: 1 }) + tx(145, 95, 'R', { c: A, b: 1 }) +
+    axes(205, 130, 120, 90, 'f', '|H|') + `<path d="M205,118 C240,90 250,62 270,60 L320,60" stroke="${P}" ${sw}/>` + ln(262, 130, 262, 60, M) + tx(262, 145, 'fc', { c: G, b: 1 }) + tx(170, 180, 'fc = 1 / (2πRC)', { c: G, b: 1, s: 12 })),
+    'Blocks low frequencies (and DC), passes high ones.');
+  add('sine', 'Sinusoid: amplitude, period, phase', /sinus|sine|cosine|period|frequency|angular|radian|waveform(?!.*square)|combining waves|phase(?! ?angle)/i, svg(
+    axes(30, 95, 290, 150, 't', 'v', true) + wave(30, 95, 280, 55, 1.5, A) + wave(30, 95, 280, 55, 1.5, P, -0.9) + ln(30, 40, 72, 40, G) + tx(52, 33, 'Vm', { c: G, b: 1 }) +
+    ln(58, 160, 245, 160, M) + tx(150, 175, 'period T = 1/f', { c: G, b: 1 }) + tx(300, 40, 'φ shift', { c: P }) + tx(170, 190, 'v(t) = Vm sin(ωt + φ),  ω = 2πf', { c: C, s: 11 }), 198),
+    'Amplitude Vm, period T, angular frequency ω = 2πf; the pink wave lags by phase φ.');
+  add('square', 'Non-sinusoidal waveforms', /square|sawtooth|triangle wave|non.?sinusoid|harmonic/i, svg(
+    axes(30, 60, 290, 80, 't', '', true) + pl([[30, 60], [30, 30], [80, 30], [80, 90], [130, 90], [130, 30], [180, 30], [180, 90], [230, 90], [230, 30], [280, 30], [280, 60]], A) + tx(300, 35, 'square', { c: A, a: 'end' }) +
+    axes(30, 150, 290, 80, 't', '', true) + pl([[30, 150], [100, 120], [100, 180], [170, 120], [170, 180], [240, 120], [240, 180], [300, 150]], P) + tx(300, 125, 'sawtooth', { c: P, a: 'end' }), 195),
+    'Made of a fundamental plus harmonics — the sharp edges are what sound "harsh".');
+  add('phasor', 'Phasor diagram', /phasor|phase angle|leading|lagging|power factor/i, svg(
+    arr(40, 150, 320, 150, M) + arr(60, 175, 60, 15, M) + tx(318, 166, 'Re') + tx(72, 18, 'Im', { a: 'start' }) + arr(60, 150, 250, 60, G) + tx(260, 55, 'V', { c: G, b: 1, s: 13 }) + arr(60, 150, 260, 120, A) + tx(272, 122, 'I', { c: A, b: 1, s: 13 }) +
+    `<path d="M120,150 A60,60 0 0 0 117,128" stroke="${P}" ${sw}/>` + tx(140, 140, 'φ', { c: P, b: 1, s: 13 }) + tx(200, 185, 'here I lags V by φ (inductive)', { c: C, s: 11 }), 195),
+    'A sinusoid as a rotating arrow: length = amplitude, angle = phase.');
+  add('imped', 'Impedance triangle', /impedance|reactance|admittance|complex impedance/i, svg(
+    pl([[60, 160], [280, 160], [280, 40], [60, 160]], C) + ln(60, 160, 280, 160, A) + ln(280, 160, 280, 40, P) + ln(60, 160, 280, 40, G) + tx(170, 178, 'R (resistance)', { c: A }) + tx(318, 104, 'X', { c: P, b: 1 }) + tx(150, 90, '|Z|', { c: G, b: 1, s: 13 }) +
+    `<path d="M110,160 A50,50 0 0 0 104,137" stroke="${M}" ${sw}/>` + tx(125, 150, 'θ', { c: C }) + tx(170, 22, 'Z = R + jX,  XL = ωL,  XC = −1/(ωC)', { c: C, s: 11 }), 190),
+    'Impedance combines resistance and reactance: |Z| = √(R² + X²), θ = tan⁻¹(X/R).');
+  add('rlc', 'Series RLC circuit', /\brlc\b|resonan/i, svg(
+    ac(40, 40, 150, 'vs') + zig(40, 40, 140) + ind(140, 40, 230) + ln(230, 40, 300, 40) + capV(300, 40, 150) + ln(300, 150, 40, 150) + tx(90, 28, 'R', { c: A, b: 1 }) + tx(185, 28, 'L', { c: A, b: 1 }) + tx(322, 99, 'C', { c: A, b: 1 }) + tx(170, 180, 'resonance: f₀ = 1 / (2π√(LC))', { c: G, b: 1, s: 12 })),
+    'At resonance XL = XC, so the impedance is just R and the current peaks.');
+  add('opamp', 'Op-amp: inverting amplifier', /op.?amp|operational amplifier/i, svg(
+    `<polygon points="170,50 170,140 250,95" stroke="${A}" ${sw}/>` + tx(180, 78, '−', { c: C, s: 14 }) + tx(180, 122, '+', { c: C, s: 14 }) + term(20, 74, 'vin', 1) + zig(24, 74, 120) + ln(120, 74, 170, 74) + dot(140, 74) + ln(140, 74, 140, 30) + zig(140, 30, 270) + ln(270, 30, 270, 95) + ln(250, 95, 300, 95) + dot(270, 95) + term(300, 95, 'vout') +
+    ln(170, 116, 150, 116) + ln(150, 116, 150, 150) + ln(138, 150, 162, 150) + ln(142, 155, 158, 155) + ln(146, 160, 154, 160) + tx(72, 62, 'Rin', { c: P, b: 1 }) + tx(205, 20, 'Rf', { c: P, b: 1 }) + tx(170, 185, 'vout / vin = −Rf / Rin', { c: G, b: 1, s: 12 }), 195),
+    'Negative feedback sets the gain; the inverting input sits at virtual earth (0 V).');
+  add('argand', 'Argand diagram (complex plane)', /complex number|argand|modulus|argument|euler|polar form|de moivre|imaginary/i, svg(
+    arr(30, 120, 320, 120, M) + arr(170, 165, 170, 12, M) + tx(318, 136, 'Re') + tx(182, 16, 'Im', { a: 'start' }) + arr(170, 120, 270, 45, G) + dot(270, 45, G) + tx(262, 30, 'z = x + jy', { c: G, b: 1, a: 'end' }) +
+    ln(270, 45, 270, 120, M) + ln(170, 45, 270, 45, M) + tx(270, 135, 'x', { c: A }) + tx(160, 49, 'y', { c: A }) + tx(208, 72, 'r', { c: G, b: 1 }) + `<path d="M205,120 A35,35 0 0 0 198,100" stroke="${P}" ${sw}/>` + tx(214, 110, 'θ', { c: P, b: 1 }) +
+    tx(170, 190, 'z = r(cos θ + j sin θ) = r e^(jθ)', { c: C, s: 11 }), 198),
+    'Modulus r = |z| is the length; argument θ is the angle from the positive real axis.');
+  const MATH = new Set(['sine', 'argand', 'square']);
+  const GENERAL = new Set(['ohm', 'series', 'parallel', 'sine']);
+  const used = (s, circ) => D.filter(d => (circ || MATH.has(d.id)) && d.rx.test(s)).sort((a, b) => GENERAL.has(a.id) - GENERAL.has(b.id));
+  return { all: D, match: used };
+})();
+function diagramHTML(d) { return `<figure class="dg"><div class="dgsvg">${d.svg}</div><figcaption><b>${esc(d.title)}</b>${d.cap ? ' — ' + esc(d.cap) : ''}</figcaption></figure>`; }
+function diagramsFor(text, seen, max = 2, circ = true) { const out = []; for (const d of DG.match(text, circ)) { if (seen.has(d.id)) continue; seen.add(d.id); out.push(d); if (out.length >= max) break; } return out; }
+
+
+/* ---------- exam calendar (view only) ---------- */
+const MOD_COLS = ['#4b70dd', '#e2553d', '#d9a066', '#3fbfa8', '#a35ce6', '#7fc94a', '#ff7eb6', '#ffd60a'];
+const modCol = id => MOD_COLS[Math.max(0, D.mods.findIndex(m => m.id === id)) % MOD_COLS.length];
+const exTs = e => new Date(e.date + 'T' + (e.time || '09:00') + ':00').getTime();
+const exDays = e => Math.ceil((exTs(e) - Date.now()) / 864e5);
+const CAL = { y: null, mo: null, sel: null };
+function calendarView() {
+  const ex = (D.exams || []).filter(e => MODS[e.mod]), now = new Date();
+  if (CAL.y == null) { const nx = ex.find(e => exTs(e) > Date.now()); const d = nx ? new Date(nx.date) : now; CAL.y = d.getFullYear(); CAL.mo = d.getMonth(); }
+  const first = new Date(CAL.y, CAL.mo, 1), startDow = (first.getDay() + 6) % 7, nDays = new Date(CAL.y, CAL.mo + 1, 0).getDate();
+  const iso = d => `${CAL.y}-${String(CAL.mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`, todayIso = now.toISOString().slice(0, 10);
+  let cells = ''; for (let i = 0; i < startDow; i++) cells += '<div class="cd empty"></div>';
+  for (let d = 1; d <= nDays; d++) { const es = ex.map((e, i) => ({ e, i })).filter(x => x.e.date === iso(d)); cells += `<div class="cd ${iso(d) === todayIso ? 'today' : ''} ${es.length ? 'has' : ''}" ${es.length ? `data-ex="${es[0].i}"` : ''}><span class="dn">${d}</span>${es.map(({ e, i }) => `<i class="evt" data-ex="${i}" style="--c:${modCol(e.mod)}">${esc(MODS[e.mod].name)}</i>`).join('')}</div>`; }
+  const up = ex.map((e, i) => ({ e, i })).filter(x => exTs(x.e) > Date.now() - 864e5);
+  const si = CAL.sel != null ? CAL.sel : up.length ? up[0].i : null, sel = si != null ? ex[si] : null;
+  let det = '';
+  if (sel) {
+    const m = MODS[sel.mod], col = modCol(m.id), n = exDays(sel), units = m.secs.flatMap(s => s.units);
+    const scored = units.map(u => ({ u, sc: unitScore(u) })).filter(x => x.sc.done).sort((a, b) => a.sc.acc - b.sc.acc).slice(0, 5);
+    const ess = m.sheet.flatMap(s => s.topics.flatMap(t => t.formulas.filter(f => f.rank === 3))).slice(0, 8);
+    const perDay = Math.ceil(units.length / Math.max(1, n));
+    det = `<div class="card exdet" style="--c:${col}"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div><div class="label" style="color:${col};margin:0">${esc(m.name)}</div><h2 style="margin:4px 0">${esc(sel.title)}</h2><div class="meta">${new Date(exTs(sel)).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} · ${esc(sel.time)}${sel.place ? ' · ' + esc(sel.place) : ''}</div></div><div class="cdown"><b>${n <= 0 ? '🔥' : n}</b><span>${n <= 0 ? 'today' : n === 1 ? 'day' : 'days'}</span></div></div>
+      <div class="label">📋 Plan</div><div style="font-size:14.5px;line-height:1.55">${units.length} units${n > 0 ? ` in ${n} day${n === 1 ? '' : 's'} → about <b>${perDay} a day</b>` : ''}. Work through the sections below, then do a ⚡ Quick 10 each day.</div>
+      ${scored.length ? `<div class="label">🎯 Your weakest units (from your quizzes)</div>${scored.map(({ u, sc }) => `<div class="qrow" style="--acc:${thColor(u.th)}">${ring(sc, thColor(u.th))}<div style="flex:1;min-width:0"><b>${esc(u.name)}</b></div><button class="chip go sm" data-qunit="${u.id}">▶ Play</button></div>`).join('')}` : ''}
+      <div class="label">📚 What's on it</div><div class="exsecs">${m.secs.map((s, k) => `<a class="chip" href="#m${m.id}" data-gosec="${m.id}|${k}">${esc(topicName(s.name) || s.name)} <span class="cnt">${s.units.length}</span></a>`).join('')}</div>
+      ${m.rep.must.length ? `<div class="label l-must">★ Must know</div>${list(m.rep.must, 'must')}` : ''}
+      ${m.rep.weak.length ? `<div class="label l-weak">⚠ Where students lose marks</div>${list(m.rep.weak, 'weak')}` : ''}
+      ${ess.length ? `<div class="label">🧮 Essential formulas</div><div class="essf">${ess.map(f => `<div><span class="meta">${esc(f.name)}</span><div class="mx">\\(\\displaystyle ${esc(f.latex)}\\)</div></div>`).join('')}</div>` : ''}
+      <div class="row" style="margin-top:14px"><button class="chip go big" data-cquick="${m.id}">⚡ Quick 10 on ${esc(m.name)}</button><a class="chip" href="#formulas" data-cform="${m.id}">🧮 Full formula sheet</a></div></div>`;
+  }
+  return `<div class="exgrid"><div class="card cal"><div class="row" style="justify-content:space-between"><button class="chip sm" id="calPrev">‹</button><b>${first.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</b><button class="chip sm" id="calNext">›</button></div>
+    <div class="cgrid">${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(d => `<div class="cdh">${d}</div>`).join('')}${cells}</div>
+    <div class="key" style="margin-top:10px">${D.mods.map(m => `<span class="k"><i style="background:${modCol(m.id)}"></i>${esc(m.name)}</span>`).join('')}</div>
+    <div class="label">Coming up</div>${up.length ? up.map(({ e, i }) => { const n = exDays(e); return `<div class="exli ${i === si ? 'on' : ''}" data-ex="${i}" style="--c:${modCol(e.mod)}"><i></i><span><b>${esc(MODS[e.mod].name)}</b> · ${esc(e.title)}<small>${new Date(exTs(e)).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} · ${esc(e.time)}</small></span><em>${n <= 0 ? 'today' : n === 1 ? 'tomorrow' : n + 'd'}</em></div>`; }).join('') : '<div class="meta">No exams added yet.</div>'}</div>
+    <div>${det || '<div class="card empty">No upcoming exams yet.</div>'}</div></div>`;
+}
+function wireCalendar(main) {
+  const r = () => { main.innerHTML = calendarView(); typeset(main); wireCalendar(main); };
+  const p = main.querySelector('#calPrev'); if (!p) return;
+  p.onclick = () => { CAL.mo--; if (CAL.mo < 0) { CAL.mo = 11; CAL.y--; } r(); };
+  main.querySelector('#calNext').onclick = () => { CAL.mo++; if (CAL.mo > 11) { CAL.mo = 0; CAL.y++; } r(); };
+  main.querySelectorAll('[data-ex]').forEach(el => el.onclick = e => { e.stopPropagation(); CAL.sel = +el.dataset.ex; r(); if (innerWidth < 900) setTimeout(() => main.querySelector('.exdet') && main.querySelector('.exdet').scrollIntoView({ behavior: 'smooth' }), 50); });
+  main.querySelectorAll('[data-qunit]').forEach(b => b.onclick = () => { location.hash = 'quiz'; setTimeout(() => startQuiz([UNITS[b.dataset.qunit]]), 50); });
+  main.querySelectorAll('[data-cquick]').forEach(b => b.onclick = () => { QZ.mod = b.dataset.cquick; location.hash = 'quiz'; setTimeout(() => { QZ.quick = true; startQuiz(MODS[b.dataset.cquick].secs.flatMap(s => s.units)); }, 50); });
+  main.querySelectorAll('[data-gosec]').forEach(a => a.onclick = () => { const [mid, k] = a.dataset.gosec.split('|'); SECSEL[mid] = +k; });
+  main.querySelectorAll('[data-cform]').forEach(a => a.onclick = () => { FORM.mod = a.dataset.cform; });
+}
+
+</script>
+</body>
+</html>
