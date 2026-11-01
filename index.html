@@ -137,6 +137,19 @@ details.ovbox>summary{cursor:pointer;color:var(--cyan);font-size:14px;padding:6p
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
 @keyframes rise{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
 @keyframes pulse{50%{filter:brightness(1.25)}}
+.exgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:12px}@media(max-width:900px){.exgrid{grid-template-columns:1fr}}
+.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}.cdh{font-family:var(--mono);font-size:10.5px;color:var(--mute);text-align:center;padding:4px 0}
+.cd{min-height:58px;border-radius:10px;background:#0b0b18;border:1px solid var(--line);padding:4px;display:flex;flex-direction:column;gap:2px;overflow:hidden}.cd.empty{background:none;border:0}
+.cd .dn{font-family:var(--mono);font-size:11px;color:var(--mute)}.cd.today{border-color:#8b7dff;box-shadow:inset 0 0 0 1px #8b7dff}.cd.today .dn{color:#fff;font-weight:700}.cd.has{cursor:pointer}
+.evt{font-style:normal;font-size:10px;line-height:1.25;padding:2px 4px;border-radius:5px;background:color-mix(in srgb,var(--c) 30%,transparent);border-left:3px solid var(--c);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:620px){.cd{min-height:46px}.evt{font-size:0;padding:0;height:7px;border-radius:4px;border:0;background:var(--c)}}
+.exli{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;margin:4px 0;border:1px solid transparent}.exli i{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);flex:none}
+.exli span{flex:1;min-width:0;font-size:14px}.exli small{display:block;font-family:var(--mono);font-size:11px;color:var(--mute)}.exli em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--c)}
+.exli.on{background:#17163a;border-color:var(--line)}@media(hover:hover){.exli:hover{background:#17163a;border-color:var(--line)}}
+a.exhome{display:block;text-decoration:none;color:inherit}
+.exdet{border-top:4px solid var(--c)}.cdown{width:70px;height:70px;border-radius:18px;background:linear-gradient(135deg,var(--c),#1b1030);display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none}.cdown b{font-size:26px;line-height:1}.cdown span{font-family:var(--mono);font-size:10px}
+.essf{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}.essf>div{background:#0b0b18;border:1px solid var(--line);border-radius:10px;padding:8px 10px;overflow-x:auto}
+.exsecs{display:flex;flex-wrap:wrap;gap:6px}
 .modal{position:fixed;inset:0;z-index:50;background:rgba(2,2,10,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px}
 .mcard{width:100%;max-width:380px;background:linear-gradient(180deg,#14132e,#0b0b18);border:1px solid #3b3480;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 .lbrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line)}.lbrow.me{background:#1b1840;border-radius:10px}
@@ -172,7 +185,7 @@ const PCOL = ['#4b70dd', '#e2553d', '#d9a066', '#3fbfa8', '#a35ce6', '#7fc94a'];
 
 function nav() {
   const h = location.hash.slice(1) || 'home';
-  $('#nav').innerHTML = [['home', '☀️ Home'], ...D.mods.map((m, i) => ['m' + m.id, '🪐 ' + m.name]), ['quiz', '📝 Quiz'], ['leaderboard', '🏆 Leaderboard'], ['formulas', '🧮 Formula sheets'], ['key', '🎨 Colour key']]
+  $('#nav').innerHTML = [['home', '☀️ Home'], ...D.mods.map((m, i) => ['m' + m.id, '🪐 ' + m.name]), ['calendar', '📅 Exams'], ['quiz', '📝 Quiz'], ['leaderboard', '🏆 Leaderboard'], ['formulas', '🧮 Formula sheets'], ['key', '🎨 Colour key']]
     .map(([k, t]) => `<a href="#${k}" class="${h === k ? 'on' : ''}">${esc(t)}</a>`).join('');
 }
 function keyHTML() {
@@ -189,7 +202,8 @@ function home() {
     const n = m.secs.reduce((a, s) => a + s.units.length, 0), dd = m.exam ? daysTo(m.exam) : null;
     h += `<a class="card planet" href="#m${m.id}"><div class="orb" style="background:${PLANET[i % PLANET.length]};--c:${PCOL[i % PCOL.length]}"></div><div><h2>${esc(m.name)}</h2><div class="topics">${m.secs.map(s => topicName(s.name)).filter(Boolean).map(t => `<span>${esc(t)}</span>`).join('')}</div><div class="meta">${n} units${dd != null && dd >= 0 ? ` · 📅 exam in ${dd} days` : ''}</div></div></a>`;
   });
-  return h + `</div><div class="card">${keyHTML()}</div>`;
+  const nx = (D.exams || []).filter(e => MODS[e.mod] && exTs(e) > Date.now() - 864e5).slice(0, 4);
+  return h + `</div>${nx.length ? `<a class="card exhome" href="#calendar"><div class="label" style="margin-top:0">📅 Upcoming exams</div>${nx.map(e => { const n = exDays(e); return `<div class="exli" style="--c:${modCol(e.mod)}"><i></i><span><b>${esc(MODS[e.mod].name)}</b> · ${esc(e.title)}<small>${new Date(exTs(e)).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</small></span><em>${n <= 0 ? 'today' : n === 1 ? 'tomorrow' : n + 'd'}</em></div>`; }).join('')}</a>` : ''}<div class="card">${keyHTML()}</div>`;
 }
 const isCirc = u => /electr|circuit/i.test(modOfUnit(u.id));
 function unitHTML(u) {
@@ -274,6 +288,7 @@ const UNITS = {};
 function render() {
   nav();
   const h = location.hash.slice(1) || 'home', q = $('#q').value.trim(), main = $('#main');
+  if (q.length < 2 && h === 'calendar') { main.innerHTML = calendarView(); typeset(main); wireCalendar(main); return; }
   if (q.length < 2 && h === 'quiz') return renderQuizMain();
   if (q.length < 2 && h === 'leaderboard') return renderLeaderboard();
   if (q.length >= 2) main.innerHTML = searchView(q);
@@ -631,6 +646,55 @@ const DG = (() => {
 })();
 function diagramHTML(d) { return `<figure class="dg"><div class="dgsvg">${d.svg}</div><figcaption><b>${esc(d.title)}</b>${d.cap ? ' — ' + esc(d.cap) : ''}</figcaption></figure>`; }
 function diagramsFor(text, seen, max = 2, circ = true) { const out = []; for (const d of DG.match(text, circ)) { if (seen.has(d.id)) continue; seen.add(d.id); out.push(d); if (out.length >= max) break; } return out; }
+
+
+/* ---------- exam calendar (view only) ---------- */
+const MOD_COLS = ['#4b70dd', '#e2553d', '#d9a066', '#3fbfa8', '#a35ce6', '#7fc94a', '#ff7eb6', '#ffd60a'];
+const modCol = id => MOD_COLS[Math.max(0, D.mods.findIndex(m => m.id === id)) % MOD_COLS.length];
+const exTs = e => new Date(e.date + 'T' + (e.time || '09:00') + ':00').getTime();
+const exDays = e => Math.ceil((exTs(e) - Date.now()) / 864e5);
+const CAL = { y: null, mo: null, sel: null };
+function calendarView() {
+  const ex = (D.exams || []).filter(e => MODS[e.mod]), now = new Date();
+  if (CAL.y == null) { const nx = ex.find(e => exTs(e) > Date.now()); const d = nx ? new Date(nx.date) : now; CAL.y = d.getFullYear(); CAL.mo = d.getMonth(); }
+  const first = new Date(CAL.y, CAL.mo, 1), startDow = (first.getDay() + 6) % 7, nDays = new Date(CAL.y, CAL.mo + 1, 0).getDate();
+  const iso = d => `${CAL.y}-${String(CAL.mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`, todayIso = now.toISOString().slice(0, 10);
+  let cells = ''; for (let i = 0; i < startDow; i++) cells += '<div class="cd empty"></div>';
+  for (let d = 1; d <= nDays; d++) { const es = ex.map((e, i) => ({ e, i })).filter(x => x.e.date === iso(d)); cells += `<div class="cd ${iso(d) === todayIso ? 'today' : ''} ${es.length ? 'has' : ''}" ${es.length ? `data-ex="${es[0].i}"` : ''}><span class="dn">${d}</span>${es.map(({ e, i }) => `<i class="evt" data-ex="${i}" style="--c:${modCol(e.mod)}">${esc(MODS[e.mod].name)}</i>`).join('')}</div>`; }
+  const up = ex.map((e, i) => ({ e, i })).filter(x => exTs(x.e) > Date.now() - 864e5);
+  const si = CAL.sel != null ? CAL.sel : up.length ? up[0].i : null, sel = si != null ? ex[si] : null;
+  let det = '';
+  if (sel) {
+    const m = MODS[sel.mod], col = modCol(m.id), n = exDays(sel), units = m.secs.flatMap(s => s.units);
+    const scored = units.map(u => ({ u, sc: unitScore(u) })).filter(x => x.sc.done).sort((a, b) => a.sc.acc - b.sc.acc).slice(0, 5);
+    const ess = m.sheet.flatMap(s => s.topics.flatMap(t => t.formulas.filter(f => f.rank === 3))).slice(0, 8);
+    const perDay = Math.ceil(units.length / Math.max(1, n));
+    det = `<div class="card exdet" style="--c:${col}"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div><div class="label" style="color:${col};margin:0">${esc(m.name)}</div><h2 style="margin:4px 0">${esc(sel.title)}</h2><div class="meta">${new Date(exTs(sel)).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} · ${esc(sel.time)}${sel.place ? ' · ' + esc(sel.place) : ''}</div></div><div class="cdown"><b>${n <= 0 ? '🔥' : n}</b><span>${n <= 0 ? 'today' : n === 1 ? 'day' : 'days'}</span></div></div>
+      <div class="label">📋 Plan</div><div style="font-size:14.5px;line-height:1.55">${units.length} units${n > 0 ? ` in ${n} day${n === 1 ? '' : 's'} → about <b>${perDay} a day</b>` : ''}. Work through the sections below, then do a ⚡ Quick 10 each day.</div>
+      ${scored.length ? `<div class="label">🎯 Your weakest units (from your quizzes)</div>${scored.map(({ u, sc }) => `<div class="qrow" style="--acc:${thColor(u.th)}">${ring(sc, thColor(u.th))}<div style="flex:1;min-width:0"><b>${esc(u.name)}</b></div><button class="chip go sm" data-qunit="${u.id}">▶ Play</button></div>`).join('')}` : ''}
+      <div class="label">📚 What's on it</div><div class="exsecs">${m.secs.map((s, k) => `<a class="chip" href="#m${m.id}" data-gosec="${m.id}|${k}">${esc(topicName(s.name) || s.name)} <span class="cnt">${s.units.length}</span></a>`).join('')}</div>
+      ${m.rep.must.length ? `<div class="label l-must">★ Must know</div>${list(m.rep.must, 'must')}` : ''}
+      ${m.rep.weak.length ? `<div class="label l-weak">⚠ Where students lose marks</div>${list(m.rep.weak, 'weak')}` : ''}
+      ${ess.length ? `<div class="label">🧮 Essential formulas</div><div class="essf">${ess.map(f => `<div><span class="meta">${esc(f.name)}</span><div class="mx">\\(\\displaystyle ${esc(f.latex)}\\)</div></div>`).join('')}</div>` : ''}
+      <div class="row" style="margin-top:14px"><button class="chip go big" data-cquick="${m.id}">⚡ Quick 10 on ${esc(m.name)}</button><a class="chip" href="#formulas" data-cform="${m.id}">🧮 Full formula sheet</a></div></div>`;
+  }
+  return `<div class="exgrid"><div class="card cal"><div class="row" style="justify-content:space-between"><button class="chip sm" id="calPrev">‹</button><b>${first.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</b><button class="chip sm" id="calNext">›</button></div>
+    <div class="cgrid">${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(d => `<div class="cdh">${d}</div>`).join('')}${cells}</div>
+    <div class="key" style="margin-top:10px">${D.mods.map(m => `<span class="k"><i style="background:${modCol(m.id)}"></i>${esc(m.name)}</span>`).join('')}</div>
+    <div class="label">Coming up</div>${up.length ? up.map(({ e, i }) => { const n = exDays(e); return `<div class="exli ${i === si ? 'on' : ''}" data-ex="${i}" style="--c:${modCol(e.mod)}"><i></i><span><b>${esc(MODS[e.mod].name)}</b> · ${esc(e.title)}<small>${new Date(exTs(e)).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} · ${esc(e.time)}</small></span><em>${n <= 0 ? 'today' : n === 1 ? 'tomorrow' : n + 'd'}</em></div>`; }).join('') : '<div class="meta">No exams added yet.</div>'}</div>
+    <div>${det || '<div class="card empty">No upcoming exams yet.</div>'}</div></div>`;
+}
+function wireCalendar(main) {
+  const r = () => { main.innerHTML = calendarView(); typeset(main); wireCalendar(main); };
+  const p = main.querySelector('#calPrev'); if (!p) return;
+  p.onclick = () => { CAL.mo--; if (CAL.mo < 0) { CAL.mo = 11; CAL.y--; } r(); };
+  main.querySelector('#calNext').onclick = () => { CAL.mo++; if (CAL.mo > 11) { CAL.mo = 0; CAL.y++; } r(); };
+  main.querySelectorAll('[data-ex]').forEach(el => el.onclick = e => { e.stopPropagation(); CAL.sel = +el.dataset.ex; r(); if (innerWidth < 900) setTimeout(() => main.querySelector('.exdet') && main.querySelector('.exdet').scrollIntoView({ behavior: 'smooth' }), 50); });
+  main.querySelectorAll('[data-qunit]').forEach(b => b.onclick = () => { location.hash = 'quiz'; setTimeout(() => startQuiz([UNITS[b.dataset.qunit]]), 50); });
+  main.querySelectorAll('[data-cquick]').forEach(b => b.onclick = () => { QZ.mod = b.dataset.cquick; location.hash = 'quiz'; setTimeout(() => { QZ.quick = true; startQuiz(MODS[b.dataset.cquick].secs.flatMap(s => s.units)); }, 50); });
+  main.querySelectorAll('[data-gosec]').forEach(a => a.onclick = () => { const [mid, k] = a.dataset.gosec.split('|'); SECSEL[mid] = +k; });
+  main.querySelectorAll('[data-cform]').forEach(a => a.onclick = () => { FORM.mod = a.dataset.cform; });
+}
 
 </script>
 </body>
