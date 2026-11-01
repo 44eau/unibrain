@@ -130,8 +130,8 @@ const thColor = i => (D.themes[i] || {}).color || '#7aa2f7';
 const thName = i => (D.themes[i] || {}).name || '';
 const daysTo = d => Math.ceil((new Date(d + 'T09:00:00') - Date.now()) / 864e5);
 const list = (a, cls) => a && a.length ? `<ol class="${cls}">${a.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : '';
-const PLANET = ['radial-gradient(circle at 32% 30%,#cfe3ff,#4b70dd 45%,#14215c 85%)', 'radial-gradient(circle at 32% 30%,#ffd9c2,#e2553d 45%,#5c160c 85%)', 'radial-gradient(circle at 32% 30%,#fff2cf,#d9a066 45%,#5a3510 85%)', 'radial-gradient(circle at 32% 30%,#d8fff6,#3fbfa8 45%,#0d4a40 85%)'];
-const PCOL = ['#4b70dd', '#e2553d', '#d9a066', '#3fbfa8'];
+const PLANET = ['radial-gradient(circle at 32% 30%,#cfe3ff,#4b70dd 45%,#14215c 85%)', 'radial-gradient(circle at 32% 30%,#ffd9c2,#e2553d 45%,#5c160c 85%)', 'radial-gradient(circle at 32% 30%,#fff2cf,#d9a066 45%,#5a3510 85%)', 'radial-gradient(circle at 32% 30%,#d8fff6,#3fbfa8 45%,#0d4a40 85%)', 'radial-gradient(circle at 32% 30%,#f0dcff,#a35ce6 45%,#3a1460 85%)', 'radial-gradient(circle at 32% 30%,#e6ffd6,#7fc94a 45%,#24470f 85%)'];
+const PCOL = ['#4b70dd', '#e2553d', '#d9a066', '#3fbfa8', '#a35ce6', '#7fc94a'];
 
 function nav() {
   const h = location.hash.slice(1) || 'home';
@@ -143,14 +143,14 @@ function keyHTML() {
   <div class="label">Note colours</div><div class="key"><span class="k"><i style="background:var(--gold)"></i>★ Must know</span><span class="k"><i style="background:var(--cyan)"></i>🔗 Connections</span><span class="k"><i style="background:var(--pink)"></i>📝 Likely exam questions / equations</span><span class="k"><i style="background:var(--orange)"></i>⚠ Where marks are lost / exam tips</span><span class="k"><i style="background:var(--violet)"></i>📘 Definitions</span><span class="k"><i style="background:var(--green)"></i>❓ Test yourself</span></div>
   <div class="label">Formula ranks</div><div class="key"><span class="k"><span class="rk r3">★★★</span>essential</span><span class="k"><span class="rk r2">★★</span>often useful</span><span class="k"><span class="rk r1">★</span>reference</span></div>`;
 }
-const topicName = n => /^block\s*\d+$/i.test(n) ? n : n.replace(/^(w|wk|week|lec|lecture|l)\s*\d+\s*/i, '').replace(/^course introduction$/i, 'Intro').replace(/^extra notes$/i, '');
+const topicName = n => /^block\s*\d+$/i.test(n) ? n : n.replace(/^((w|wk|week|lec|lecture|l)\s*)?\d+[\s.:)-]+/i, '').replace(/^course introduction$/i, 'Intro').replace(/^extra notes$/i, '');
 function home() {
   let units = 0, pages = 0, eqs = 0;
   D.mods.forEach(m => m.secs.forEach(s => s.units.forEach(u => { units++; pages += u.pages; u.notes.forEach(n => eqs += n.eqs.length); })));
   let h = `<div class="card"><div class="row" style="justify-content:space-between"><div><div class="label" style="margin-top:0">The system</div><div style="font-size:15px;line-height:1.6"><span class="count">${D.mods.length}</span> modules · <span class="count">${units}</span> units · <span class="count">${pages}</span> pages of lecture notes · <span class="count">${eqs}</span> equations</div></div><div class="meta">Updated ${esc(D.updated)}</div></div></div><div class="planets">`;
   D.mods.forEach((m, i) => {
     const n = m.secs.reduce((a, s) => a + s.units.length, 0), dd = m.exam ? daysTo(m.exam) : null;
-    h += `<a class="card planet" href="#m${m.id}"><div class="orb" style="background:${PLANET[i % 4]};--c:${PCOL[i % 4]}"></div><div><h2>${esc(m.name)}</h2><div class="topics">${m.secs.map(s => topicName(s.name)).filter(Boolean).map(t => `<span>${esc(t)}</span>`).join('')}</div><div class="meta">${n} units${dd != null && dd >= 0 ? ` · 📅 exam in ${dd} days` : ''}</div></div></a>`;
+    h += `<a class="card planet" href="#m${m.id}"><div class="orb" style="background:${PLANET[i % PLANET.length]};--c:${PCOL[i % PCOL.length]}"></div><div><h2>${esc(m.name)}</h2><div class="topics">${m.secs.map(s => topicName(s.name)).filter(Boolean).map(t => `<span>${esc(t)}</span>`).join('')}</div><div class="meta">${n} units${dd != null && dd >= 0 ? ` · 📅 exam in ${dd} days` : ''}</div></div></a>`;
   });
   return h + `</div><div class="card">${keyHTML()}</div>`;
 }
