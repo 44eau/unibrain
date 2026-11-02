@@ -252,7 +252,7 @@ function home() {
   const nx = (D.exams || []).filter(e => MODS[e.mod] && exTs(e) > Date.now() - 864e5).slice(0, 4);
   return h + `</div>${nx.length ? `<a class="card exhome" href="#calendar"><div class="label" style="margin-top:0">📅 Upcoming exams</div>${nx.map(e => { const n = exDays(e); return `<div class="exli" style="--c:${modCol(e.mod)}"><i></i><span><b>${esc(MODS[e.mod].name)}</b> · ${esc(e.title)}<small>${new Date(exTs(e)).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</small></span><em>${n <= 0 ? 'today' : n === 1 ? 'tomorrow' : n + 'd'}</em></div>`; }).join('')}</a>` : ''}<div class="card">${keyHTML()}</div>`;
 }
-const isCirc = u => /electr|circuit/i.test(modOfUnit(u.id));
+const isCirc = u => { const n = modOfUnit(u.id); return /electr|circuit/i.test(n) ? 'circ' : /mech\w* design|machine element/i.test(n) ? 'mech' : ''; };
 function unitHTML(u) {
   let h = '';
   const seen = new Set(), circ = isCirc(u), top = diagramsFor(u.name, seen, 2, circ);
@@ -686,9 +686,173 @@ const DG = (() => {
     ln(270, 45, 270, 120, M) + ln(170, 45, 270, 45, M) + tx(270, 135, 'x', { c: A }) + tx(160, 49, 'y', { c: A }) + tx(208, 72, 'r', { c: G, b: 1 }) + `<path d="M205,120 A35,35 0 0 0 198,100" stroke="${P}" ${sw}/>` + tx(214, 110, 'θ', { c: P, b: 1 }) +
     tx(170, 190, 'z = r(cos θ + j sin θ) = r e^(jθ)', { c: C, s: 11 }), 198),
     'Modulus r = |z| is the length; argument θ is the angle from the positive real axis.');
+  /* ---------- Mechanical Design: machine elements, valves, pumps, heat exchangers, clutches ---------- */
+  const W = '#3a3a6a', F = 'fill="#14143a"', sf = (c = C) => `stroke="${c}" stroke-width="2" stroke-linejoin="round"`;
+  const pth = (d, c = C, fill = 'none') => `<path d="${d}" stroke="${c}" stroke-width="2" fill="${fill}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const rc = (x, y, w, h, c = C, fill = '#14143a', r = 0) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${fill}" ${sf(c)}/>`;
+  const circ = (x, y, r, c = C, fill = 'none') => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" ${sf(c)}/>`;
+  const water = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#5ce1ff22"/>`;
+  const gear = (cx, cy, r, n, c = A, rot = 0) => { const pts = []; for (let i = 0; i < n * 4; i++) { const a = rot + i * Math.PI * 2 / (n * 4), rr = (i % 4 < 2) ? r + 6 : r - 2; pts.push([cx + rr * Math.cos(a), cy + rr * Math.sin(a)]); } return `<polygon points="${pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ')}" fill="#14143a" ${sf(c)}/>` + circ(cx, cy, 5, c, c); };
+  const spring = (x, y1, y2, c = G, w = 10, n = 7) => { const pts = [[x, y1]], h = (y2 - y1) / (n + 1); for (let i = 1; i <= n; i++) pts.push([x + (i % 2 ? w : -w), y1 + i * h]); pts.push([x, y2]); return pl(pts, c); };
+  const springH = (x1, x2, y, c = G, w = 8, n = 7) => { const pts = [[x1, y]], s = (x2 - x1) / (n + 1); for (let i = 1; i <= n; i++) pts.push([x1 + i * s, y + (i % 2 ? w : -w)]); pts.push([x2, y]); return pl(pts, c); };
+  const flow = (pts, c = A) => pl(pts.slice(0, -1), c, 'stroke-dasharray="5 4"') + arr(...pts[pts.length - 2], ...pts[pts.length - 1], c);
+  const curve = (f, x0, y0, w, h, c = A, a = 0, b = 1) => { let d = ''; for (let i = 0; i <= 60; i++) { const t = a + (b - a) * i / 60, v = f(t); d += (i ? 'L' : 'M') + (x0 + t * w).toFixed(1) + ',' + (y0 - v * h).toFixed(1); } return pth(d, c); };
+  const M3 = (id, title, rx, body, cap) => D.push({ id, title, rx, svg: body, cap, kind: 'mech' });
+
+  M3('globe', 'Globe valve (cut-away)', /globe valve|stop valve/i, svg(
+    ln(20, 70, 110, 70) + ln(20, 150, 230, 150) + ln(230, 70, 320, 70) + ln(230, 150, 320, 150) + pth('M110,70 L110,30 L230,30 L230,70', C) +
+    pth('M110,150 L110,112 L150,112') + pth('M190,112 L230,112 L230,70') + rc(146, 84, 48, 10, P, '#ff7eb633', 3) + ln(170, 84, 170, 14, M) + `<ellipse cx="170" cy="12" rx="34" ry="6" fill="none" ${sf(G)}/>` +
+    flow([[30, 132], [150, 132], [170, 132], [170, 102]]) + flow([[200, 100], [230, 92], [310, 92]]) +
+    tx(252, 14, 'handwheel', { c: G, a: 'start' }) + tx(180, 50, 'stem', { a: 'start' }) + tx(120, 80, 'disc', { c: P, a: 'end' }) + tx(170, 126, 'seat', { c: C }) + tx(60, 175, 'inlet', { c: A }) + tx(282, 112, 'outlet', { c: A }), 185),
+    'Flow turns up through the seat, so it throttles well but has a high pressure loss.');
+  M3('gate', 'Gate valve', /gate valve|wedge gate/i, svg(
+    ln(20, 80, 145, 80) + ln(195, 80, 320, 80) + ln(20, 150, 320, 150) + rc(140, 26, 60, 54, C, '#0b0b24', 4) + `<polygon points="150,36 190,36 186,104 154,104" fill="#ff7eb633" ${sf(P)}/>` +
+    ln(170, 36, 170, 6, M) + `<ellipse cx="170" cy="6" rx="28" ry="5" fill="none" ${sf(G)}/>` + flow([[30, 127], [310, 127]]) +
+    arr(212, 60, 212, 34, P) + tx(220, 52, 'gate lifts clear', { c: P, a: 'start' }) + tx(170, 175, 'straight-through flow → very low loss', { c: A }), 185),
+    'The wedge lifts right out of the flow: tiny pressure loss, but use it fully open or fully shut, not for throttling.');
+  M3('butterfly', 'Butterfly (disc) valve', /butterfly|disc valve/i, svg(
+    ln(20, 60, 320, 60) + ln(20, 150, 320, 150) + `<ellipse cx="170" cy="105" rx="10" ry="44" transform="rotate(35 170 105)" fill="#ff7eb633" ${sf(P)}/>` + dot(170, 105, G) +
+    flow([[30, 82], [130, 82]]) + flow([[30, 128], [130, 128]]) + flow([[210, 82], [310, 82]]) + flow([[210, 128], [310, 128]]) +
+    pth('M170,40 A65,65 0 0 1 225,70', G) + tx(232, 40, 'turns 90°', { c: G, a: 'start' }) + tx(170, 175, 'the disc always sits in the flow', { c: P }), 185),
+    'A disc on a spindle rotates 90°: compact, light and cheap, but it always causes some loss.');
+  M3('relief', 'Relief (safety) valve', /relief valve|safety valve|pressure relief|over.?pressure/i, svg(
+    ln(150, 185, 150, 110) + ln(190, 185, 190, 110) + ln(150, 110, 130, 110) + ln(190, 110, 210, 110) + ln(110, 110, 110, 20) + ln(230, 20, 230, 80) + ln(110, 20, 230, 20) +
+    ln(230, 80, 320, 80) + ln(230, 120, 320, 120) + ln(230, 110, 230, 120) + rc(140, 98, 60, 10, P, '#ff7eb633', 3) + spring(170, 30, 96) + rc(158, 14, 24, 8, M, '#22224a') +
+    arr(170, 178, 170, 120, A) + tx(162, 160, 'p × A', { c: A, a: 'end', b: 1 }) + flow([[200, 100], [310, 100]]) + tx(196, 60, 'spring', { c: G, a: 'start' }) + tx(100, 104, 'disc', { c: P, a: 'end' }) +
+    tx(272, 150, 'opens when', { c: C }) + tx(272, 165, 'p·A > spring', { c: C }), 192),
+    'The spring holds the disc shut until the pressure force beats it, then excess fluid escapes.');
+  M3('threeway', 'Three-way control valve', /three.?way/i, svg(
+    ln(20, 70, 140, 70) + ln(20, 120, 140, 120) + ln(200, 70, 320, 70) + ln(200, 120, 320, 120) + ln(140, 120, 140, 180) + ln(200, 120, 200, 180) + rc(140, 70, 60, 50, C, '#0b0b24', 6) +
+    flow([[30, 95], [130, 95]]) + flow([[170, 172], [170, 105]], P) + flow([[210, 95], [310, 95]], G) + tx(60, 60, 'A', { c: A, b: 1 }) + tx(185, 168, 'B', { c: P, b: 1, a: 'start' }) + tx(280, 60, 'AB', { c: G, b: 1 }) +
+    tx(170, 20, 'mixing: A + B → AB   ·   diverting: AB → A or B', { c: C }), 190),
+    'One plug sets the split between two ports — used to mix or divert flows (e.g. temperature control).');
+
+  M3('piston', 'Piston (reciprocating) pump', /piston pump|reciprocating|single.?acting|double.?acting|plunger/i, svg(
+    rc(110, 60, 160, 70, C, '#0b0b24') + water(112, 62, 88, 66) + rc(200, 62, 14, 66, P, '#ff7eb644', 2) + ln(214, 95, 280, 95, M) + circ(305, 95, 22, M) + ln(280, 95, 318, 80, M) + dot(318, 80, G) +
+    ln(60, 60, 110, 60) + ln(60, 130, 110, 130) + pth('M80,130 L80,180 M100,130 L100,180') + pth('M80,60 L80,10 M100,60 L100,10') +
+    `<polygon points="82,150 98,150 90,140" fill="${G}"/>` + `<polygon points="82,40 98,40 90,30" fill="${G}"/>` + arr(90, 185, 90, 160, A) + arr(90, 25, 90, 4, A) +
+    tx(108, 150, 'suction', { c: G, a: 'start' }) + tx(108, 162, 'valve', { c: G, a: 'start' }) + tx(108, 30, 'delivery', { c: G, a: 'start' }) + tx(108, 42, 'valve', { c: G, a: 'start' }) + tx(207, 150, 'piston', { c: P }) + tx(305, 132, 'crank', { c: M }), 192),
+    'Out-stroke draws liquid in through the suction valve, in-stroke pushes it out through the delivery valve — so flow comes in pulses.');
+  M3('ripple', 'Pressure ripple & accumulator', /ripple|pulsation|accumulator|discharge pressure|pulsating/i, svg(
+    axes(30, 160, 290, 140, 'time', 'flow') + curve(t => Math.max(0, Math.sin(t * 4 * Math.PI)) * .8, 30, 160, 280, 120, P) + curve(t => Math.abs(Math.sin(t * 4 * Math.PI)) * .8, 30, 160, 280, 120, A) +
+    ln(30, 100, 310, 100, G) + tx(300, 18, 'single-acting', { c: P, a: 'end' }) + tx(300, 32, 'double-acting', { c: A, a: 'end' }) + tx(300, 46, 'with accumulator', { c: G, a: 'end' }), 180),
+    'Double-acting halves the gaps; an accumulator (gas cushion) stores and releases liquid to smooth the flow.');
+  M3('gearpump', 'External gear pump', /gear pump/i, svg(
+    `<rect x="95" y="40" width="150" height="110" rx="55" fill="#0b0b24" ${sf(C)}/>` + gear(140, 95, 36, 10, A) + gear(200, 95, 36, 10, P, Math.PI / 40) +
+    ln(20, 80, 95, 80) + ln(20, 110, 95, 110) + ln(245, 80, 320, 80) + ln(245, 110, 320, 110) + flow([[30, 95], [88, 95]]) + flow([[252, 95], [312, 95]]) +
+    pth('M135,148 Q110,150 104,120', G) + arr(108, 70, 128, 50, G) + pth('M205,42 Q232,40 238,70', G) + arr(234, 120, 214, 146, G) +
+    tx(60, 128, 'in (low p)', { c: A }) + tx(282, 128, 'out (high p)', { c: A }) + tx(170, 176, 'liquid carried round the OUTSIDE of the gears', { c: G }), 188),
+    'Liquid is trapped between the teeth and the casing and carried round; the meshing teeth stop it coming back.');
+  M3('lobe', 'Lobe pump', /lobe pump/i, svg(
+    `<rect x="95" y="35" width="150" height="120" rx="58" fill="#0b0b24" ${sf(C)}/>` +
+    pth('M122,77 A18,18 0 0 1 158,77 Q150,95 158,113 A18,18 0 0 1 122,113 Q130,95 122,77 Z', A, '#5ce1ff22') +
+    pth('M187,77 Q205,85 223,77 A18,18 0 0 1 223,113 Q205,105 187,113 A18,18 0 0 1 187,77 Z', P, '#ff7eb622') +
+    flow([[30, 95], [92, 95]]) + flow([[248, 95], [312, 95]]) + tx(170, 178, 'lobes never touch — gentle on slurries', { c: G }), 188),
+    'Two lobed rotors turn in sync (driven by timing gears) and sweep pockets of liquid round the casing.');
+  M3('vane', 'Rotary sliding-vane pump', /vane pump|sliding vane/i, svg(
+    circ(170, 95, 70, C, '#0b0b24') + circ(185, 95, 44, A, '#14143a') + [0, 1, 2, 3, 4, 5].map(i => { const a = i * Math.PI / 3 + .3, c = Math.cos(a), t = -15 * c + Math.sqrt(225 * c * c - 225 + 4900); return ln(185 + 30 * c, 95 + 30 * Math.sin(a), 185 + (t - 2) * c, 95 + (t - 2) * Math.sin(a), P); }).join('') +
+    dot(185, 95, G) + flow([[30, 60], [110, 60]]) + flow([[230, 60], [312, 60]]) + tx(70, 48, 'inlet', { c: A }) + tx(272, 48, 'outlet', { c: A }) + tx(185, 180, 'offset rotor: pockets grow, then shrink', { c: G }), 190),
+    'The rotor is offset in the casing, so each pocket between vanes expands at the inlet and squeezes at the outlet.');
+  M3('centrifugal', 'Centrifugal pump: impeller & volute', /(?<!\()centrifugal(?!\)| clutch)|impeller|volute|wear ring/i, svg(
+    pth('M170,40 A55,55 0 1 1 115,95 A55,55 0 0 1 170,40 M170,30 A72,72 0 0 1 242,102 A72,72 0 0 1 170,174 A68,68 0 0 1 102,106 A62,62 0 0 1 164,32', C) + ln(170, 30, 170, 6) + ln(242, 102, 242, 6) +
+    [0, 1, 2, 3, 4, 5].map(i => { const a = i * Math.PI / 3; return pth(`M${170 + 14 * Math.cos(a)},${100 + 14 * Math.sin(a)} Q${170 + 40 * Math.cos(a + .5)},${100 + 40 * Math.sin(a + .5)} ${170 + 50 * Math.cos(a + 1.1)},${100 + 50 * Math.sin(a + 1.1)}`, A); }).join('') +
+    circ(170, 100, 12, G) + dot(170, 100, G) + arr(206, 30, 206, 4, A) + tx(214, 20, 'discharge', { c: A, a: 'start' }) + tx(170, 128, 'eye', { c: G }) + tx(250, 150, 'volute', { c: C, a: 'start' }) + tx(60, 170, 'impeller', { c: A }), 188),
+    'Liquid enters the eye, the spinning impeller flings it outward, and the widening volute turns speed into pressure.');
+  M3('pumpsys', 'Pump curve + system curve → operating point', /system curve|operating point|duty point|pump.?system|matching|total dynamic head|\bTDH\b|static head|dynamic head/i, svg(
+    axes(40, 160, 270, 140, 'flow Q', '') + tx(48, 24, 'head H', { a: 'start' }) + curve(t => .9 - .7 * t * t, 40, 160, 260, 140, A) + curve(t => .25 + .55 * t * t, 40, 160, 260, 140, P) +
+    dot(40 + .72 * 260, 160 - (.25 + .55 * .72 * .72) * 140, G) + ln(40, 125, 60, 125, P) + tx(66, 129, 'static head', { c: P, a: 'start' }) + tx(70, 32, 'pump curve', { c: A, a: 'start' }) + tx(300, 40, 'system curve', { c: P, a: 'end' }) +
+    tx(235, 78, 'operating point', { c: G, a: 'end', b: 1 }), 180),
+    'The pump runs where its H–Q curve crosses the system curve (static head + friction losses ∝ Q²).');
+  M3('pumpchar', 'Centrifugal pump characteristics', /characteristic curve|performance curve|pump curves?|efficiency curve|best efficiency/i, svg(
+    axes(40, 160, 270, 140, 'flow Q', '') + curve(t => .85 - .6 * t * t, 40, 160, 260, 140, A) + curve(t => 3.2 * t * (1 - t) * .85, 40, 160, 260, 140, G) + curve(t => .2 + .55 * t, 40, 160, 260, 140, P) +
+    ln(40 + 130, 160, 40 + 130, 40, M) + tx(176, 36, 'BEP', { c: G, a: 'start', b: 1 }) + tx(52, 34, 'head H', { c: A, a: 'start' }) + tx(300, 60, 'power', { c: P, a: 'end' }) + tx(300, 140, 'efficiency η', { c: G, a: 'end' }), 180),
+    'Head falls as flow rises; efficiency peaks at the best efficiency point (BEP) — choose a pump that runs near it.');
+  M3('suction', 'Suction lift', /suction lift|pump lift|vapou?r pressure|priming|cavitation|npsh/i, svg(
+    rc(40, 120, 150, 60, C, '#0b0b24') + water(42, 140, 146, 38) + ln(42, 140, 188, 140, A) + [70, 110, 150].map(x => arr(x, 108, x, 136, G)).join('') + tx(115, 104, 'air pressure pushes up', { c: G }) +
+    ln(140, 170, 140, 40) + ln(156, 170, 156, 48) + circ(160, 34, 16, P, '#ff7eb622') + ln(176, 34, 300, 34) + arr(220, 140, 220, 36, M) + arr(220, 36, 220, 140, M) + tx(228, 92, 'lift h', { c: C, a: 'start', b: 1 }) +
+    tx(228, 120, '≤10.3 m theory', { c: C, a: 'start', s: 10 }) + tx(228, 134, '~7 m in practice', { c: C, a: 'start', s: 10 }) + tx(160, 12, 'pump', { c: P }), 188),
+    'A pump can only “suck” as far as air pressure can push the liquid up — less with friction, warm liquid (vapour pressure) and altitude.');
+
+  M3('flowcfg', 'Parallel-flow vs counter-flow', /counter.?flow|parallel.?flow|co.?current|lmtd|log.?mean|flow configuration/i, svg(
+    axes(20, 150, 130, 120, 'length', '') + curve(t => .85 - .45 * (1 - Math.exp(-2.5 * t)), 20, 150, 125, 120, P) + curve(t => .15 + .35 * (1 - Math.exp(-2.5 * t)), 20, 150, 125, 120, A) + tx(85, 175, 'parallel flow', { c: C, b: 1 }) +
+    axes(185, 150, 130, 120, 'length', '') + curve(t => .85 - .5 * t, 185, 150, 125, 120, P) + curve(t => .6 - .45 * t, 185, 150, 125, 120, A) + tx(250, 175, 'counter-flow', { c: C, b: 1 }) +
+    tx(28, 18, 'hot', { c: P, a: 'start' }) + tx(60, 18, 'cold', { c: A, a: 'start' }) + tx(320, 18, 'ΔT stays big → more heat', { c: G, a: 'end' }), 188),
+    'Counter-flow keeps a large temperature difference along the whole length, so it transfers more heat (bigger LMTD).');
+  M3('plateHX', 'Plate heat exchanger', /plate (type )?heat exchanger|plate heat|gasket|corrugat/i, svg(
+    rc(30, 30, 18, 130, M, '#22224a') + rc(292, 30, 18, 130, M, '#22224a') + ln(30, 36, 310, 36, M) +
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => { const x = 70 + i * 22, pts = []; for (let k = 0; k <= 10; k++) pts.push([x + (k % 2 ? 4 : -4), 50 + k * 10]); return pl(pts, C); }).join('') +
+    [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => arr(81 + i * 22, i % 2 ? 140 : 60, 81 + i * 22, i % 2 ? 66 : 134, i % 2 ? A : P)).join('') +
+    tx(170, 182, 'hot & cold flow in alternate gaps', { c: G }) + tx(18, 20, 'frame', { c: M, a: 'start' }), 190),
+    'Thin corrugated plates give a huge area and turbulent flow; gaskets seal each channel. Easy to open up and clean.');
+  M3('shelltube', 'Shell-and-tube heat exchanger', /shell.?and.?tube|tube bundle|baffle|tube.?pass|u.?pass|tube.?sheet|\bS&T\b/i, svg(
+    rc(70, 50, 200, 100, C, '#0b0b24', 10) + rc(30, 60, 40, 80, M, '#22224a', 6) + rc(270, 60, 40, 80, M, '#22224a', 6) + [72, 88, 104, 120].map(y => ln(70, y, 270, y, A)).join('') +
+    ln(120, 50, 120, 120, G) + ln(170, 80, 170, 150, G) + ln(220, 50, 220, 120, G) + flow([[90, 32], [90, 60], [145, 135], [195, 65], [245, 135], [250, 168]], P) +
+    tx(170, 22, 'shell-side fluid zig-zags round the baffles', { c: P }) + tx(50, 160, 'tube', { c: A }) + tx(50, 172, 'side', { c: A }) + tx(170, 182, 'baffles', { c: G }), 190),
+    'One fluid flows inside the tubes, the other through the shell; baffles force it across the tubes for better heat transfer.');
+
+  M3('dog', 'Dog (square-jaw) clutch', /dog clutch|jaw clutch|positive.?contact|square jaw|serration|toothed clutch/i, svg(
+    rc(20, 85, 110, 20, M, '#22224a') + rc(210, 85, 110, 20, M, '#22224a') + pth('M110,55 L130,55 L130,70 L145,70 L145,120 L130,120 L130,135 L110,135 Z', A, '#5ce1ff22') +
+    pth('M230,55 L200,55 L200,70 L185,70 L185,120 L200,120 L200,135 L230,135 Z', P, '#ff7eb622') + arr(250, 160, 205, 160, G) + tx(228, 178, 'slide to engage', { c: G }) +
+    tx(60, 74, 'driving', { c: A }) + tx(275, 74, 'driven', { c: P }) + tx(170, 24, 'no slip — but engage only when slow', { c: C }), 185),
+    'Positive contact: interlocking jaws transmit full torque with no slip — but engaging at speed causes shock.');
+  M3('drumclutch', 'Centrifugal (drum) clutch', /centrifugal clutch|drum clutch|drum type|drum \(centrifugal\)|radial clutch/i, svg(
+    circ(170, 95, 75, P) + circ(170, 95, 70, P) + circ(170, 95, 16, A, '#5ce1ff33') +
+    [0, 1, 2].map(i => { const a = i * 2 * Math.PI / 3 - Math.PI / 2, x = 170 + 50 * Math.cos(a), y = 95 + 50 * Math.sin(a); return pth(`M${170 + 66 * Math.cos(a - .45)},${95 + 66 * Math.sin(a - .45)} A66,66 0 0 1 ${170 + 66 * Math.cos(a + .45)},${95 + 66 * Math.sin(a + .45)}`, G) + ln(170 + 18 * Math.cos(a), 95 + 18 * Math.sin(a), x, y, M) + arr(x, y, 170 + 64 * Math.cos(a), 95 + 64 * Math.sin(a), A); }).join('') +
+    tx(170, 186, 'faster → shoes fly out (F = mω²r)', { c: G }) + tx(260, 30, 'drum', { c: P, a: 'start' }), 192),
+    'Spring-held shoes on the driving hub swing outward with speed and grip the drum — engages automatically.');
+  M3('discclutch', 'Friction disc (plate) clutch', /disc clutch|friction disc|friction plate|plate clutch|clutch plate/i, svg(
+    rc(20, 88, 90, 14, M, '#22224a') + rc(230, 88, 90, 14, M, '#22224a') + rc(110, 30, 20, 130, A, '#5ce1ff22', 3) + rc(136, 40, 10, 110, G, '#ffd60a33', 2) + rc(152, 40, 18, 110, P, '#ff7eb622', 3) +
+    springH(170, 225, 70) + springH(170, 225, 120) + ln(225, 55, 225, 135, M) + arr(250, 30, 175, 30, G) +
+    tx(118, 175, 'flywheel', { c: A, a: 'end' }) + tx(141, 24, 'friction disc', { c: G }) + tx(150, 175, 'pressure plate', { c: P, a: 'start' }) + tx(258, 34, 'clamp F', { c: G, a: 'start' }) + tx(285, 70, 'T = μ F Rₘ n', { c: C, b: 1 }), 188),
+    'Springs clamp the friction disc between flywheel and pressure plate; torque T = μ F Rₘ n (n = friction faces).');
+  M3('ratchet', 'Ratchet and pawl', /ratchet|pawl/i, svg(
+    (() => { const pts = []; for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6, b = a + Math.PI / 6; pts.push([170 + 60 * Math.cos(a), 105 + 60 * Math.sin(a)], [170 + 45 * Math.cos(b), 105 + 45 * Math.sin(b)]); } return `<polygon points="${pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ')}" fill="#14143a" ${sf(A)}/>`; })() +
+    dot(170, 105, G) + pth('M280,20 L209,60', P) + circ(280, 20, 6, P) + springH(280, 320, 40, G, 6, 5) + pth('M168,150 A45,45 0 0 1 125,108', G) + arr(130, 120, 125, 106, G) +
+    tx(296, 12, 'pawl', { c: P, a: 'start' }) + tx(170, 186, 'turns freely one way, locks the other', { c: G }), 192),
+    'The pawl rides over the sloped teeth in one direction and jams against the steep face in the other.');
+  M3('roller', 'Roller-type overrunning clutch', /roller.?(type|clutch)|overrunning|freewheel|one.?way clutch/i, svg(
+    circ(170, 95, 72, P) + (() => { const pts = []; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; pts.push([170 + 40 * Math.cos(a), 95 + 40 * Math.sin(a)], [170 + 56 * Math.cos(a + .75), 95 + 56 * Math.sin(a + .75)]); } return `<polygon points="${pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ')}" fill="#14143a" ${sf(A)}/>`; })() +
+    [0, 1, 2, 3, 4, 5].map(i => { const a = i * Math.PI / 3 + .5; return circ(170 + 62 * Math.cos(a), 95 + 62 * Math.sin(a), 8, G, '#ffd60a33'); }).join('') + dot(170, 95, C) +
+    tx(170, 186, 'rollers wedge in the gap → lock one way', { c: G }), 192),
+    'Rollers sit in wedge-shaped gaps: one way they roll free, the other they jam between inner star and outer race.');
+  M3('sprag', 'Sprag clutch', /sprag/i, svg(
+    circ(170, 95, 76, P) + circ(170, 95, 44, A) + dot(170, 95, C) +
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => { const a = i * Math.PI / 5, x = 170 + 60 * Math.cos(a), y = 95 + 60 * Math.sin(a); return `<rect x="${x - 4}" y="${y - 12}" width="8" height="24" rx="3" fill="#ffd60a33" ${sf(G)} transform="rotate(${(a * 180 / Math.PI + 70).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`; }).join('') +
+    tx(170, 186, 'sprags stand up and jam one way', { c: G }), 192),
+    'Figure-of-eight sprags are tilted between two plain races: driven one way they stand up and lock; the other way they lie down and slip.');
+  M3('fluidcoupling', 'Fluid coupling', /fluid coupling|torque converter|hydraulic coupling/i, svg(
+    rc(20, 88, 90, 14, M, '#22224a') + rc(230, 88, 90, 14, M, '#22224a') + pth('M165,25 Q100,25 100,95 Q100,165 165,165 Z', A, '#5ce1ff22') + pth('M175,25 Q240,25 240,95 Q240,165 175,165 Z', P, '#ff7eb622') +
+    [45, 70, 120, 145].map(y => ln(115, y, 165, y, A) + ln(175, y, 225, y, P)).join('') + pth('M140,60 C150,40 190,40 200,60', G) + arr(196, 56, 200, 62, G) + pth('M200,130 C190,150 150,150 140,130', G) + arr(144, 134, 140, 128, G) +
+    tx(60, 74, 'impeller (in)', { c: A }) + tx(282, 74, 'runner (out)', { c: P }) + tx(170, 184, 'oil circulates: smooth, always some slip', { c: G }), 192),
+    'The driving impeller throws oil at the runner, dragging it round: no wear, cushions shock, but there is always some slip.');
+  M3('torquepower', 'Torque, power and speed', /torque, power|power.?torque|torque and (power|speed)|accelerating torque|steady.?state torque|\bP\s*=\s*T\s*ω|angular speed/i, svg(
+    rc(40, 82, 220, 26, M, '#22224a', 4) + circ(80, 95, 40, A) + pth('M80,40 A55,55 0 0 1 135,95', G) + arr(130, 80, 135, 96, G) + tx(140, 50, 'torque T (N·m)', { c: G, a: 'start' }) + arr(265, 95, 315, 95, P) + tx(290, 82, 'ω', { c: P, b: 1, s: 14 }) +
+    tx(170, 150, 'P = T ω     ω = 2πN / 60', { c: C, b: 1, s: 13 }) + tx(170, 172, 'accelerating: T = I α + T(load)', { c: A, s: 12 }), 186),
+    'Power = torque × angular speed. Starting a load needs extra torque to accelerate its inertia.');
+
+  M3('mount', 'Machinery mountings (vibration isolation)', /mounting|isolat|anti.?vibration|resilient|enclosure|gearbox/i, svg(
+    rc(90, 30, 160, 70, A, '#5ce1ff22', 6) + tx(170, 70, 'machine', { c: A, b: 1 }) + spring(120, 100, 150) + spring(220, 100, 150) + rc(60, 150, 220, 16, M, '#22224a', 2) +
+    pth('M40,40 l8,-6 l8,12 l8,-12 l8,6', P) + tx(52, 22, 'vibration', { c: P }) + tx(170, 186, 'mounts stop vibration reaching the base', { c: G }), 190),
+    'Resilient mounts (springs/rubber) isolate the seating from machine vibration and shock; gearbox mounts must also resist the reaction torque.');
+  M3('decision', 'Weighted decision matrix', /decision matrix|concept selection|criteria weight|weighting|digital logic|pugh/i, svg(
+    (() => { let h = ''; const xs = [20, 120, 175, 230, 285, 320], ys = [20, 46, 72, 98, 124, 150, 176]; xs.forEach(x => h += ln(x, 20, x, 176, M)); ys.forEach(y => h += ln(20, y, 320, y, M));
+      [['criterion', 'weight', 'A', 'B', 'C'], ['cost', '0.3', '4', '3', '5'], ['safety', '0.4', '5', '3', '4'], ['mass', '0.2', '3', '5', '2'], ['ease', '0.1', '2', '4', '3']].forEach((r, i) => r.forEach((c, j) => h += tx(j ? (xs[j] + xs[j + 1]) / 2 : 26, 37 + i * 26, c, { c: i === 0 ? G : j === 1 ? P : C, a: j ? 'middle' : 'start', b: i === 0 })));
+      return h + tx(26, 167, 'total', { c: A, a: 'start', b: 1 }) + tx(202, 167, '4.0', { c: A, b: 1 }) + tx(257, 167, '3.5', { c: A }) + tx(302, 167, '3.8', { c: A }) + tx(170, 196, 'score × weight, add up → A wins', { c: G }); })(), 204),
+    'Score each concept against weighted criteria (weights sum to 1); multiply and add — the highest total wins.');
+  M3('ortho', 'Orthographic views & dimensioning', /orthographic|third.?angle|first.?angle|dimension|engineering drawing|detail drawing|technical drawing|projection/i, svg(
+    pth('M30,40 L110,40 L110,70 L70,70 L70,110 L30,110 Z', C) + pth('M140,40 L200,40 L200,110 L140,110 Z', C) + ln(140, 70, 200, 70, M) + pth('M30,130 L110,130 L110,170 L30,170 Z', C) + ln(70, 130, 70, 170, M) +
+    tx(70, 30, 'front', { c: A }) + tx(170, 30, 'side (right)', { c: A }) + tx(116, 160, 'plan', { c: A, a: 'start' }) + arr(30, 122, 110, 122, P) + arr(110, 122, 30, 122, P) + tx(116, 126, '80', { c: P, a: 'start' }) +
+    circ(265, 70, 18) + circ(265, 70, 8) + `<polygon points="235,110 295,100 295,130 235,120" fill="none" ${sf(C)}/>` + tx(265, 150, '3rd-angle symbol', { c: G }), 192),
+    'Views line up with each other; dimensions go outside the outline, once each, from clear datum lines.');
+  M3('symbols', 'Fluid system symbols (BS 1553)', /bs ?1553|graphical symbols?|fluid (flow )?diagram|line cross|junction|p&id|piping diagram/i, svg(
+    circ(60, 60, 20, A) + `<polygon points="48,48 48,72 78,60" fill="none" ${sf(A)}/>` + tx(60, 98, 'pump', { c: A }) +
+    `<polygon points="130,48 130,72 160,48 160,72" fill="none" ${sf(P)}/>` + ln(110, 60, 130, 60) + ln(160, 60, 180, 60) + tx(145, 98, 'valve', { c: P }) +
+    ln(210, 40, 210, 80) + ln(190, 60, 230, 60) + dot(210, 60, G) + tx(210, 98, 'junction', { c: G }) + ln(270, 40, 270, 80) + pth('M250,60 L263,60 A7,7 0 0 1 277,60 L290,60', C) + tx(270, 98, 'crossing', { c: C }) +
+    tx(170, 140, 'a dot means joined — a hop means they just cross', { c: G }) + tx(170, 160, 'flow left→right, top→bottom where possible', { c: M }), 175),
+    'Standard symbols make fluid diagrams readable by anyone: pumps, valves, joins vs crossings.');
   const MATH = new Set(['sine', 'argand', 'square']);
   const GENERAL = new Set(['ohm', 'series', 'parallel', 'sine']);
-  const used = (s, circ) => D.filter(d => (circ || MATH.has(d.id)) && d.rx.test(s)).sort((a, b) => GENERAL.has(a.id) - GENERAL.has(b.id));
+  const used = (s, kind) => D.filter(d => (d.kind ? d.kind === kind : (kind === 'circ' || (kind !== 'mech' && MATH.has(d.id)))) && d.rx.test(s)).sort((a, b) => GENERAL.has(a.id) - GENERAL.has(b.id));
   return { all: D, match: used };
 })();
 function diagramHTML(d) { return `<figure class="dg"><div class="dgsvg">${d.svg}</div><figcaption><b>${esc(d.title)}</b>${d.cap ? ' — ' + esc(d.cap) : ''}</figcaption></figure>`; }
