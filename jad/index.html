@@ -214,7 +214,8 @@ function cramBox(m) {
   const wd = new Date(ex.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long' });
   const topics = []; const used = new Set();
   CRAM_TOPICS.forEach(([re, t, sub]) => { const idx = m.secs.map((s, i) => re.test(s.name) && !used.has(i) ? i : -1).filter(i => i >= 0); if (idx.length) { idx.forEach(i => used.add(i)); topics.push([idx.join(','), t]); } });
-  const pack = topics.find(t => /revision pack/.test(t[1]));
+  if (!topics.length) m.secs.forEach((s, i) => topics.push([String(i), '📘 ' + (topicName(s.name) || s.name)]));
+  const pack = topics.find(t => /revision pack/.test(t[1])), ess = (m.sheet || []).flatMap(s => s.topics.flatMap(t => t.formulas.filter(f => f.rank === 3)));
   const exq = (m.rep.exq || []).slice(0, 6), must = m.rep.must || [];
   const step = (n, title, sub, btn, extra = '') => `<div class="cstep"><b class="n">${n}</b><div class="ct"><div class="t">${title}</div><div class="s">${sub}</div>${extra}</div>${btn}</div>`;
   return `<div class="card cram" data-cramm="${m.id}">
@@ -224,11 +225,13 @@ function cramBox(m) {
     ${step(2, '⚡ Quick 10 (10 min)', 'Mixed questions from the whole module — find the gaps fast.', `<button class="cbtn" data-cramq="all">Start</button>`)}
     ${step(3, '🎯 Quiz every big topic (30 min)', 'One quiz per topic — pick the ones you feel weakest on first.', `<button class="cbtn" data-ctog="top">Open</button>`, `<div class="cfold ctops" data-cf="top" hidden>${topics.filter(t => t !== pack).map(t => `<button class="chipq" data-cramq="${t[0]}">${esc(t[1])}</button>`).join('')}</div>`)}
     ${step(4, '📝 Likely exam questions (15 min)', 'Plan an answer to each in your head — points, examples, a counter-argument.', `<button class="cbtn" data-ctog="exq">Open</button>`, `<ol class="cfold" data-cf="exq" hidden>${exq.map(x => `<li>${esc(x)}</li>`).join('')}</ol>`)}
+    ${ess.length ? step('🧮', `Essential formulas (${ess.length})`, 'Cover the right-hand side and write each one from memory.', `<a class="cbtn" href="#formulas" data-cform="${m.id}">Open</a>`) : ''}
     ${pack ? step(5, '📦 Exam revision pack quiz (10 min)', 'The whole course boiled down — the last full run-through.', `<button class="cbtn" data-cramq="${pack[0]}">Start</button>`) : ''}
     ${step(pack ? 6 : 5, '🔁 Redo mistakes, then stop', 'Finish by 10pm and sleep 8 hours — sleep is when memories set. No new topics after this.', `<button class="cbtn" data-cramq="wrong">Start</button>`)}
   </div>`;
 }
 function wireCram(root) {
+  root.querySelectorAll('.cram [data-cform]').forEach(a => a.onclick = () => { FORM.mod = a.dataset.cform; });
   root.querySelectorAll('[data-ctog]').forEach(b => b.onclick = () => { const f = b.closest('.cstep').querySelector('.cfold'); f.hidden = !f.hidden; b.textContent = f.hidden ? 'Open' : 'Close'; });
   root.querySelectorAll('[data-cramq]').forEach(b => b.onclick = () => {
     const m = MODS[b.closest('[data-cramm]').dataset.cramm], k = b.dataset.cramq, all = m.secs.flatMap(s => s.units);
