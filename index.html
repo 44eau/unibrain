@@ -203,6 +203,7 @@ a.exhome{display:block;text-decoration:none;color:inherit}
 .pldh{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
 .plday .plrow:first-of-type{border-top:0}
 @media(max-width:640px){.plrow{flex-wrap:wrap}.plrow .plb{width:100%;justify-content:flex-start;padding-left:33px}}
+.gr{padding:7px 0;border-top:1px solid var(--line)}.gr:first-of-type{border-top:0}.gr .use{margin-top:2px}
 </style>
 <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };</script>
 <script src="lib/tex-svg-full.js" defer></script>
@@ -364,7 +365,7 @@ const PCOL = ['#4b70dd', '#e2553d', '#d9a066', '#3fbfa8', '#a35ce6', '#7fc94a'];
 
 function nav() {
   const h = location.hash.slice(1) || 'home';
-  $('#nav').innerHTML = [['home', '☀️ Home'], ...D.mods.map((m, i) => ['m' + m.id, '🪐 ' + m.name]), ['calendar', '📅 Plan & exams'], ['quiz', '📝 Quiz'], ['tutor', '🎓 Tutor'], ['leaderboard', '🏆 Leaderboard'], ['formulas', '🧮 Formula sheets'], ['key', '🎨 Colour key']]
+  $('#nav').innerHTML = [['home', '☀️ Home'], ...D.mods.map((m, i) => ['m' + m.id, '🪐 ' + m.name]), ['calendar', '📅 Plan & exams'], ['quiz', '📝 Quiz'], ['tutor', '🎓 Tutor'], ['leaderboard', '🏆 Leaderboard'], ['formulas', '🧮 Formulas & glossary'], ['key', '🎨 Colour key']]
     .map(([k, t]) => `<a href="#${k}" class="${h === k ? 'on' : ''}">${esc(t)}</a>`).join('');
 }
 function keyHTML() {
@@ -449,6 +450,15 @@ function formulasView() {
       if (!tops.length) continue;
       h += `<div class="sec">${esc(s.name)}</div>`;
       for (const t of tops) h += `<div class="ft"><h4>${esc(t.topic)}</h4>${t.formulas.map(f => `<div class="fr"><div><div class="nm"><span class="rk r${f.rank}">${'★'.repeat(f.rank)}</span>${esc(f.name)}</div>${f.use ? `<div class="use">${esc(f.use)}</div>` : ''}</div><div><div class="mx">\\(\\displaystyle ${esc(f.latex)}\\)</div>${f.vars ? `<div class="vars">${esc(f.vars)}</div>` : ''}</div></div>`).join('')}</div>`;
+    }
+    if ((m.gl || []).length) {
+      let g = '';
+      for (const s of m.gl) {
+        const tops = s.topics.map(t => ({ ...t, terms: t.terms.filter(x => !FORM.ess || x.r === 3) })).filter(t => t.terms.length);
+        if (!tops.length) continue;
+        g += `<div class="sec">${esc(s.name)}</div>` + tops.map(t => `<div class="ft"><h4>${esc(t.topic)}</h4>${t.terms.map(x => `<div class="gr"><div class="nm"><span class="rk r${x.r}">${'★'.repeat(x.r)}</span>${esc(x.t)}</div><div class="use">${esc(x.d)}</div></div>`).join('')}</div>`).join('');
+      }
+      if (g) h += `<h3 style="margin:18px 0 2px">📖 Glossary</h3><div class="meta" style="margin-bottom:4px">★★★ essential · ★★ useful · ★ background</div>` + g;
     }
     h += `</div>`;
   }
