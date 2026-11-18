@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<!--
+  Abdul Alkhalil's Engineering Notes
+  Copyright (c) 2026 Abdul Alkhalil. All rights reserved.
+  No permission is granted to copy, modify, rebrand or republish this code or its content. See LICENSE.
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -263,6 +268,15 @@ nav a:hover{color:var(--text)}nav a.on{background:none;border-color:var(--accent
 .modal{backdrop-filter:none;background:rgba(8,10,14,.86)}
 .mcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 @media(max-width:640px){.wrap{padding:20px 16px 48px}header.site .title{font-size:26px}header.site .tagline{font-size:16px}.card{padding:16px}nav{gap:20px}}
+
+/* polish (18 Nov): calm hover, whole-word topic wrapping, gap-free module layout */
+nav a:hover,nav a.on:hover{background:none;color:var(--text);border-bottom-color:var(--line)}nav a.on,nav a.on:hover{border-bottom-color:var(--accent)}nav a:active{transform:none}
+.chip:hover{background:var(--panel2);border-color:var(--accent);color:var(--text)}.chip.go:hover{background:#3a71bd;border-color:#3a71bd}
+.planet>div:last-child{overflow-wrap:normal!important}
+.topics span{display:inline-block;max-width:100%;white-space:normal}
+.planets{display:block!important;columns:3 300px;column-gap:16px}
+.planets>.planet{display:flex;break-inside:avoid;margin:0 0 16px;width:100%}
+.planet:hover{background:var(--panel2)}
 </style>
 <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };</script>
 <script src="lib/tex-svg-full.js" defer></script>
