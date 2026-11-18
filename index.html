@@ -904,6 +904,27 @@ async function renderLeaderboard() {
     ${nameBox()}${ME.token ? '<button class="chip" id="lbPair">Link Notes Crawler</button> <span id="lbCode" class="meta"></span>' : ''}<div id="lbList" style="margin-top:12px"><div class="empty">Loading…</div></div></div>`;
   main.querySelectorAll('[data-lb]').forEach(b => b.onclick = () => { LB.tab = b.dataset.lb; renderLeaderboard(); });
   wireName(main, () => renderLeaderboard());
+  const macNonce=new URLSearchParams(location.search).get('macLink');
+  if (/^[a-f0-9]{32}$/.test(macNonce||'')) {
+    const controls=main.querySelector('#lbList');
+    if(ME.token) {
+      const connect=document.createElement('button');
+      connect.className='chip go';
+      connect.textContent='Connect Notes Crawler as '+ME.name;
+      controls.before(connect);
+      connect.onclick=async()=>{
+        connect.disabled=true;
+        try {
+          const {code}=await boardApi('link',{method:'POST',body:JSON.stringify({player_id:ME.id,token:ME.token})});
+          location.replace('http://127.0.0.1:8765/link-leaderboard.html#'+macNonce+'.'+code);
+        } catch(e){connect.disabled=false;toast(e.message);}
+      };
+    } else {
+      const hint=document.createElement('p');
+      hint.textContent='Open the Mac link in the browser profile where you originally joined the leaderboard.';
+      controls.before(hint);
+    }
+  }
   const pair=main.querySelector('#lbPair');
   if(pair) pair.onclick=async()=>{
     const out=main.querySelector('#lbCode'); pair.disabled=true;
