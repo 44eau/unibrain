@@ -768,41 +768,60 @@ function renderQuizMain() {
 }
 
 
-/* ---------- Leaderboard (Supabase, public read + insert only) ---------- */
-const SB = { url: 'https://qzxdkgrwukdasvsvanaq.supabase.co', key: 'sb_publishable_D9-vqcFaCADAkDwyjl4T5w_4hvUIGqL' };
-const SB_ON = !SB.url.startsWith('__');
-const ME = (() => { try { let id = localStorage.getItem('ub.pid'); if (!id) { id = 'p' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('ub.pid', id); } return { id, name: localStorage.getItem('ub.name') || '' }; } catch { return { id: 'p' + Math.random().toString(36).slice(2), name: '' }; } })();
+/* ---------- Leaderboard (Cloudflare Worker + D1) ---------- */
+const LB_API = 'https://unibrain-tutor.unibrain.workers.dev/leaderboard';
+const SB_ON = true;
+const newPlayerId = () => 'p' + (crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : Math.random().toString(36).slice(2) + Date.now().toString(36));
+const ME = (() => { try { let id = localStorage.getItem('ub.pid'); if (!id) { id = newPlayerId(); localStorage.setItem('ub.pid', id); } return { id, name: localStorage.getItem('ub.name') || '', token: localStorage.getItem('ub.lbtok') || '' }; } catch { return { id: newPlayerId(), name: '', token: '' }; } })();
 const setName = n => { ME.name = n; try { localStorage.setItem('ub.name', n); } catch {} };
-async function sb(path, opts = {}) {
-  const r = await fetch(`${SB.url}/rest/v1/${path}`, { ...opts, headers: { apikey: SB.key, ...(SB.key.startsWith('eyJ') ? { Authorization: `Bearer ${SB.key}` } : {}), 'Content-Type': 'application/json', ...(opts.headers || {}) } });
-  if (!r.ok) throw new Error(await r.text());
-  return r.status === 201 || r.status === 204 ? null : r.json();
+async function boardApi(path, opts = {}) {
+  let r, data;
+  try {
+    r = await fetch(`${LB_API}/${path}`, { ...opts, headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) } });
+    data = await r.json();
+  } catch { throw new Error('Could not reach the leaderboard. Check your connection and try again.'); }
+  if (!r.ok) throw new Error(data.error || 'The leaderboard could not complete that request.');
+  return data;
 }
-const SESSION = { answered: 0, correct: 0, first: 0, module: '' };
+const newSessionId = () => 's' + (crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : Math.random().toString(36).slice(2) + Date.now().toString(36));
+const SESSION = { answered: 0, correct: 0, first: 0, module: '', id: newSessionId(), sending: false };
 function noteResult(o, q) { SESSION.answered++; if (o !== 'wrong') SESSION.correct++; if (o === 'right') SESSION.first++; SESSION.module = SESSION.module && SESSION.module !== modOfUnit(q.u.id) ? 'Mixed' : modOfUnit(q.u.id); }
 const modOfUnit = id => { for (const m of D.mods) for (const s of m.secs) if (s.units.some(u => u.id === id)) return m.name; return ''; };
 async function submitSession() {
-  if (!SB_ON || !SESSION.answered || !ME.name) { Object.assign(SESSION, { answered: 0, correct: 0, first: 0, module: '' }); return; }
-  const row = { player: ME.name.slice(0, 20), player_id: ME.id, module: SESSION.module.slice(0, 60), answered: Math.min(40, SESSION.answered), correct: Math.min(SESSION.correct, 40), first_try: Math.min(SESSION.first, SESSION.correct, 40) };
-  Object.assign(SESSION, { answered: 0, correct: 0, first: 0, module: '' });
-  try { await sb('quiz_scores', { method: 'POST', body: JSON.stringify(row), headers: { Prefer: 'return=minimal' } }); } catch (e) { console.warn('leaderboard', e); }
+  if (!SB_ON || !SESSION.answered || !ME.name || SESSION.sending) { if (!ME.name || !SESSION.answered) Object.assign(SESSION, { answered: 0, correct: 0, first: 0, module: '', id: newSessionId() }); return; }
+  const id = SESSION.id, row = { session_id: id, player_id: ME.id, token: ME.token, module: SESSION.module.slice(0, 60) || 'Mixed', answered: Math.min(40, SESSION.answered), correct: Math.min(SESSION.correct, 40), first_try: Math.min(SESSION.first, SESSION.correct, 40) };
+  SESSION.sending = true;
+  try {
+    await boardApi('score', { method: 'POST', body: JSON.stringify(row) });
+    if (SESSION.id === id) Object.assign(SESSION, { answered: 0, correct: 0, first: 0, module: '', id: newSessionId() });
+  } catch (e) { console.warn('leaderboard', e); toast('Quiz score was not sent. Reconnect before your next quiz so it can be retried.'); }
+  finally { SESSION.sending = false; }
 }
 function nameBox() {
   return `<div class="row" style="margin-top:10px"><input id="lbName" class="search" style="margin:0;flex:1;min-width:160px" maxlength="20" placeholder="Your name for the leaderboard" value="${esc(ME.name)}"><button class="chip go" id="lbSave">${ME.name ? 'Update name' : 'Join leaderboard'}</button></div>`;
 }
 function wireName(root, after) {
   const b = root.querySelector('#lbSave'); if (!b) return;
-  b.onclick = async () => { const v = root.querySelector('#lbName').value.trim().replace(/\s+/g, ' '); if (v.length < 2) return; await register(v); after ? after() : null; };
+  b.onclick = async () => {
+    const v = root.querySelector('#lbName').value.trim().replace(/\s+/g, ' ');
+    if (Array.from(v).length < 2 || Array.from(v).length > 20) { toast('Choose a name between 2 and 20 characters'); return; }
+    b.disabled = true;
+    try { await register(v); after ? after() : null; }
+    catch (e) { toast(e.message); }
+    finally { b.disabled = false; }
+  };
 }
 async function register(name) {
-  setName(name);
-  if (!SB_ON) return;
-  try { await sb('quiz_scores', { method: 'POST', body: JSON.stringify({ player: name.slice(0, 20), player_id: ME.id, module: 'Joined', answered: 0, correct: 0, first_try: 0 }), headers: { Prefer: 'return=minimal' } }); try { localStorage.setItem('ub.reg', name); } catch {} } catch (e) { console.warn('register', e); }
+  const clean = String(name || '').trim().replace(/\s+/g, ' ');
+  if (Array.from(clean).length < 2 || Array.from(clean).length > 20) throw new Error('Choose a name between 2 and 20 characters.');
+  const player = await boardApi('register', { method: 'POST', body: JSON.stringify({ player_id: ME.id, token: ME.token || undefined, name: clean }) });
+  ME.id = player.player_id; ME.token = player.token;
+  setName(clean); try { localStorage.setItem('ub.pid', ME.id); localStorage.setItem('ub.lbtok', ME.token); localStorage.setItem('ub.reg', clean); } catch {}
 }
 function welcome() {
   let reg = ''; try { reg = localStorage.getItem('ub.reg') || ''; } catch {}
   if (!SB_ON) return;
-  if (ME.name && reg !== ME.name) { register(ME.name); return; }
+  if (ME.name && reg !== ME.name) { register(ME.name).catch(e => console.warn('leaderboard registration', e)); return; }
   if (ME.name) return;
   const box = document.createElement('div'); box.className = 'modal';
   box.innerHTML = `<div class="mcard"><h2 style="margin:0 0 6px">Join the leaderboard</h2>
@@ -812,7 +831,13 @@ function welcome() {
     <button class="chip" id="wLater" style="width:100%;margin-top:8px;background:none;border:0;color:var(--mute)">Not now</button></div>`;
   document.body.appendChild(box);
   const inp = box.querySelector('#wName'); setTimeout(() => inp.focus(), 50);
-  const go = async () => { const v = inp.value.trim().replace(/\s+/g, ' '); if (v.length < 2) { inp.focus(); inp.style.borderColor = 'var(--pink)'; return; } box.querySelector('#wGo').textContent = 'Joining…'; await register(v); box.remove(); render(); };
+  const go = async () => {
+    const v = inp.value.trim().replace(/\s+/g, ' '), b = box.querySelector('#wGo');
+    if (Array.from(v).length < 2 || Array.from(v).length > 20) { inp.focus(); inp.style.borderColor = 'var(--pink)'; toast('Choose a name between 2 and 20 characters'); return; }
+    b.disabled = true; b.textContent = 'Joining…';
+    try { await register(v); box.remove(); render(); }
+    catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Join'; }
+  };
   box.querySelector('#wGo').onclick = go; inp.onkeydown = e => { if (e.key === 'Enter') go(); };
   box.querySelector('#wLater').onclick = () => box.remove();
 }
@@ -826,11 +851,11 @@ async function renderLeaderboard() {
   main.querySelectorAll('[data-lb]').forEach(b => b.onclick = () => { LB.tab = b.dataset.lb; renderLeaderboard(); });
   wireName(main, () => renderLeaderboard());
   try {
-    const rows = await sb(`${LB.tab === 'week' ? 'leaderboard_week' : 'leaderboard_all'}?select=*&order=points.desc&limit=50`);
+    const rows = await boardApi(LB.tab === 'week' ? 'this-week' : 'all-time');
     const medal = i => ['🥇', '🥈', '🥉'][i] || `<span class="meta">${i + 1}</span>`;
     $('#lbList').innerHTML = rows.length ? rows.map((r, i) => `<div class="lbrow ${r.player_id === ME.id ? 'me' : ''}"><span class="lbpos">${medal(i)}</span><span class="lbname">${esc(r.player)}${r.player_id === ME.id ? ' <span class="meta">(you)</span>' : ''}</span><span class="meta">${r.correct}/${r.answered} right · ${r.quizzes} quiz${r.quizzes == 1 ? '' : 'zes'}</span><b class="lbpts">${r.points}</b></div>`).join('')
       : `<div class="empty">No scores ${LB.tab === 'week' ? 'this week' : 'yet'} — be the first: do a quiz!</div>`;
-  } catch { $('#lbList').innerHTML = '<div class="empty">Couldn\'t load the leaderboard right now.</div>'; }
+  } catch (e) { $('#lbList').innerHTML = `<div class="empty">${esc(e.message || 'Couldn\'t load the leaderboard right now.')}</div>`; }
 }
 
 
