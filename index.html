@@ -277,6 +277,24 @@ nav a:hover,nav a.on:hover{background:none;color:var(--text);border-bottom-color
 .planets{display:block!important;columns:3 300px;column-gap:16px}
 .planets>.planet{display:flex;break-inside:avoid;margin:0 0 16px;width:100%}
 .planet:hover{background:var(--panel2)}
+
+/* Side navigation: mirrors the Notes Crawler rail on wide screens and its top-edge menu on narrow screens. */
+#navZone{position:fixed;inset:0 0 auto;height:12px;z-index:60}
+#hoverNav{position:fixed;top:0;left:50%;width:min(920px,calc(100% - 24px));transform:translate(-50%,-115%);transition:transform .18s ease;z-index:61;display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;padding:4px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
+#hoverNav.show{transform:translate(-50%,0)}
+#hoverNav a{flex:1;min-width:0;text-align:center;border:0;border-radius:9px;background:transparent;color:var(--mute);padding:9px 6px;font-size:14px;white-space:nowrap;text-decoration:none}
+#hoverNav a.on{background:var(--panel2);color:var(--text);box-shadow:inset 0 0 0 1px var(--line)}
+#sideNav{position:fixed;left:12px;top:50%;transform:translate(-150%,-50%);transition:transform .22s ease,width .28s cubic-bezier(.2,.8,.2,1);z-index:59;display:flex;flex-direction:column;gap:4px;padding:8px;background:var(--panel);border:1px solid var(--line);border-radius:14px;width:52px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+#sideNav.show{transform:translate(0,-50%)}
+#sideNav:hover,#sideNav:focus-within{width:190px}
+#sideNav button{display:flex;align-items:center;gap:12px;height:38px;min-width:170px;padding:0 9px;border:0;border-radius:9px;background:transparent;color:var(--mute);font:inherit;font-size:14px;white-space:nowrap;cursor:pointer;text-align:left;transition:background .15s ease,color .15s ease}
+#sideNav button svg{flex:none;width:18px;height:18px}
+#sideNav button span{opacity:0;transform:translateX(-4px);transition:opacity .15s ease,transform .2s ease}
+#sideNav:hover button span,#sideNav:focus-within button span{opacity:1;transform:none;transition-delay:.06s}
+#sideNav button:hover,#sideNav button:focus-visible,#sideNav button.on{background:var(--panel2);color:var(--text)}
+#sideNav button:focus-visible,#hoverNav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:1299px){#sideNav{display:none}}
+@media(prefers-reduced-motion:reduce){#sideNav,#sideNav button,#sideNav button span,#hoverNav{transition:none!important}}
 </style>
 <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };</script>
 <script src="lib/tex-svg-full.js" defer></script>
@@ -1427,6 +1445,58 @@ function wireCalendar(main) {
   main.querySelectorAll('[data-cform]').forEach(a => a.onclick = () => { FORM.mod = a.dataset.cform; });
 }
 
+</script>
+<script>
+(() => {
+  const orig = document.getElementById('nav'); if (!orig) return;
+  const zone = document.createElement('div'); zone.id = 'navZone'; zone.setAttribute('aria-hidden', 'true');
+  const bar = document.createElement('nav'); bar.id = 'hoverNav'; bar.setAttribute('aria-label', 'Page navigation');
+  const side = document.createElement('nav'); side.id = 'sideNav'; side.setAttribute('aria-label', 'Page navigation');
+  document.body.append(zone, bar, side);
+  let timer = 0;
+  const icons = {
+    home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-6v-7h-4v7H4a1 1 0 0 1-1-1z"/>',
+    modules:'<circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16"/>',
+    calendar:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+    quiz:'<path d="M5 4h14v16H5zM8 8h8M8 12h2m3 0h2m-7 4h2m3 0h2"/>',
+    formulas:'<path d="M17 5H7l6 7-6 7h10"/>',
+    tutor:'<path d="M4 5h16v11H9l-5 4z"/>',
+    leaderboard:'<path d="M4 19V9h4v10M10 19V5h4v14M16 19v-8h4v8"/>'
+  };
+  const links = () => [...orig.querySelectorAll('a[href^="#"]')];
+  const keyOf = a => a.getAttribute('href').slice(1);
+  const svgFor = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[k] || '<circle cx="12" cy="12" r="4"/>'}</svg>`;
+  const fill = () => {
+    const as = links();
+    bar.innerHTML = as.map(a => `<a href="${a.getAttribute('href')}" class="${a.classList.contains('on') ? 'on' : ''}">${a.textContent.trim()}</a>`).join('');
+    side.innerHTML = as.map(a => { const k = keyOf(a), title = a.textContent.trim(); return `<button type="button" data-page="${k}" class="${a.classList.contains('on') ? 'on' : ''}" title="${title}" aria-label="${title}" aria-current="${a.classList.contains('on') ? 'page' : 'false'}">${svgFor(k)}<span>${title}</span></button>`; }).join('');
+  };
+  const wide = () => innerWidth >= 1300;
+  const sync = () => {
+    const hidden = orig.getBoundingClientRect().bottom < 0;
+    side.classList.toggle('show', hidden && wide());
+    if (hidden && wide()) fill();
+  };
+  const showTop = () => {
+    if (orig.getBoundingClientRect().bottom > 0 || wide()) return;
+    clearTimeout(timer); fill(); bar.classList.add('show');
+  };
+  const hideTop = () => { clearTimeout(timer); timer = setTimeout(() => bar.classList.remove('show'), 350); };
+  const go = k => {
+    const a = orig.querySelector(`a[href="#${CSS.escape(k)}"]`); if (!a) return;
+    bar.classList.remove('show'); window.scrollTo(0, 0); a.click();
+  };
+  addEventListener('scroll', sync, {passive:true}); addEventListener('resize', sync);
+  new MutationObserver(() => { fill(); sync(); }).observe(orig, {subtree:true,attributes:true,childList:true,characterData:true});
+  zone.addEventListener('mouseenter', showTop); zone.addEventListener('mouseleave', hideTop);
+  zone.addEventListener('click', () => bar.classList.contains('show') ? bar.classList.remove('show') : showTop());
+  bar.addEventListener('mouseenter', () => clearTimeout(timer)); bar.addEventListener('mouseleave', hideTop);
+  bar.addEventListener('focusin', () => { clearTimeout(timer); bar.classList.add('show'); }); bar.addEventListener('focusout', hideTop);
+  bar.addEventListener('click', e => { const a = e.target.closest('a[href^="#"]'); if (!a) return; e.preventDefault(); go(keyOf(a)); });
+  side.addEventListener('click', e => { const b = e.target.closest('button[data-page]'); if (b) go(b.dataset.page); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') bar.classList.remove('show'); });
+  fill(); sync();
+})();
 </script>
 </body>
 </html>
