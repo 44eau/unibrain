@@ -1051,7 +1051,7 @@ function ttDigest0(m, topic) {
   const px = units.flatMap(x => (x.u.xq || []).filter(q => q.src).map(q => `- [${q.m} marks] ${String(q.q).slice(0, 400)}`)).join('\n').slice(0, 1800);
   return px ? out + '\n\nReal past-paper questions from this module (treat these as the pasted past paper: copy their style and mark weighting):\n' + px : out;
 }
-const TT_RELAY = '';   // the Uni Brain tutor relay (Cloudflare Worker → Groq's free open models); set after deployment
+const TT_RELAY = 'https://unibrain-tutor.unibrain.workers.dev';   // the Uni Brain tutor relay (Cloudflare Worker → Groq's free open models); set after deployment
 const TT_FREE_SYS = [
   "You are a patient one-to-one tutor for a first-year University of Glasgow engineering student, inside the Tutor tab of the Uni Brain revision website (a chat panel with no tools).",
   "The student's first message names the topic. Teach it like this:",
