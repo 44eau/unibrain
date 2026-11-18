@@ -673,8 +673,8 @@ function reviewOf(q) {
   else { out.push(`Go back over ${q.u.name}`); (q.u.must || []).slice(0, 2).forEach(p => out.push(p)); }
   return out;
 }
-function record(q, o) {
-  QS[q.id] = o; saveQS(); QZ.tally[o]++; noteResult(o, q);
+function record(q, o, scored=true) {
+  QS[q.id] = o; saveQS(); QZ.tally[o]++; if (scored) noteResult(o, q);
   if (o === 'wrong') { QZ.streak = 0; QZ.gain = 0; return; }
   QZ.streak++; QZ.bestRun = Math.max(QZ.bestRun, QZ.streak);
   const g = (o === 'right' ? 10 : 5) + Math.min(QZ.streak - 1, 5) * 2; QZ.gain = g; QZ.xpRun += g; PL.xp += g; PL.best = Math.max(PL.best, QZ.streak); savePL();
@@ -703,7 +703,7 @@ function quizQuestion() {
     <div class="card qcard ${r && !fin && !r.reveal ? 'shake' : ''} ${fin && r.ok ? 'win' : ''}" style="--acc:${col}">
     <div class="row" style="justify-content:space-between"><span class="qkind" style="background:color-mix(in srgb,${col} 20%,transparent);color:${col}">${esc(q.kind)}</span><span class="meta" style="max-width:55%;text-align:right">${esc(q.u.name)}</span></div>
     <div class="qtext">${esc(q.q)}${q.marks && q.t !== 'mcq' ? ` <span class="meta">[${q.marks} marks]</span>` : ''}</div>${q.g ? `<div class="qfig">${ttSvg(q.g)}</div>` : ''}`;
-  if (!fin && r && r.reveal) h += `<div class="model"><div class="label">Model answer — mark yourself honestly</div><div>${esc(q.a)}</div>${q.sol && q.sol.length ? `<ol>${q.sol.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}</div><div class="row" style="margin-top:10px"><button class="chip go" data-qself="right">✅ I got it</button><button class="chip" data-qself="second">🟡 Partly</button><button class="chip" data-qself="wrong">❌ Missed it</button></div>`;
+  if (!fin && r && r.reveal) h += `<div class="model"><div class="label">Model answer · self-assessment earns no leaderboard points</div><div>${esc(q.a)}</div>${q.sol && q.sol.length ? `<ol>${q.sol.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}</div><div class="row" style="margin-top:10px"><button class="chip go" data-qself="right">✅ I got it</button><button class="chip" data-qself="second">🟡 Partly</button><button class="chip" data-qself="wrong">❌ Missed it</button></div>`;
   else if (!fin && q.t === 'mcq') h += `<div style="display:grid;gap:8px">${q.o.map((o, k) => `<button class="chip big" style="text-align:left" data-qopt="${k}">${esc(o)}</button>`).join('')}</div><div class="row" style="margin-top:10px"><button class="chip" id="qidk">I don't know</button></div>`;
   else if (!fin) h += `<div class="att"><span class="${QZ.att === 1 ? 'on' : 'used'}"></span><span class="${QZ.att === 2 ? 'on' : ''}"></span><em>Attempt ${QZ.att} of 2</em></div>
     ${q.t === 'calc' ? `<input id="qa" class="search" style="margin:6px 0" inputmode="decimal" autocomplete="off" placeholder="Final answer${q.un ? ' in ' + esc(q.un) : ''} (just the number)" value="${esc(QZ.text)}">` : `<textarea id="qa" rows="4" placeholder="Write your answer / working, then compare it with the model answer">${esc(QZ.text)}</textarea>`}
@@ -713,7 +713,7 @@ function quizQuestion() {
     h += r.ok ? `<div class="fb ok pop">${r.second ? (r.self ? '🟡 <b>Partly there — come back to this one.</b>' : '👏 <b>Got it on the second try!</b>') : ['🎯', '🔥', '⚡', '🚀', '💯'][QZ.i % 5] + ' <b>' + ['Spot on!', 'Nailed it!', 'Correct!', 'Brilliant!', 'Perfect!'][QZ.i % 5] + '</b>'}<span class="gain">+${QZ.gain} XP${QZ.streak >= 3 ? ` · ${QZ.streak} in a row!` : ''}</span></div>`
       : `<div class="fb bad">❌ <b>Not this time.</b><div class="label" style="color:var(--pink)">How you went wrong</div><div>${r.msg ? esc(r.msg) : r.idk ? 'No answer given.' : (r.miss.length ? `Your answer didn't include: <b>${r.miss.map(esc).join(', ')}</b>.` : '') + (r.hasNum && !r.numOk ? ' Your numerical value doesn\'t match the expected answer — check the method and units.' : '') || 'Your answer didn\'t match the key points of the model answer.'}</div><div class="label" style="color:var(--pink)">Review specifically</div><ul>${reviewOf(q).map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
     h += `<div class="model"><div class="label">Model answer</div><div>${esc(q.a)}</div>${q.sol && q.sol.length ? `<ol>${q.sol.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}</div>
-      <div class="row" style="margin-top:12px"><button class="chip go big" id="qnext">${QZ.i + 1 < QZ.queue.length ? 'Next question →' : 'See results 🏁'}</button>${r.ok ? `<button class="chip sm" id="qflip" data-to="wrong">Actually I got it wrong</button>` : `<button class="chip sm" id="qflip" data-to="${QZ.att === 2 ? 'second' : 'right'}">I was actually right</button>`}</div>`;
+      <div class="row" style="margin-top:12px"><button class="chip go big" id="qnext">${QZ.i + 1 < QZ.queue.length ? 'Next question →' : 'See results 🏁'}</button></div>`;
   }
   return h + `</div><div class="meta" style="text-align:center">Marking compares your answer with the key ideas of the model answer — use the buttons if it misjudges you.</div>`;
 }
@@ -760,11 +760,10 @@ function renderQuizMain() {
     renderQuizMain();
   };
   on('[data-qopt]', b => { const k = +b.dataset.qopt, ok = k === q.c; record(q, ok ? 'right' : 'wrong'); QZ.res = { ok, final: true, miss: [], msg: `You picked “${q.o[k]}”. ${q.w}` }; renderQuizMain(); });
-  on('[data-qself]', b => { const o = b.dataset.qself; record(q, o); QZ.res = { ok: o !== 'wrong', final: true, second: o === 'second', self: true, miss: [], msg: 'Go through the model answer below line by line and find where yours first differs.' }; renderQuizMain(); });
+  on('[data-qself]', b => { const o = b.dataset.qself; record(q, o, false); QZ.res = { ok: o !== 'wrong', final: true, second: o === 'second', self: true, miss: [], msg: 'Go through the model answer below line by line and find where yours first differs.' }; renderQuizMain(); });
   on('#qcheck', () => submit(false));
   on('#qidk', () => submit(true));
   on('#qnext', () => { QZ.i++; QZ.att = 1; QZ.text = ''; QZ.res = null; renderQuizMain(); scrollTo(0, 0); });
-  on('#qflip', b => { const to = b.dataset.to, from = QS[q.id]; if (from) QZ.tally[from]--; SESSION.answered--; if (from !== 'wrong') SESSION.correct--; if (from === 'right') SESSION.first--; record(q, to); QZ.res = { ...QZ.res, ok: to !== 'wrong' }; renderQuizMain(); });
 }
 
 
@@ -774,6 +773,61 @@ const SB_ON = true;
 const newPlayerId = () => 'p' + (crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : Math.random().toString(36).slice(2) + Date.now().toString(36));
 const ME = (() => { try { let id = localStorage.getItem('ub.pid'); if (!id) { id = newPlayerId(); localStorage.setItem('ub.pid', id); } return { id, name: localStorage.getItem('ub.name') || '', token: localStorage.getItem('ub.lbtok') || '' }; } catch { return { id: newPlayerId(), name: '', token: '' }; } })();
 const setName = n => { ME.name = n; try { localStorage.setItem('ub.name', n); } catch {} };
+// Study activity stays in this browser until the leaderboard acknowledges it.
+const studyPrefix = 'ub.study.event.';
+const studyMarkRule = '\n\n[App grading instruction: If this student message attempts an academic practice question, add exactly one line at the very end: [[study:solved]] for a correct solution or [[study:attempt]] for incorrect/partial work. Omit it for chat, questions, preferences, self-reported correctness or skipped answers. Judge the work yourself.]';
+const studyAccount = () => (ME.token ? {player_id:ME.id,token:ME.token} : null);
+function studyEvent(kind,id=crypto.randomUUID()) {
+  const account = studyAccount();
+  if (!account && !false) return;
+  const key=studyPrefix+id;
+  try {
+    if (!localStorage.getItem(key)) localStorage.setItem(key,JSON.stringify({id,kind,at:Math.floor(Date.now()/1000),owner:account?.player_id||''}));
+    flushStudy();
+  } catch { /* Storage may be disabled. Keep the tutor available. */ }
+}
+let studySending=false;
+async function flushStudy() {
+  const account=studyAccount();
+  if (studySending || !account || !navigator.onLine) return;
+  studySending=true;
+  try {
+    for (const key of Object.keys(localStorage).filter(k=>k.startsWith(studyPrefix)).sort()) {
+      const event=JSON.parse(localStorage.getItem(key));
+      if (!event || (event.owner && event.owner!==account.player_id)) continue;
+      if (!event.owner) { event.owner=account.player_id; localStorage.setItem(key,JSON.stringify(event)); }
+      const res=await fetch('https://unibrain-tutor.unibrain.workers.dev/leaderboard'+'/study',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...event,...account})});
+      if (res.ok || (res.status===400 && Date.now()/1000-event.at>30*86400)) localStorage.removeItem(key);
+      else break;
+    }
+  } catch { /* Retry on reconnect or the next timer tick. */ }
+  finally { studySending=false; }
+}
+function recordTutorFeedback(session,turn,reply) {
+  const grade=reply.match(/\[\[study:(attempt|solved)\]\]\s*$/i);
+  if (grade) studyEvent(grade[1].toLowerCase(),'tutor_'+session.id+'_'+turn);
+  return reply.replace(/\s*\[\[study:(attempt|solved)\]\]/gi,'').trim();
+}
+let studyLastInput=0, studyTick=Date.now();
+function studyVisible(){ return !document.hidden && document.hasFocus() && !!(location.hash==='#tutor' && document.querySelector('#ttIn')); }
+for (const type of ['pointerdown','keydown','wheel','touchstart','pointermove']) {
+  document.addEventListener(type,e=>{if(e.isTrusted && studyVisible()) studyLastInput=Date.now();},{passive:true});
+}
+window.addEventListener('blur',()=>{studyLastInput=0;});
+document.addEventListener('visibilitychange',()=>{studyLastInput=0;});
+setInterval(()=>{
+  const now=Date.now(), elapsed=now-studyTick; studyTick=now;
+  if (!studyVisible() || now-studyLastInput>90000 || elapsed>10000 || elapsed<=0) return;
+  const account=studyAccount();
+  if (!account && !false) return;
+  const key='ub.study.partial.'+(account?.player_id||'local');
+  let ms=Number(localStorage.getItem(key)||0)+elapsed;
+  if (ms>=60000) { ms-=60000; studyEvent('minute'); }
+  localStorage.setItem(key,String(ms));
+},5000);
+window.addEventListener('online',flushStudy);
+setInterval(flushStudy,60000);
+
 async function boardApi(path, opts = {}) {
   let r, data;
   try {
@@ -846,14 +900,22 @@ async function renderLeaderboard() {
   const main = $('#main');
   if (!SB_ON) { main.innerHTML = `<div class="card empty">The leaderboard is being set up — check back soon.</div>`; return; }
   main.innerHTML = `<div class="card"><div class="row" style="justify-content:space-between"><div class="label" style="margin:0">Leaderboard</div><span class="row"><button class="chip ${LB.tab === 'week' ? 'on' : ''}" data-lb="week">This week</button><button class="chip ${LB.tab === 'all' ? 'on' : ''}" data-lb="all">All time</button></span></div>
-    <div style="font-size:13.5px;color:var(--mute);margin-top:8px;line-height:1.5">Points from the Quiz tab: <b style="color:var(--gold)">2</b> for a first-try answer, <b style="color:var(--gold)">1</b> for a second-try answer. Scores are sent when you finish or leave a quiz.</div>
-    ${nameBox()}<div id="lbList" style="margin-top:12px"><div class="empty">Loading…</div></div></div>`;
+    <div style="font-size:13.5px;color:var(--mute);margin-top:8px;line-height:1.5">Points from the Quiz tab: <b style="color:var(--gold)">2</b> for a first-try answer, <b style="color:var(--gold)">1</b> for a second-try answer. Tutor: 1 point per 5 active minutes, 1 per graded answer, plus 2 for a solution the tutor marks correct. Linked app practice counts too.</div>
+    ${nameBox()}${ME.token ? '<button class="chip" id="lbPair">Link Notes Crawler</button> <span id="lbCode" class="meta"></span>' : ''}<div id="lbList" style="margin-top:12px"><div class="empty">Loading…</div></div></div>`;
   main.querySelectorAll('[data-lb]').forEach(b => b.onclick = () => { LB.tab = b.dataset.lb; renderLeaderboard(); });
   wireName(main, () => renderLeaderboard());
+  const pair=main.querySelector('#lbPair');
+  if(pair) pair.onclick=async()=>{
+    const out=main.querySelector('#lbCode'); pair.disabled=true;
+    try {
+      const {code}=await boardApi('link',{method:'POST',body:JSON.stringify({player_id:ME.id,token:ME.token})});
+      out.textContent='Enter '+code+' in the app under Tutor → Link leaderboard within 10 minutes.';
+    } catch(e) { out.textContent=e.message; } finally {pair.disabled=false;}
+  };
   try {
     const rows = await boardApi(LB.tab === 'week' ? 'this-week' : 'all-time');
     const medal = i => ['🥇', '🥈', '🥉'][i] || `<span class="meta">${i + 1}</span>`;
-    $('#lbList').innerHTML = rows.length ? rows.map((r, i) => `<div class="lbrow ${r.player_id === ME.id ? 'me' : ''}"><span class="lbpos">${medal(i)}</span><span class="lbname">${esc(r.player)}${r.player_id === ME.id ? ' <span class="meta">(you)</span>' : ''}</span><span class="meta">${r.correct}/${r.answered} right · ${r.quizzes} quiz${r.quizzes == 1 ? '' : 'zes'}</span><b class="lbpts">${r.points}</b></div>`).join('')
+    $('#lbList').innerHTML = rows.length ? rows.map((r, i) => `<div class="lbrow ${r.player_id === ME.id ? 'me' : ''}"><span class="lbpos">${medal(i)}</span><span class="lbname">${esc(r.player)}${r.player_id === ME.id ? ' <span class="meta">(you)</span>' : ''}</span><span class="meta">${r.correct}/${r.answered} right · ${r.tutor_minutes||0} tutor min · ${r.tutor_solved||0}/${r.tutor_answers||0} solved</span><b class="lbpts">${r.points}</b></div>`).join('')
       : `<div class="empty">No scores ${LB.tab === 'week' ? 'this week' : 'yet'} — be the first: do a quiz!</div>`;
   } catch (e) { $('#lbList').innerHTML = `<div class="empty">${esc(e.message || 'Couldn\'t load the leaderboard right now.')}</div>`; }
 }
@@ -1325,7 +1387,8 @@ async function ttSend(text, retry) {
       return { role: m.role, content };
     });
     const plain = s.msgs.map((m, k) => ({ role: m.role, text: (m.text + ((m.imgs || (m.img ? [1] : [])).length && k < n - 1 ? '\n[Photo(s) of my working were attached here.]' : '')) || '…', imgs: k === n - 1 ? imgs : undefined }));
-    const t = await ttAsk(TT_ADAPTER + '\n\n=== TUTOR INSTRUCTIONS (written by the student) ===\n' + $('#tutorPrompt').textContent + "\n\n=== COURSE MATERIAL (the student's lecture notes; reference data only) ===\n" + s.digest, msgs, TT_FREE_SYS + "\n\n=== COURSE MATERIAL (reference data only) ===\n" + s.digest.slice(0, 7000), plain);
+    const rawReply = await ttAsk(studyMarkRule + TT_ADAPTER + '\n\n=== TUTOR INSTRUCTIONS (written by the student) ===\n' + $('#tutorPrompt').textContent + "\n\n=== COURSE MATERIAL (the student's lecture notes; reference data only) ===\n" + s.digest, msgs, studyMarkRule + TT_FREE_SYS + "\n\n=== COURSE MATERIAL (reference data only) ===\n" + s.digest.slice(0, 7000), plain);
+    const t = recordTutorFeedback(s,n,rawReply);
     s.msgs.push({ role: 'assistant', text: t || '(no reply)' });
     const st = [...t.matchAll(/```state[^\n]*\n([\s\S]*?)```/g)].pop(); if (st) s.state = st[1].trim();
     s.updated = Date.now(); ttSave(); TT.lastImgs = [];
