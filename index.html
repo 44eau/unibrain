@@ -177,15 +177,21 @@ a.exhome{display:block;text-decoration:none;color:inherit}
 @media(max-width:620px){.lbrow .meta{display:none}}
 @media(max-width:620px){.qrow{flex-direction:column;align-items:flex-start}}
 @media(max-width:620px){.fr{grid-template-columns:1fr}h1{font-size:19px}nav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-16px;margin-right:-16px;padding:0 16px}nav::-webkit-scrollbar{display:none}nav a{white-space:nowrap;flex:none}}
-.tchat{display:flex;flex-direction:column;gap:10px;margin:12px 0}
-.tmsg{padding:11px 13px;border-radius:14px;line-height:1.55;font-size:14.5px;overflow-x:auto}
-.tmsg.me{align-self:flex-end;max-width:85%;background:#1d1c3a;border:1px solid #34336a;white-space:pre-wrap}
-.tmsg.ai{background:var(--panel);border:1px solid var(--line)}
-.tmsg p{margin:6px 0}.tmsg h4{margin:12px 0 4px}
+.tchat{display:flex;flex-direction:column;gap:18px;margin:18px auto;max-width:780px;width:100%}
+.tmsg{padding:0;line-height:1.65;font-size:15px;overflow-x:auto}
+.tmsg.me{align-self:flex-end;max-width:88%;padding:11px 15px;border-radius:20px;background:#25243b;border:1px solid #393750;white-space:pre-wrap}
+.tmsg.ai{background:transparent;border:0;padding:2px 0}
+.tmsg p{margin:7px 0}.tmsg h4{margin:14px 0 5px}
+.tmsg table{border-collapse:collapse;width:100%;margin:10px 0;font-size:14px}.tmsg th,.tmsg td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}.tmsg th{background:#ffffff0b}
+.tmsg .tsource{color:var(--mute);font-size:12.5px;margin-top:12px}
+.timgs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.timgs img{width:112px;height:84px;object-fit:cover;border-radius:9px;border:1px solid #ffffff24}
 .tsvg{width:100%;max-width:560px;height:auto;display:block;margin:10px 0;background:#0b0b14;border-radius:10px}
 .tmer{margin:10px 0;overflow-x:auto}
 .tcode{background:#0b0b14;border:1px solid var(--line);border-radius:10px;padding:10px;max-height:300px;overflow:auto;font-size:12px;white-space:pre;margin:6px 0}
-.tcomp{position:sticky;bottom:0;background:var(--bg);padding:8px 0 4px;display:flex;gap:8px;align-items:flex-end}.tcomp textarea{margin:0;min-height:52px}
+.tcomposer{position:sticky;bottom:0;z-index:5;background:linear-gradient(180deg,transparent,var(--bg) 18%);padding:16px 0 8px;max-width:820px;margin:auto}
+.tcomp{display:flex;gap:9px;align-items:flex-end;border:1px solid #ffffff2c;background:#171625;border-radius:25px;padding:8px 9px;box-shadow:0 8px 28px #0005}.tcomp textarea{margin:0;min-height:38px;max-height:180px;resize:none;border:0!important;background:transparent!important;box-shadow:none!important;padding:8px 2px;flex:1;line-height:1.45}.tcomp .tadd,.tcomp .tsend{width:38px;height:38px;border:0;border-radius:50%;display:grid;place-items:center;flex:none;font-size:22px;cursor:pointer}.tcomp .tadd{background:#ffffff12;color:inherit}.tcomp .tsend{background:#e87536;color:#fff;font-weight:700}.tcomp .tsend:disabled{opacity:.45;cursor:default}
+.tpreview{display:flex;gap:8px;overflow-x:auto;padding:8px 4px}.tpreview:empty{display:none}.tthumb{position:relative;flex:none}.tthumb img{width:64px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #ffffff35}.tthumb button{position:absolute;right:-5px;top:-6px;width:20px;height:20px;border:0;border-radius:50%;background:#29283a;color:#fff;cursor:pointer}
+@media(max-width:620px){.tchat{gap:15px;margin:12px auto}.tmsg{font-size:14.5px}.tmsg.me{max-width:92%}.tcomposer{padding-top:12px}.tcomp{gap:6px;padding:7px}.tmsg table{font-size:12px}.tmsg th,.tmsg td{padding:5px}}
 
 /* figures on quiz questions + day-by-day plan */
 .qfig svg{width:100%;max-width:620px;height:auto;display:block;margin:2px 0 12px;background:#0b0b14;color:#e9e7ff;border-radius:10px}
@@ -1120,7 +1126,7 @@ function diagramsFor(text, seen, max = 2, circ = true) { const out = []; for (co
 
 
 /* ---------- Tutor: one-to-one tutoring on the viewer's own Anthropic API key, which stays in this browser ---------- */
-const TT = { sid: null, busy: false, err: '', draft: '', img: null, lastImg: null, mod: null, S: null };
+const TT = { sid: null, busy: false, err: '', draft: '', imgs: [], lastImgs: [], mod: null, S: null };
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 const ttSessions = () => (TT.S = TT.S || lsGet('ub.tutor', {}));
@@ -1204,13 +1210,26 @@ function ttMd(t) {
   const math = [];
   t = t.replace(/\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)/g, m => { math.push(m); return '\u0000' + (math.length - 1) + '\u0000'; });
   const h = esc(t).replace(/`([^`\n]+)`/g, '<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/(^|[\s(])\*([^*\n]+)\*/g, '$1<i>$2</i>');
-  const out = []; let list = null;
-  for (const line of h.split('\n')) {
+  const out = [], lines = h.split('\n'); let list = null;
+  const cells = line => line.trim().replace(/^\||\|$/g, '').split('|').map(x => x.trim());
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.includes('|') && /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(lines[i + 1] || '')) {
+      if (list) { out.push(`</${list}>`); list = null; }
+      const head = cells(line), rows = [];
+      i += 2;
+      while (i < lines.length && lines[i].includes('|') && lines[i].trim()) rows.push(cells(lines[i++]));
+      i--;
+      out.push(`<div style="overflow-x:auto"><table><thead><tr>${head.map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${head.map((_, j) => `<td>${r[j] || ''}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`);
+      continue;
+    }
     const li = line.match(/^\s*(?:[-*•]|(\d+)[.)])\s+(.*)/);
     if (li) { const tag = li[1] ? 'ol' : 'ul'; if (list !== tag) { if (list) out.push(`</${list}>`); out.push(`<${tag}>`); list = tag; } out.push(`<li>${li[2]}</li>`); continue; }
     if (list) { out.push(`</${list}>`); list = null; }
     const hd = line.match(/^#{1,4}\s+(.*)/);
-    if (hd) out.push(`<h4>${hd[1]}</h4>`); else if (line.trim()) out.push(`<p>${line}</p>`);
+    const source = line.match(/^Source:\s*(.*)/i);
+    if (source) out.push(`<div class="tsource">Source: ${source[1]}</div>`);
+    else if (hd) out.push(`<h4>${hd[1]}</h4>`); else if (line.trim()) out.push(`<p>${line}</p>`);
   }
   if (list) out.push(`</${list}>`);
   return out.join('').replace(/\u0000(\d+)\u0000/g, (_, i) => esc(math[+i]));
@@ -1240,7 +1259,7 @@ async function ttDrawMermaid(root) {
 }
 function ttBlock(i, off) { const re = /```[a-zA-Z]*[^\n]*\n([\s\S]*?)```/y; re.lastIndex = off; const m = re.exec((ttSessions()[TT.sid].msgs[i] || {}).text || ''); return m ? m[1] : ''; }
 function ttMsgHTML(s, m, i) {
-  if (m.role === 'user') return `<div class="tmsg me">${esc(m.text)}${m.img ? '<div class="meta">📷 photo attached</div>' : ''}</div>`;
+  if (m.role === 'user') return `<div class="tmsg me">${esc(m.text)}${(m.imgs || (m.img ? [''] : [])).length ? `<div class="timgs">${(m.imgs || []).map(src => `<img src="data:image/jpeg;base64,${src}" alt="Attached working">`).join('')}</div><div class="meta">📷 ${(m.imgs || []).length || 1} photo${(m.imgs || []).length === 1 ? '' : 's'} attached</div>` : ''}</div>`;
   const last = i === s.msgs.length - 1, answered = s.msgs.slice(i + 1).some(x => x.role === 'user');
   const re = /```([a-zA-Z]*)[^\n]*\n([\s\S]*?)```/g; let h = '', pos = 0, mt;
   while ((mt = re.exec(m.text))) {
@@ -1261,26 +1280,28 @@ function ttMsgHTML(s, m, i) {
 }
 async function ttSend(text, retry) {
   const s = ttSessions()[TT.sid]; if (!s || TT.busy) return;
-  const img = retry ? TT.lastImg : TT.img;
+  const imgs = retry ? TT.lastImgs : TT.imgs.map(x => x.full);
   if (!retry) {
-    if (!String(text || '').trim() && !img) return;
-    s.msgs.push({ role: 'user', text: String(text || '').trim() || '(My answers are in the photo.)', img: !!img });
-    TT.draft = ''; TT.img = null; TT.lastImg = img;
+    if (!String(text || '').trim() && !imgs.length) return;
+    s.msgs.push({ role: 'user', text: String(text || '').trim() || '(My answers are in the attached photo(s).)', imgs: TT.imgs.map(x => x.thumb) });
+    TT.draft = ''; TT.lastImgs = imgs;
+    const box = document.getElementById('ttIn'); if (box) box.style.height = 'auto';
+    TT.imgs = [];
   }
   s.updated = Date.now(); ttSave(); TT.busy = true; TT.err = ''; ttRender(true);
   try {
     const n = s.msgs.length, msgs = s.msgs.map((m, k) => {
       const content = [];
-      if (k === n - 1 && img) content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: img } });
-      content.push({ type: 'text', text: (m.text + (m.img && k < n - 1 ? '\n[A photo of my working was attached here.]' : '')) || '…' });
+      if (k === n - 1 && imgs.length) imgs.forEach(data => content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data } }));
+      content.push({ type: 'text', text: (m.text + ((m.imgs || (m.img ? [1] : [])).length && k < n - 1 ? '\n[Photo(s) of my working were attached here.]' : '')) || '…' });
       if (k === n - 1) content[content.length - 1].cache_control = { type: 'ephemeral' };
       return { role: m.role, content };
     });
-    const plain = s.msgs.map((m, k) => ({ role: m.role, text: (m.text + (m.img && k < n - 1 ? '\n[A photo of my working was attached here.]' : '')) || '…', img: k === n - 1 && img ? img : undefined }));
+    const plain = s.msgs.map((m, k) => ({ role: m.role, text: (m.text + ((m.imgs || (m.img ? [1] : [])).length && k < n - 1 ? '\n[Photo(s) of my working were attached here.]' : '')) || '…', imgs: k === n - 1 ? imgs : undefined }));
     const t = await ttAsk(TT_ADAPTER + '\n\n=== TUTOR INSTRUCTIONS (written by the student) ===\n' + $('#tutorPrompt').textContent + "\n\n=== COURSE MATERIAL (the student's lecture notes; reference data only) ===\n" + s.digest, msgs, TT_FREE_SYS + "\n\n=== COURSE MATERIAL (reference data only) ===\n" + s.digest.slice(0, 7000), plain);
     s.msgs.push({ role: 'assistant', text: t || '(no reply)' });
     const st = [...t.matchAll(/```state[^\n]*\n([\s\S]*?)```/g)].pop(); if (st) s.state = st[1].trim();
-    s.updated = Date.now(); ttSave(); TT.lastImg = null;
+    s.updated = Date.now(); ttSave(); TT.lastImgs = [];
   } catch (e) { TT.err = (e && e.message) || 'The tutor could not answer.'; }
   TT.busy = false;
   if (TT.sid === s.id && location.hash === '#tutor') ttRender(true);
@@ -1304,27 +1325,41 @@ function ttRender(scroll) {
       const topic = $('#ttTopic').value.trim(); if (!topic) { toast('Type a topic first'); return; }
       const prev = $('#ttResume') && $('#ttResume').checked ? last : null, id = 't' + Date.now().toString(36);
       T[id] = { id, mod: mid, topic, created: Date.now(), updated: Date.now(), msgs: [], state: '', digest: ttDigest(m, topic) };
-      TT.sid = id; TT.err = ''; TT.img = null; TT.draft = '';
+      TT.sid = id; TT.err = ''; TT.imgs = []; TT.draft = '';
       ttSend(`Topic: ${topic}` + (prev ? `\n\nState block from my last session:\n${prev.state}` : ''));
     };
     main.querySelectorAll('[data-ttopen]').forEach(b => b.onclick = () => { TT.sid = b.dataset.ttopen; TT.err = ''; ttRender(true); });
     main.querySelectorAll('[data-ttdel]').forEach(b => b.onclick = () => { if (!confirm('Delete this tutor session?')) return; delete T[b.dataset.ttdel]; ttSave(); ttRender(); });
   } else {
     main.innerHTML = `<div class="row" style="justify-content:space-between;gap:8px"><div><b>${esc((MODS[s.mod] || {}).name || '')}</b> · ${esc(s.topic)}</div><span class="row" style="gap:6px"><button class="chip sm" id="ttStop" ${TT.busy || s.msgs.length < 2 ? 'disabled' : ''}>Stop &amp; set my paper</button><button class="chip sm" id="ttBack">← Sessions</button></span></div>
-      <div class="tchat">${s.msgs.map((m, i) => ttMsgHTML(s, m, i)).join('')}${TT.busy ? '<div class="tmsg ai meta">Tutor is thinking…</div>' : ''}${TT.err ? `<div class="tmsg ai" style="border-color:#5a2222">${esc(TT.err)} <button class="chip sm" id="ttRetry">Try again</button></div>` : ''}</div>
-      <div class="tcomp"><label class="chip" title="Attach a photo of your working" style="cursor:pointer">📷${TT.img ? ' ✓' : ''}<input type="file" id="ttFile" accept="image/*" hidden></label><textarea id="ttIn" rows="2" placeholder="Type your answer… (Enter sends, Shift+Enter for a new line)">${esc(TT.draft)}</textarea><button class="chip go" id="ttSendB" ${TT.busy ? 'disabled' : ''}>Send</button></div>`;
+      <div class="tchat">${s.msgs.map((m, i) => ttMsgHTML(s, m, i)).join('')}${TT.busy ? '<div class="tmsg ai meta">Tutor is thinking…</div>' : ''}${TT.err ? `<div class="tmsg ai" style="color:#ffaaa8">${esc(TT.err)} <button class="chip sm" id="ttRetry">Try again</button></div>` : ''}</div>
+      <div class="tcomposer"><div class="tpreview">${TT.imgs.map((x,i)=>`<span class="tthumb"><img src="data:image/jpeg;base64,${x.thumb}" alt="Image ${i+1} preview"><button type="button" data-ttremove="${i}" aria-label="Remove image ${i+1}">×</button></span>`).join('')}</div><div class="tcomp" id="ttDrop"><label class="tadd" title="Add images" aria-label="Add images">+<input type="file" id="ttFile" accept="image/*" multiple hidden></label><textarea id="ttIn" rows="1" placeholder="Reply… (Enter sends, Shift+Enter for a new line)">${esc(TT.draft)}</textarea><button class="tsend" id="ttSendB" aria-label="Send" title="Send" ${TT.busy ? 'disabled' : ''}>↑</button></div></div>`;
     const inp = $('#ttIn'), send = () => ttSend(inp.value);
-    inp.oninput = () => (TT.draft = inp.value);
+    inp.oninput = () => { TT.draft = inp.value; inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight, 180) + 'px'; };
     inp.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
     $('#ttSendB').onclick = send;
     $('#ttBack').onclick = () => { TT.sid = null; TT.err = ''; ttRender(); };
     $('#ttStop').onclick = () => ttSend("Let's stop here. Set my practice paper now.");
     const rt = $('#ttRetry'); if (rt) rt.onclick = () => ttSend('', true);
-    $('#ttFile').onchange = async e => {
-      const f = e.target.files[0]; if (!f) return;
-      try { const bmp = await createImageBitmap(f), k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas'); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k); c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height); TT.img = c.toDataURL('image/jpeg', 0.85).split(',')[1]; ttRender(); toast('Photo attached — press Send'); }
-      catch { toast('Could not read that photo'); }
+    const addFiles = async files => {
+      const fs = [...files].filter(f => f.type.startsWith('image/'));
+      if (!fs.length) return;
+      let added = 0;
+      for (const f of fs) try {
+        const bmp = await createImageBitmap(f), k = Math.min(1, 1400 / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(bmp.width * k)); c.height = Math.max(1, Math.round(bmp.height * k)); c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+        let full = c.toDataURL('image/jpeg', .78).split(',')[1]; if (full.length > 1400000) full = c.toDataURL('image/jpeg', .55).split(',')[1];
+        const scale = Math.min(1, 240 / Math.max(c.width, c.height)), mini = document.createElement('canvas'); mini.width = Math.max(1, Math.round(c.width * scale)); mini.height = Math.max(1, Math.round(c.height * scale)); mini.getContext('2d').drawImage(c,0,0,mini.width,mini.height);
+        TT.imgs.push({ full, thumb: mini.toDataURL('image/jpeg', .48).split(',')[1] }); added++;
+      } catch { toast('One image could not be read'); }
+      ttRender(); toast(`${added} image${added === 1 ? '' : 's'} attached`);
     };
+    $('#ttFile').onchange = e => { addFiles(e.target.files); e.target.value = ''; };
+    $('#ttDrop').ondragover = e => { e.preventDefault(); $('#ttDrop').style.borderColor = '#e87536'; };
+    $('#ttDrop').ondragleave = () => { $('#ttDrop').style.borderColor = ''; };
+    $('#ttDrop').ondrop = e => { e.preventDefault(); $('#ttDrop').style.borderColor = ''; addFiles(e.dataTransfer.files); };
+    inp.onpaste = e => { const fs = [...(e.clipboardData?.items || [])].filter(x => x.type.startsWith('image/')).map(x => x.getAsFile()).filter(Boolean); if (fs.length) { e.preventDefault(); addFiles(fs); } };
+    main.querySelectorAll('[data-ttremove]').forEach(b => b.onclick = () => { TT.imgs.splice(+b.dataset.ttremove,1); ttRender(); });
     main.querySelectorAll('[data-ttans]').forEach(b => b.onclick = () => ttSend(b.dataset.ttans));
     main.querySelectorAll('[data-ttcopy]').forEach(b => b.onclick = async () => { const [i, o] = b.dataset.ttcopy.split(':').map(Number); try { await navigator.clipboard.writeText(ttBlock(i, o)); toast('Copied'); } catch { toast('Could not copy'); } });
     main.querySelectorAll('[data-ttdl]').forEach(b => b.onclick = () => { const [i, o] = b.dataset.ttdl.split(':').map(Number), a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ttBlock(i, o)], { type: 'application/x-tex' })); a.download = `${((MODS[s.mod] || {}).name || 'Module')} - ${s.topic} practice paper.tex`.replace(/[\\/:*?"<>|]/g, ''); a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); });
@@ -1474,8 +1509,9 @@ function wireCalendar(main) {
   const wide = () => innerWidth >= 1300;
   const sync = () => {
     const hidden = orig.getBoundingClientRect().bottom < 0;
+    const wasShown = side.classList.contains('show');
     side.classList.toggle('show', hidden && wide());
-    if (hidden && wide()) fill();
+    if (hidden && wide() && !wasShown) fill();
   };
   const showTop = () => {
     if (orig.getBoundingClientRect().bottom > 0 || wide()) return;
@@ -1489,7 +1525,8 @@ function wireCalendar(main) {
   addEventListener('scroll', sync, {passive:true}); addEventListener('resize', sync);
   new MutationObserver(() => { fill(); sync(); }).observe(orig, {subtree:true,attributes:true,childList:true,characterData:true});
   zone.addEventListener('mouseenter', showTop); zone.addEventListener('mouseleave', hideTop);
-  zone.addEventListener('click', () => bar.classList.contains('show') ? bar.classList.remove('show') : showTop());
+  zone.addEventListener('click', showTop);
+  zone.addEventListener('touchstart', showTop, {passive:true});
   bar.addEventListener('mouseenter', () => clearTimeout(timer)); bar.addEventListener('mouseleave', hideTop);
   bar.addEventListener('focusin', () => { clearTimeout(timer); bar.classList.add('show'); }); bar.addEventListener('focusout', hideTop);
   bar.addEventListener('click', e => { const a = e.target.closest('a[href^="#"]'); if (!a) return; e.preventDefault(); go(keyOf(a)); });
