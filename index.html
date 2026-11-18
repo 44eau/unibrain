@@ -1423,7 +1423,7 @@ function planTutor(t) {
   if (old) { TT.sid = old.id; location.hash = 'tutor'; return; }
   const id = 't' + Date.now().toString(36), names = t.u.map(u => (UNITS[u] || {}).name || '').join(' ');
   T[id] = { id, mod: t.mod, topic, created: Date.now(), updated: Date.now(), msgs: [], state: '', digest: ttDigest(MODS[t.mod], topic + ' ' + names) };
-  TT.sid = id; TT.img = null; TT.draft = '';
+  TT.sid = id; TT.imgs = []; TT.lastImgs = []; TT.draft = '';
   location.hash = 'tutor';
   setTimeout(() => ttSend(`Topic: ${topic}` + (t.w ? `\nWhy it matters for the exam: ${t.w}` : '')), 120);
 }
