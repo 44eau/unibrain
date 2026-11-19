@@ -905,7 +905,7 @@ async function renderLeaderboard() {
   if (!SB_ON) { main.innerHTML = `<div class="card empty">The leaderboard is being set up — check back soon.</div>`; return; }
   main.innerHTML = `<div class="card"><div class="row" style="justify-content:space-between"><div class="label" style="margin:0">Leaderboard</div><span class="row"><button class="chip ${LB.tab === 'week' ? 'on' : ''}" data-lb="week">This week</button><button class="chip ${LB.tab === 'all' ? 'on' : ''}" data-lb="all">All time</button></span></div>
     <div style="font-size:13.5px;color:var(--mute);margin-top:8px;line-height:1.5">Points from the Quiz tab: <b style="color:var(--gold)">2</b> for a first-try answer, <b style="color:var(--gold)">1</b> for a second-try answer. Tutor: 2 points per 30 active minutes, 1 per graded answer, plus 2 for a solution the tutor marks correct. Linked app practice counts too.</div>
-    ${nameBox()}${ME.token ? '<button class="chip" id="lbPair">Link Notes Crawler</button> <span id="lbCode" class="meta"></span>' : ''}<div id="lbList" style="margin-top:12px"><div class="empty">Loading…</div></div></div>`;
+    ${nameBox()}${ME.token && ME.id === 'phkl7h4bgoimvwup21f' ? '<button class="chip" id="lbPair">Link Notes Crawler</button> <span id="lbCode" class="meta"></span>' : ''}<div id="lbList" style="margin-top:12px"><div class="empty">Loading…</div></div></div>`;
   main.querySelectorAll('[data-lb]').forEach(b => b.onclick = () => { LB.tab = b.dataset.lb; renderLeaderboard(); });
   wireName(main, () => renderLeaderboard());
   const macNonce=new URLSearchParams(location.search).get('macLink');
