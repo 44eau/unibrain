@@ -302,8 +302,9 @@ nav a:hover,nav a.on:hover{background:none;color:var(--text);border-bottom-color
 @media(max-width:1299px){#sideNav{display:none}}
 @media(prefers-reduced-motion:reduce){#sideNav,#sideNav button,#sideNav button span,#hoverNav{transition:none!important}}
 #acctBtn{margin-top:10px;font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer}#acctBtn:hover{border-color:var(--accent)}
-#main .tchat{height:calc(100vh - 300px);min-height:300px;overflow-y:auto;overscroll-behavior:contain;padding:4px 10px 12px;border:1px solid var(--line);border-radius:14px;margin:12px auto 0}
-@media(max-width:620px){#main .tchat{height:calc(100vh - 260px)}}
+#main .tchat{height:auto;overflow:visible;border:0}
+#main .tcomp,#main .tcomposer{position:sticky;bottom:0;z-index:20;background:linear-gradient(to bottom,transparent,var(--bg) 28%);padding-bottom:12px}
+#ttDown{position:fixed;left:50%;bottom:130px;transform:translateX(-50%);z-index:30;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:18px;cursor:pointer;display:none;align-items:center;justify-content:center}#ttDown.on{display:flex}
 </style>
 <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };</script>
 <script src="lib/tex-svg-full.js" defer></script>
@@ -1746,9 +1747,12 @@ function wireCalendar(main) {
 })();
 </script>
 <script>
-/* keep the website tutor chat scrolled to the newest message inside its box */
-(() => { const fix = () => { const c = document.querySelector('#main .tchat'); if (c && !c.dataset.pinned) { c.dataset.pinned = 1; c.scrollTop = c.scrollHeight; } };
-  new MutationObserver(() => { const c = document.querySelector('#main .tchat'); if (c) { c.scrollTop = c.scrollHeight; } }).observe(document.getElementById('main'), { childList: true, subtree: false }); addEventListener('hashchange', () => setTimeout(fix, 300)); })();
+/* Claude-style: open on the newest message; a ↓ button jumps back down after scrolling up */
+(() => { const b = document.createElement('button'); b.id = 'ttDown'; b.textContent = '↓'; b.title = 'Jump to the latest message'; document.body.appendChild(b);
+  b.onclick = () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+  const check = () => b.classList.toggle('on', location.hash === '#tutor' && !!document.querySelector('#main .tchat') && document.documentElement.scrollHeight - innerHeight - scrollY > 400);
+  addEventListener('scroll', check, { passive: true }); setInterval(check, 1000);
+  addEventListener('hashchange', () => { if (location.hash === '#tutor') setTimeout(() => { if (document.querySelector('#main .tchat')) window.scrollTo(0, document.documentElement.scrollHeight); }, 350); }); })();
 </script>
 </body>
 </html>
