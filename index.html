@@ -302,6 +302,8 @@ nav a:hover,nav a.on:hover{background:none;color:var(--text);border-bottom-color
 @media(max-width:1299px){#sideNav{display:none}}
 @media(prefers-reduced-motion:reduce){#sideNav,#sideNav button,#sideNav button span,#hoverNav{transition:none!important}}
 #acctBtn{margin-top:10px;font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer}#acctBtn:hover{border-color:var(--accent)}
+#main .tchat{height:calc(100vh - 300px);min-height:300px;overflow-y:auto;overscroll-behavior:contain;padding:4px 10px 12px;border:1px solid var(--line);border-radius:14px;margin:12px auto 0}
+@media(max-width:620px){#main .tchat{height:calc(100vh - 260px)}}
 </style>
 <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };</script>
 <script src="lib/tex-svg-full.js" defer></script>
@@ -1742,6 +1744,11 @@ function wireCalendar(main) {
   const start = () => { if (typeof D === 'undefined' || !D) return setTimeout(start, 500); pull(); setInterval(pull, 60000); addEventListener('focus', pull); };
   start();
 })();
+</script>
+<script>
+/* keep the website tutor chat scrolled to the newest message inside its box */
+(() => { const fix = () => { const c = document.querySelector('#main .tchat'); if (c && !c.dataset.pinned) { c.dataset.pinned = 1; c.scrollTop = c.scrollHeight; } };
+  new MutationObserver(() => { const c = document.querySelector('#main .tchat'); if (c) { c.scrollTop = c.scrollHeight; } }).observe(document.getElementById('main'), { childList: true, subtree: false }); addEventListener('hashchange', () => setTimeout(fix, 300)); })();
 </script>
 </body>
 </html>
