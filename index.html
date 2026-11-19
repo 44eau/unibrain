@@ -301,6 +301,7 @@ nav a:hover,nav a.on:hover{background:none;color:var(--text);border-bottom-color
 #sideNav button:focus-visible,#hoverNav a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:1299px){#sideNav{display:none}}
 @media(prefers-reduced-motion:reduce){#sideNav,#sideNav button,#sideNav button span,#hoverNav{transition:none!important}}
+#acctBtn{margin-top:10px;font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer}#acctBtn:hover{border-color:var(--accent)}
 </style>
 <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };</script>
 <script src="lib/tex-svg-full.js" defer></script>
@@ -1238,7 +1239,7 @@ const TT = { sid: null, busy: false, err: '', draft: '', imgs: [], lastImgs: [],
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 const ttSessions = () => (TT.S = TT.S || lsGet('ub.tutor', {}));
-const ttSave = () => lsSet('ub.tutor', ttSessions());
+const ttSave = () => { lsSet('ub.tutor', ttSessions()); window.ubSyncSoon && window.ubSyncSoon('tutor'); };
 const TT_ADAPTER = [
   "HOW THIS APP WORKS — you are running inside the Tutor tab of the Uni Brain website, a chat panel with no tools. Everything you write is shown to the student, rendered as Markdown with MathJax. Map the tutor instructions below onto this panel as follows:",
   "- Maths: inline \\( ... \\) and display \\[ ... \\]. Never use $ signs.",
@@ -1539,7 +1540,7 @@ function planTutor(t) {
   setTimeout(() => ttSend(`Topic: ${topic}` + (t.w ? `\nWhy it matters for the exam: ${t.w}` : '')), 120);
 }
 function planWire(main, rerender) {
-  main.querySelectorAll('[data-pltick]').forEach(c => c.onchange = () => { if (c.checked) PT[c.dataset.pltick] = Date.now(); else delete PT[c.dataset.pltick]; savePT(); rerender(); });
+  main.querySelectorAll('[data-pltick]').forEach(c => c.onchange = () => { if (c.checked) PT[c.dataset.pltick] = Date.now(); else { delete PT[c.dataset.pltick]; window.ubPlanOff && window.ubPlanOff(c.dataset.pltick); } savePT(); rerender(); window.ubSyncSoon && window.ubSyncSoon('plan'); });
   main.querySelectorAll('details[data-plwk]').forEach(d => d.ontoggle = () => { if (PLV.open) PLV.open[d.open ? 'add' : 'delete'](d.dataset.plwk); });
   main.querySelectorAll('[data-pltutor]').forEach(b => b.onclick = () => planTutor(planTask(b.dataset.pltutor)));
   const quiz = (t, past) => { if (!t) return; const us = t.u.map(u => UNITS[u]).filter(Boolean), units = us.length ? us : MODS[t.mod].secs.flatMap(x => x.units); location.hash = 'quiz'; setTimeout(() => startQuiz(units, false, !!past), 60); };
@@ -1644,6 +1645,102 @@ function wireCalendar(main) {
   side.addEventListener('click', e => { const b = e.target.closest('button[data-page]'); if (b) go(b.dataset.page); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') bar.classList.remove('show'); });
   fill(); sync();
+})();
+</script>
+<script>
+/* ===== Accounts that the browser remembers + personal sync (plan ticks, tutor chats) with Notes Crawler ===== */
+(() => {
+  const API = 'https://unibrain-tutor.unibrain.workers.dev';
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch {}
+  const get = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } };
+  const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+  const post = async (path, body) => { const r = await fetch(API + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || 'Request failed'); return j; };
+  const signedIn = () => !!(ME.id && ME.token && ME.name);
+  const setMe = p => { ME.id = p.player_id; ME.token = p.token; setName(p.name); try { localStorage.setItem('ub.pid', ME.id); localStorage.setItem('ub.lbtok', ME.token); localStorage.setItem('ub.reg', p.name); } catch {} };
+
+  // header account button
+  const hdr = document.querySelector('header.site'); const acct = document.createElement('button'); acct.id = 'acctBtn'; hdr && hdr.appendChild(acct);
+  const drawAcct = () => { acct.textContent = signedIn() ? `Signed in as ${ME.name}` : 'Sign in or join'; };
+  acct.onclick = () => openAccount(signedIn() ? 'me' : 'join'); drawAcct();
+
+  function openAccount(mode) {
+    document.querySelectorAll('.modal.acct').forEach(x => x.remove());
+    const box = document.createElement('div'); box.className = 'modal acct';
+    const pinSet = get('ub.pinset', false);
+    const form = mode === 'me'
+      ? `<h2 style="margin:0 0 6px">${esc(ME.name)}</h2><p class="meta">This browser remembers you. ${pinSet ? 'Your sign-in PIN is set, so you can also sign in on other devices.' : 'Set a PIN so you can sign in on your phone or another computer.'}</p>
+         <input id="aPin" class="search" inputmode="numeric" maxlength="6" placeholder="${pinSet ? 'New 4–6 digit PIN' : 'Choose a 4–6 digit PIN'}">
+         <button class="chip go" id="aGo" style="width:100%;margin-top:12px;padding:11px">${pinSet ? 'Change PIN' : 'Set PIN'}</button>
+         <button class="chip" id="aOut" style="width:100%;margin-top:8px">Sign out on this browser</button>`
+      : `<h2 style="margin:0 0 6px">${mode === 'join' ? 'Join' : 'Sign in'}</h2>
+         <p class="meta">${mode === 'join' ? 'Pick a display name and a 4–6 digit PIN. Your quiz points, plan ticks and tutor chats are saved to your account, and this browser remembers you.' : 'Use the name and PIN you chose when you joined.'}</p>
+         <input id="aName" class="search" maxlength="20" placeholder="Your name" autocomplete="nickname">
+         <input id="aPin" class="search" inputmode="numeric" maxlength="6" placeholder="4–6 digit PIN" style="margin-top:8px">
+         <button class="chip go" id="aGo" style="width:100%;margin-top:12px;padding:11px">${mode === 'join' ? 'Join' : 'Sign in'}</button>
+         <button class="chip" id="aSwap" style="width:100%;margin-top:8px;background:none;border:0;color:var(--accent)">${mode === 'join' ? 'Already joined? Sign in' : 'New here? Join'}</button>`;
+    box.innerHTML = `<div class="mcard">${form}<button class="chip" id="aLater" style="width:100%;margin-top:4px;background:none;border:0;color:var(--mute)">Not now</button></div>`;
+    document.body.appendChild(box);
+    const $b = q => box.querySelector(q), pinOk = v => /^\d{4,6}$/.test(v);
+    $b('#aLater').onclick = () => { put('ub.skip', Date.now()); box.remove(); };
+    $b('#aSwap') && ($b('#aSwap').onclick = () => openAccount(mode === 'join' ? 'login' : 'join'));
+    $b('#aOut') && ($b('#aOut').onclick = () => { if (!confirm('Sign out on this browser? Your account stays saved; sign back in with your name and PIN.')) return; ['ub.pid', 'ub.lbtok', 'ub.reg', 'ub.name', 'ub.pinset'].forEach(k => { try { localStorage.removeItem(k); } catch {} }); location.reload(); });
+    $b('#aGo').onclick = async () => {
+      const b = $b('#aGo'), pin = ($b('#aPin').value || '').trim(), name = (($b('#aName') || {}).value || '').trim().replace(/\s+/g, ' ');
+      if (!pinOk(pin)) { toast('The PIN must be 4 to 6 digits'); return; }
+      b.disabled = true;
+      try {
+        if (mode === 'me') { await post('/leaderboard/setpin', { player_id: ME.id, token: ME.token, pin }); put('ub.pinset', true); toast('PIN saved'); }
+        else if (mode === 'join') { await register(name); await post('/leaderboard/setpin', { player_id: ME.id, token: ME.token, pin }); put('ub.pinset', true); toast('Welcome, ' + name); }
+        else { setMe(await post('/leaderboard/login', { name, pin })); put('ub.pinset', true); toast('Signed in as ' + ME.name); await pull(); }
+        box.remove(); drawAcct(); render();
+      } catch (e) { toast(e.message); b.disabled = false; }
+    };
+    setTimeout(() => (($b('#aName') || $b('#aPin')).focus()), 50);
+  }
+  window.ubOpenAccount = openAccount;
+  // replaces the old pop-up: ask once, and remember "Not now" for a week
+  window.welcome = function () { if (signedIn()) return; if (Date.now() - get('ub.skip', 0) < 7 * 864e5) return; openAccount('join'); };
+
+  // ---- sync ----
+  const planItems = () => Object.values((D && D.plan && D.plan.days) || {}).flat().filter(t => t.o);
+  window.ubPlanOff = id => { const off = get('ub.plan.off', {}); off[id] = Date.now(); put('ub.plan.off', off); };
+  function localPlan() { const off = get('ub.plan.off', {}), out = {}; for (const t of planItems()) { if (PT[t.id]) out[t.o] = { d: 1, at: +PT[t.id] || 1 }; else if (off[t.id]) out[t.o] = { d: 0, at: off[t.id] }; } return out; }
+  function applyPlan(remote) {
+    let changed = false; const off = get('ub.plan.off', {});
+    for (const t of planItems()) { const r = remote[t.o]; if (!r) continue; const at = PT[t.id] ? (+PT[t.id] || 1) : (off[t.id] || 0);
+      if (r.at > at) { if (r.d) { PT[t.id] = r.at; delete off[t.id]; } else { delete PT[t.id]; off[t.id] = r.at; } changed = true; } }
+    if (changed) { savePT(); put('ub.plan.off', off); }
+    return changed;
+  }
+  const slimSession = s => ({ id: s.id, mod: s.mod, topic: s.topic, created: s.created, updated: s.updated, state: s.state || '', msgs: (s.msgs || []).slice(-80).map(m => ({ role: m.role, text: String(m.text || '').slice(0, 8000), img: !!m.img })) });
+  function localTutor() { const T = ttSessions(), out = {}; Object.values(T).sort((a, b) => b.updated - a.updated).slice(0, 30).forEach(s => out[s.id] = slimSession(s)); return out; }
+  function applyTutor(remote) {
+    const T = ttSessions(); let changed = false;
+    for (const [id, r] of Object.entries(remote || {})) { const l = T[id]; if (!l || (r.updated || 0) > (l.updated || 0)) { T[id] = Object.assign({}, r, { digest: (l && l.digest) || (MODS[r.mod] ? ttDigest(MODS[r.mod], r.topic) : '') }); changed = true; } }
+    if (changed) lsSet('ub.tutor', T);
+    return changed;
+  }
+  let busy = false;
+  async function pull() {
+    if (!signedIn() || busy) return; busy = true;
+    try {
+      const r = await post('/sync/get', { player_id: ME.id, token: ME.token, keys: ['plan', 'tutor'] });
+      const a = r.plan ? applyPlan((r.plan.value || {}).ticks || {}) : false, b = r.tutor ? applyTutor((r.tutor.value || {}).sessions || {}) : false;
+      if ((a && location.hash === '#calendar') || (b && location.hash === '#tutor' && !TT.busy)) render();
+    } catch (e) { console.warn('sync pull', e.message); } finally { busy = false; }
+  }
+  async function push(key) {
+    if (!signedIn()) return;
+    try {
+      const r = await post('/sync/get', { player_id: ME.id, token: ME.token, keys: [key] });
+      if (key === 'plan') { const rem = ((r.plan || {}).value || {}).ticks || {}; applyPlan(rem); await post('/sync/put', { player_id: ME.id, token: ME.token, key, value: { ticks: Object.assign({}, rem, localPlan()) } }); }
+      else { const rem = ((r.tutor || {}).value || {}).sessions || {}; applyTutor(rem); const loc = localTutor(); const all = Object.assign({}, rem); for (const [id, s] of Object.entries(loc)) if (!all[id] || (s.updated || 0) >= (all[id].updated || 0)) all[id] = s;
+        const keep = Object.values(all).sort((a, b) => (b.updated || 0) - (a.updated || 0)).slice(0, 30); await post('/sync/put', { player_id: ME.id, token: ME.token, key, value: { sessions: Object.fromEntries(keep.map(s => [s.id, s])) } }); }
+    } catch (e) { console.warn('sync push', e.message); }
+  }
+  const timers = {}; window.ubSyncSoon = key => { clearTimeout(timers[key]); timers[key] = setTimeout(() => push(key), 2500); };
+  const start = () => { if (typeof D === 'undefined' || !D) return setTimeout(start, 500); pull(); setInterval(pull, 60000); addEventListener('focus', pull); };
+  start();
 })();
 </script>
 </body>
