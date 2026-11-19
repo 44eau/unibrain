@@ -637,11 +637,11 @@ const QS = (() => { try { return JSON.parse(localStorage.getItem('ub.quiz') || '
 const saveQS = () => { try { localStorage.setItem('ub.quiz', JSON.stringify(QS)); } catch {} };
 const QK = { calc: 'Calculation', mcq: 'Multiple choice', written: 'Exam question' };
 function questionsOf(u) {   // exam-style questions; "why/how" recall only stands in until a unit has some
-  const ex = (u.xq || []).map((x, i) => ({ id: `${u.id}|x${i}`, t: x.t || 'written', kind: x.src ? '' + x.src : QK[x.t] || 'Exam question', q: x.q,
+  const ex = (u.xq || []).map((x, i) => ({ id: `${u.id}|x${i}`, bankId: `${u.id}|x${x.i ?? i}`, sig: x.sig, t: x.t || 'written', kind: x.src ? '' + x.src : QK[x.t] || 'Exam question', q: x.q,
     a: x.a || (x.t === 'mcq' ? (x.o || [])[x.c] + (x.w ? ' — ' + x.w : '') : ''), sol: x.s || [], marks: x.m, past: !!x.src, v: x.v, un: x.u || '', o: x.o || [], c: x.c, w: x.w || '', g: x.g || '' }));
   if (ex.length) return ex;
   const qs = [];
-  for (const n of u.notes) n.rq.forEach(([q, a], i) => qs.push({ id: `${u.id}|r${n.p}.${i}`, t: 'written', kind: 'Why / how', q, a, n }));
+  for (const n of u.notes) n.rq.forEach(([q, a, sig], i) => qs.push({ id: `${u.id}|r${n.p}.${i}`, sig, t: 'written', kind: 'Why / how', q, a, n }));
   return qs;
 }
 function unitScore(u) { const qs = questionsOf(u); let done = 0, ok = 0; qs.forEach(q => { const s = QS[q.id]; if (s) { done++; if (s !== 'wrong') ok++; } }); return { total: qs.length, done, acc: done ? ok / done : null }; }
@@ -809,7 +809,7 @@ async function flushStudy() {
 }
 function recordTutorFeedback(session,turn,reply) {
   const grade=reply.match(/\[\[study:(attempt|solved)\]\]\s*$/i);
-  if (grade) studyEvent(grade[1].toLowerCase(),'tutor_'+session.id+'_'+turn);
+  if (grade) studyEvent(grade[1].toLowerCase(),'web_tutor_'+session.id+'_'+turn);
   return reply.replace(/\s*\[\[study:(attempt|solved)\]\]/gi,'').trim();
 }
 let studyLastInput=0, studyTick=Date.now();
@@ -826,7 +826,7 @@ setInterval(()=>{
   if (!account && !false) return;
   const key='ub.study.partial.'+(account?.player_id||'local');
   let ms=Number(localStorage.getItem(key)||0)+elapsed;
-  if (ms>=60000) { ms-=60000; studyEvent('minute'); }
+  if (ms>=60000) { ms-=60000; studyEvent('minute', 'web_minute_' + crypto.randomUUID()); }
   localStorage.setItem(key,String(ms));
 },5000);
 window.addEventListener('online',flushStudy);
@@ -842,19 +842,50 @@ async function boardApi(path, opts = {}) {
   return data;
 }
 const newSessionId = () => 's' + (crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : Math.random().toString(36).slice(2) + Date.now().toString(36));
-const SESSION = { answered: 0, correct: 0, first: 0, module: '', id: newSessionId(), sending: false };
-function noteResult(o, q) { SESSION.answered++; if (o !== 'wrong') SESSION.correct++; if (o === 'right') SESSION.first++; SESSION.module = SESSION.module && SESSION.module !== modOfUnit(q.u.id) ? 'Mixed' : modOfUnit(q.u.id); }
-const modOfUnit = id => { for (const m of D.mods) for (const s of m.secs) if (s.units.some(u => u.id === id)) return m.name; return ''; };
-async function submitSession() {
-  if (!SB_ON || !SESSION.answered || !ME.name || SESSION.sending) { if (!ME.name || !SESSION.answered) Object.assign(SESSION, { answered: 0, correct: 0, first: 0, module: '', id: newSessionId() }); return; }
-  const id = SESSION.id, row = { session_id: id, player_id: ME.id, token: ME.token, module: SESSION.module.slice(0, 60) || 'Mixed', answered: Math.min(40, SESSION.answered), correct: Math.min(SESSION.correct, 40), first_try: Math.min(SESSION.first, SESSION.correct, 40) };
-  SESSION.sending = true;
-  try {
-    await boardApi('score', { method: 'POST', body: JSON.stringify(row) });
-    if (SESSION.id === id) Object.assign(SESSION, { answered: 0, correct: 0, first: 0, module: '', id: newSessionId() });
-  } catch (e) { console.warn('leaderboard', e); toast('Quiz score was not sent. Reconnect before your next quiz so it can be retried.'); }
-  finally { SESSION.sending = false; }
+const quizScorePrefix = 'ub.quiz.score.';
+const newQuizScore = () => ({ id: newSessionId(), answered: 0, correct: 0, first: 0, module: '', answers: [], owner: ME.token ? ME.id : '' });
+let SESSION = newQuizScore(), quizSending = false;
+function noteResult(o, q) {
+  const owner = ME.token ? ME.id : '';
+  if (SESSION.owner !== owner || SESSION.answered >= 40) submitSession();
+  const module = modOfUnit(q.u.id);
+  SESSION.answered++;
+  if (o !== 'wrong') SESSION.correct++;
+  if (o === 'right') SESSION.first++;
+  SESSION.module = SESSION.module && SESSION.module !== module ? 'Mixed' : module;
+  SESSION.answers.push([q.bankId || q.id, q.sig, o]);
 }
+const modOfUnit = id => { for (const m of D.mods) for (const s of m.secs) if (s.units.some(u => u.id === id)) return m.name; return ''; };
+function submitSession() {
+  const quiz = SESSION;
+  SESSION = newQuizScore();
+  if (!SB_ON || !quiz.answered || !quiz.owner) return;
+  const row = { session_id: quiz.id, player_id: quiz.owner, module: quiz.module.slice(0, 60) || 'Mixed',
+    answered: quiz.answered, correct: quiz.correct, first_try: quiz.first };
+  if (quiz.answers.every(a => a[1])) row.answers = quiz.answers;
+  try { localStorage.setItem(quizScorePrefix + quiz.id, JSON.stringify(row)); }
+  catch { if (quiz.owner === ME.id) boardApi('score', { method: 'POST', body: JSON.stringify({...row, token: ME.token}) }).catch(() => toast('Quiz score could not be saved.')); return; }
+  flushQuizScores();
+}
+async function flushQuizScores() {
+  if (quizSending || !ME.token || !navigator.onLine) return;
+  const owner = ME.id, token = ME.token;
+  quizSending = true;
+  try {
+    for (const key of Object.keys(localStorage).filter(k => k.startsWith(quizScorePrefix))) {
+      if (ME.id !== owner) break;
+      const row = JSON.parse(localStorage.getItem(key));
+      if (!row || row.player_id !== owner) continue;
+      await boardApi('score', { method: 'POST', body: JSON.stringify({...row, token}) });
+      localStorage.removeItem(key);
+    }
+  } catch (err) { console.warn('Saved quiz will retry', err.message); }
+  finally { quizSending = false; }
+}
+addEventListener('online', flushQuizScores);
+addEventListener('pagehide', submitSession);
+setTimeout(flushQuizScores, 5000);
+setInterval(flushQuizScores, 60000);
 function nameBox() {
   return `<div class="row" style="margin-top:10px"><input id="lbName" class="search" style="margin:0;flex:1;min-width:160px" maxlength="20" placeholder="Your name for the leaderboard" value="${esc(ME.name)}"><button class="chip go" id="lbSave">${ME.name ? 'Update name' : 'Join leaderboard'}</button></div>`;
 }
