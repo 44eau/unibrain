@@ -318,6 +318,7 @@ nav a:hover,nav a.on:hover{background:none;color:var(--text);border-bottom-color
 .lbtask .row,.card .row{display:flex}
 .pp .pptypes{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.pp .pptypes .chip{text-align:left;padding:8px 12px}.pp .pptypes .chip.on{border-color:var(--accent,#6f62ff);background:color-mix(in srgb,var(--accent,#6f62ff) 18%,transparent)}
 .ppplan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0}@media(max-width:620px){.ppplan{grid-template-columns:1fr}}.skpad{width:100%;height:auto;display:block;margin-top:8px;border:1px dashed var(--line);border-radius:10px;background:var(--panel2);touch-action:none;cursor:crosshair}.sk summary,.fy summary{cursor:pointer}.why textarea,.fy textarea,.fy select{margin-top:8px}
+.skthumb{height:56px;border-radius:8px;border:1px solid var(--line)}
 </style>
 <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };</script>
 <script src="lib/tex-svg-full.js" defer></script>
@@ -2181,7 +2182,7 @@ function wireCalendar(main) {
     const fyd = main.querySelector('details.fy'); if (fyd) fyd.ontoggle = () => { QZ.fyOpen = fyd.open; };
     const fys = main.querySelector('[data-fyu]'); if (fys) fys.onchange = () => { QZ.fyUnit = fys.value; QZ.fyOpen = true; renderQuizMain(); };
     const fyg = main.querySelector('[data-fygo]'); if (fyg) fyg.onclick = () => feynCheck(main);
-    wireSketch(main);
+    wirePhoto(main);
     main.querySelectorAll('[data-ppweak]').forEach(b => b.onclick = () => { const mid = b.dataset.ppweak, cal = P.cal[mid] || { units: {} }, us = MODS[mid].secs.flatMap(s => s.units).filter(u => cal.units[u.id] === 'weak'); if (!us.length) return toast('No weak topics: try a Marathon instead'); submitSession(); QZ.queue = []; startQuiz(us); });
   };
   const baseRecord = record; record = function (...a) { const r = baseRecord.apply(this, a); srsUpdate(a[0], a[1]); save(); return r; };
@@ -2224,20 +2225,46 @@ function wireCalendar(main) {
   quizQuestion = function () {
     let h = baseQuestion(); const q = QZ.queue[QZ.i], r = QZ.res; if (!q) return h;
     const mod = MODS[UMOD()[q.u.id]] || { name: '' };
-    if (!(r && r.final) && qSize(q) !== 'quick') h += `<details class="card sk" ${QZ.sketchOpen ? 'open' : ''}><summary>✏️ <b>Sketch it first</b> <span class="meta">(dual coding): ${sketchHint(mod.name)}</span></summary><canvas class="skpad" width="900" height="320"></canvas><div class="row" style="gap:8px;margin-top:6px"><button class="chip" data-skclear>Clear</button><span class="meta">Draw with your mouse, finger or pen. A diagram plus words is remembered better than words alone.</span></div></details>`;
+    if (QZ.skFor !== q.id) Object.assign(QZ, { skFor: q.id, skImgs: [], skFb: null, skBusy: false });
+    if (!(r && r.final) && q.t !== 'mcq') h += `<div class="card sk"><div class="label" style="margin-top:0">📷 Mark my working <span class="meta">(dual coding)</span></div>
+      <div class="meta">Work it out on paper and ${sketchHint(mod.name)}. Then upload a photo and the AI marks it against the model answer, with method marks like a real examiner.</div>
+      <div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center"><label class="chip ${QZ.skImgs.length ? '' : 'go'}" style="cursor:pointer">📷 ${QZ.skImgs.length ? 'Add another photo' : 'Upload a photo'}<input type="file" accept="image/*" multiple data-skfile hidden></label>
+        ${QZ.skImgs.map(d => `<img class="skthumb" src="data:image/jpeg;base64,${d}" alt="your working">`).join('')}
+        ${QZ.skImgs.length ? `<button class="chip go" data-skmark ${QZ.skBusy ? 'disabled' : ''}>${QZ.skBusy ? 'Marking…' : 'Mark my working'}</button><button class="chip" data-skclear>Remove photos</button>` : ''}</div>
+      <div id="skOut">${QZ.skBusy ? '<div class="meta" style="margin-top:8px">Reading your handwriting and marking it. This can take up to a minute.</div>' : ''}</div></div>`;
+    if (QZ.skFb) h += `<div class="card sk"><div class="label" style="margin-top:0">📷 AI marking of your working</div><div class="lbsol">${ttMd(QZ.skFb)}</div><div class="meta" style="margin-top:6px">AI marking can misread handwriting: always compare with the model answer.</div></div>`;
     if (r && r.final) { const w = whyFor(q), weak = level(q) === 'weak'; if (w && (!r.ok || weak || QZ.i % 3 === 0)) h += `<div class="card why"><div class="label" style="margin-top:0">🤔 Why? <span class="meta">(elaborative interrogation${!r.ok ? ': you missed this one, so explain the idea behind it' : weak ? ': a weak topic for you' : ''})</span></div><div class="lbq">${esc(w.q)}</div><textarea class="search" rows="2" placeholder="Answer in your own words before you look…"></textarea>${w.a ? `<details><summary class="meta">Compare with your notes</summary><div style="margin-top:6px">${esc(w.a)}</div></details>` : '<div class="meta">Then check your reasoning against the model answer above.</div>'}</div>`; }
     return h;
   };
-  function wireSketch(main) {
-    const c = main.querySelector('.skpad'); if (!c) return; const x = c.getContext('2d'), det = c.closest('details');
-    det.ontoggle = () => { QZ.sketchOpen = det.open; };
-    if (QZ.sketch && QZ.sketchFor === QZ.i) { const im = new Image(); im.onload = () => x.drawImage(im, 0, 0); im.src = QZ.sketch; } else { QZ.sketch = null; QZ.sketchFor = QZ.i; }
-    x.lineWidth = 2.5; x.lineCap = 'round'; x.strokeStyle = getComputedStyle(document.body).color;
-    let on = false; const pt = e => { const b = c.getBoundingClientRect(); return [(e.clientX - b.left) * c.width / b.width, (e.clientY - b.top) * c.height / b.height]; };
-    c.onpointerdown = e => { on = true; c.setPointerCapture(e.pointerId); x.beginPath(); x.moveTo(...pt(e)); };
-    c.onpointermove = e => { if (!on) return; x.lineTo(...pt(e)); x.stroke(); };
-    c.onpointerup = () => { on = false; QZ.sketch = c.toDataURL(); QZ.sketchFor = QZ.i; };
-    const cl = main.querySelector('[data-skclear]'); if (cl) cl.onclick = () => { x.clearRect(0, 0, c.width, c.height); QZ.sketch = null; };
+  // the models write $…$ maths; this site's MathJax reads \( … \) and \[ … \]
+  const mathFix = t => String(t || '').replace(/\$\$([^$]+)\$\$/g, (m, x) => '\\[' + x + '\\]').replace(/\$([^$\n]+)\$/g, (m, x) => '\\(' + x + '\\)');
+  async function addPhotos(files) {
+    for (const file of [...files].filter(x => x.type.startsWith('image/')).slice(0, Math.max(0, 4 - QZ.skImgs.length))) try {
+      const bmp = await createImageBitmap(file), k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(bmp.width * k)); c.height = Math.max(1, Math.round(bmp.height * k)); c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+      let d = c.toDataURL('image/jpeg', .8).split(',')[1]; if (d.length > 1400000) d = c.toDataURL('image/jpeg', .55).split(',')[1]; QZ.skImgs.push(d);
+    } catch { toast('Could not read that photo'); }
+    renderQuizMain();
+  }
+  async function markPhoto() {
+    const q = QZ.queue[QZ.i]; if (!q || !QZ.skImgs.length) return; const id = q.id, marks = +q.marks || 5;
+    QZ.skBusy = true; renderQuizMain();
+    const sys = `You are a strict but fair University of Glasgow first-year engineering examiner. Mark the student's handwritten working in the photo(s) against the question and the model answer. Give method marks for correct steps even when the final answer is wrong, as a real examiner would. Check any diagram (free-body diagram, circuit, SFD/BMD, graph) for correct labels, directions and values. Reply in Markdown: **Mark: X/${marks}**, then **✅ Earned**, **❌ Lost marks** (say exactly what is wrong or missing and give the correct version), **✏️ Your diagram** (if there is one), and one line **Next time**. If the photo is unreadable or not this question, say so and give 0. Finish with one last line exactly in the form SCORE: X/${marks}`;
+    const text = (`QUESTION [${marks} marks]:\n${q.q}\n\nMODEL ANSWER:\n${q.a || ''}\n` + ((q.sol || []).length ? 'WORKED SOLUTION:\n' + q.sol.map((x, i) => `${i + 1}. ${x}`).join('\n') : '')).slice(0, 5600) + '\n\nMy working is in the attached photo(s).';
+    const msgs = [{ role: 'user', content: QZ.skImgs.map(d => ({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: d } })).concat([{ type: 'text', text }]) }];
+    const plain = [{ role: 'user', text, imgs: QZ.skImgs.slice() }];   // the free relay reads .text and .imgs (base64 JPEG)
+    try {
+      const t = await ttAsk(sys, msgs, sys, plain); if (QZ.skFor !== id) return;
+      const m = t.match(/SCORE:\s*\**\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)/i) || t.match(/Mark:\s*\**\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+)/i);
+      QZ.skFb = mathFix(t.replace(/\n*\**SCORE:[^\n]*\s*$/i, ''));
+      if (m && !(QZ.res && QZ.res.final)) { const f = +m[1] / Math.max(1, +m[2]), o = f >= 0.8 ? (QZ.att === 1 ? 'right' : 'second') : f >= 0.5 ? 'second' : 'wrong'; record(q, o); QZ.res = { ok: o !== 'wrong', final: true, second: o === 'second', ai: true, miss: [] }; }
+    } catch (e) { toast(e.message || 'The marker is busy. Try again in a minute.'); }
+    QZ.skBusy = false; if (QZ.skFor === id) renderQuizMain();
+  }
+  function wirePhoto(main) {
+    const f = main.querySelector('[data-skfile]'); if (f) f.onchange = () => addPhotos(f.files);
+    const m = main.querySelector('[data-skmark]'); if (m) m.onclick = () => markPhoto();
+    const c = main.querySelector('[data-skclear]'); if (c) c.onclick = () => { QZ.skImgs = []; renderQuizMain(); };
   }
   // 6) Feynman technique: explain a topic in plain words; the free tutor checks it against the course notes.
   const unitText = u => [u.name, u.ov || '', (u.must || []).join('; ')].concat((u.notes || []).map(n => [n.t, (n.pts || []).join('; '), (n.defs || []).map(d => Array.isArray(d) ? d.join(': ') : d).join('; '), (n.eqs || []).map(e => Array.isArray(e) ? e.join(' ') : e).join('; ')].join(' | '))).join('\n').slice(0, 6000);
@@ -2250,7 +2277,7 @@ function wireCalendar(main) {
     const sys = FEYN_SYS + `\n\n=== COURSE NOTES for "${u.name}" (reference data) ===\n${unitText(u)}`;   // notes go in the system prompt: the relay caps each message at 6000 characters
     const msgs = [{ role: 'user', content: `My explanation of "${u.name}", as if teaching a beginner:\n\n${ta.value.slice(0, 5000)}` }];
     const plain = msgs.map(m => ({ role: m.role, text: m.content }));   // the free relay reads .text
-    try { const t = await ttAsk(sys, msgs, sys, plain); out.innerHTML = `<div class="lbsol">${ttMd(t)}</div>`; typeset(out); }
+    try { const t = await ttAsk(sys, msgs, sys, plain); out.innerHTML = `<div class="lbsol">${ttMd(mathFix(t))}</div>`; typeset(out); }
     catch (e) { out.innerHTML = `<div class="lbwarn">${esc(e.message || 'The tutor is busy. Try again in a minute.')}</div>`; }
   }
 
