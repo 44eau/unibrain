@@ -2146,7 +2146,7 @@ function wireCalendar(main) {
       <div class="meta" style="margin-top:8px">Official questions come first (tutorials, past papers, Moodle): <b>${realDone}/${real.length}</b> done.${gen ? (realDone >= real.length ? ` Extra practice questions unlocked (${gen}).` : ` ${gen} extra practice questions, written from these, unlock once you have done the official ones.`) : ''}</div>
       <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:10px">${P.cal[m.id] ? `<button class="chip go" data-ppweak="${m.id}">Practise my weak topics</button>` : ''}<button class="chip ${P.cal[m.id] ? '' : 'go'}" data-ppcal="${m.id}">${P.cal[m.id] ? 'Redo my level check' : '🎯 Check my level (about 10 quick questions)'}</button></div>
       <div class="meta" style="margin-top:8px">${calLine(m.id) || 'The level check asks one question from every chapter, then tailors your quizzes to what you need.'}</div></div>`;
-    const due = dueQs(m.id), dueAll = dueQs(), weak = weakUnits(m.id), units = m.secs.flatMap(s => s.units), fyu = UNITS[QZ.fyUnit] || weak[0] || units[0];
+    const due = dueQs(m.id), dueAll = dueQs(), weak = weakUnits(m.id), units = m.secs.flatMap(s => s.units).filter(u => !/^0\.\d|logistic|admin|welcome|short description|course (intro|overview|structure|description)|learning resources|timetable/i.test(u.name)), fyu = UNITS[QZ.fyUnit] || weak[0] || units[0];
     const fyOpts = [...new Set(weak.concat(units))].map(u => `<option value="${u.id}" ${u === fyu ? 'selected' : ''}>${weak.includes(u) ? '⚠️ ' : ''}${esc(u.name)}</option>`).join('');
     const plan = `<div class="card pp"><div class="label" style="margin-top:0">Your study plan today · ${esc(m.name)}</div>
       <div class="ppplan"><button class="mode" data-ppdue="${m.id}"><b>🔁</b><span>Review due (${due.length || dueAll.length})</span><i>spaced repetition${due.length ? (dueAll.length > due.length ? ` · ${dueAll.length} in all modules` : '') : dueAll.length ? ' · from all modules' : ' · nothing due yet'}</i></button>
@@ -2247,8 +2247,10 @@ function wireCalendar(main) {
     if (!u || (ta.value || '').trim().length < 40) return toast('Write at least a few sentences first');
     P.feyn = P.feyn || {}; P.feyn[u.id] = { t: ta.value, at: Date.now() }; save();
     out.innerHTML = '<div class="meta">Checking your explanation…</div>';
-    const msgs = [{ role: 'user', content: `COURSE NOTES for "${u.name}":\n${unitText(u)}\n\nMY EXPLANATION (as if teaching a beginner):\n${ta.value}` }];
-    try { const t = await ttAsk(FEYN_SYS, msgs, FEYN_SYS, msgs); out.innerHTML = `<div class="lbsol">${ttMd(t)}</div>`; typeset(out); }
+    const sys = FEYN_SYS + `\n\n=== COURSE NOTES for "${u.name}" (reference data) ===\n${unitText(u)}`;   // notes go in the system prompt: the relay caps each message at 6000 characters
+    const msgs = [{ role: 'user', content: `My explanation of "${u.name}", as if teaching a beginner:\n\n${ta.value.slice(0, 5000)}` }];
+    const plain = msgs.map(m => ({ role: m.role, text: m.content }));   // the free relay reads .text
+    try { const t = await ttAsk(sys, msgs, sys, plain); out.innerHTML = `<div class="lbsol">${ttMd(t)}</div>`; typeset(out); }
     catch (e) { out.innerHTML = `<div class="lbwarn">${esc(e.message || 'The tutor is busy. Try again in a minute.')}</div>`; }
   }
 
