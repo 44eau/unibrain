@@ -305,6 +305,17 @@ nav a:hover,nav a.on:hover{background:none;color:var(--text);border-bottom-color
 #main .tchat{height:auto;overflow:visible;border:0}
 #main .tcomp,#main .tcomposer{position:sticky;bottom:0;z-index:20;background:linear-gradient(to bottom,transparent,var(--bg) 28%);padding-bottom:12px}
 #ttDown{position:fixed;left:50%;bottom:130px;transform:translateX(-50%);z-index:30;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:18px;cursor:pointer;display:none;align-items:center;justify-content:center}#ttDown.on{display:flex}
+/* circuit lab */
+.lbsch{width:100%;max-width:560px;height:auto;display:block;margin:8px 0;fill:none;stroke:var(--text);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.lbsch text{fill:var(--mute);stroke:none;font:12px var(--mono)}
+.lbsch .lbdot{fill:var(--text)}.lbsch .lbgrid{stroke:var(--line);stroke-width:1}.lbsch .lbmag{stroke:var(--cyan);stroke-width:2}.lbsch .lbph{stroke:var(--orange);stroke-width:2}.lbsch .lbcut{stroke:var(--pink);stroke-dasharray:4 4;stroke-width:1.2}
+.lbtpls{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.lbgrid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:18px}@media(max-width:820px){.lbgrid2{grid-template-columns:1fr}}
+.lbin{display:flex;flex-wrap:wrap;gap:8px 14px;margin:8px 0}.lbin label{display:flex;align-items:center;gap:6px;font-size:14px}
+.lbin input{width:96px;padding:7px 9px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font:14px var(--mono)}
+.lbfacts div,.lbres div{margin:4px 0;line-height:1.5}.lbnodes{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px}.lbq{font-size:16px;line-height:1.55}
+.lbres,.lbsol{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}.lbwarn{color:var(--orange)}
+.lbtask .row,.card .row{display:flex}
 </style>
 <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };</script>
 <script src="lib/tex-svg-full.js" defer></script>
@@ -472,7 +483,7 @@ const PCOL = ['#4b70dd', '#e2553d', '#d9a066', '#3fbfa8', '#a35ce6', '#7fc94a'];
 function nav() {
   const h = location.hash.slice(1) || 'home';
   const act = h.startsWith('m') && MODS[h.slice(1)] ? 'modules' : h;   // module pages sit under "Modules"
-  $('#nav').innerHTML = [['home', 'Home'], ['modules', 'Modules'], ['calendar', 'Plan & exams'], ['quiz', 'Quiz'], ['formulas', 'Formulas & glossary'], ['tutor', 'Tutor'], ['leaderboard', 'Leaderboard']]
+  $('#nav').innerHTML = [['home', 'Home'], ['modules', 'Modules'], ['calendar', 'Plan & exams'], ['quiz', 'Quiz'], ['lab', 'Circuit lab'], ['formulas', 'Formulas & glossary'], ['tutor', 'Tutor'], ['leaderboard', 'Leaderboard']]
     .map(([k, t]) => `<a href="#${k}" class="${act === k ? 'on' : ''}">${esc(t)}</a>`).join('');
 }
 function keyHTML() {
@@ -596,6 +607,7 @@ function render() {
   if (q.length < 2 && h === 'quiz') return renderQuizMain();
   if (q.length < 2 && h === 'leaderboard') return renderLeaderboard();
   if (q.length < 2 && h === 'tutor') return ttRender();
+  if (q.length < 2 && h === 'lab') { if (window.labRender) labRender(); else setTimeout(render, 60); return; }
   if (q.length >= 2) main.innerHTML = searchView(q);
   else if (h === 'formulas') main.innerHTML = formulasView();
   else if (h === 'key') main.innerHTML = `<div class="card">${keyHTML()}</div>`;
@@ -1850,5 +1862,219 @@ function wireCalendar(main) {
   addEventListener('scroll', check, { passive: true }); setInterval(check, 1000);
   addEventListener('hashchange', () => { if (location.hash === '#tutor') setTimeout(() => { if (document.querySelector('#main .tchat')) window.scrollTo(0, document.documentElement.scrollHeight); }, 350); }); })();
 </script>
+<!-- LAB START (source: site/lab.js) -->
+<script>
+/* ===== Circuit lab (Analogue Electronics 1): design trainer + circuit builder with a nodal-analysis solver and Bode plots =====
+   Source file: .notes-crawler/site/lab.js. It is inlined into index.html between the LAB START / LAB END markers. */
+(() => {
+  // ---------- numbers ----------
+  const SI = { p: 1e-12, n: 1e-9, u: 1e-6, 'µ': 1e-6, m: 1e-3, k: 1e3, K: 1e3, M: 1e6, G: 1e9 };
+  const num = s => { const m = String(s ?? '').trim().replace(/,/g, '').match(/^([-+]?\d*\.?\d+(?:e[-+]?\d+)?)\s*([pnuµmkKMG]?)/); return m ? parseFloat(m[1]) * (SI[m[2]] || 1) : NaN; };
+  const PRE = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p']];
+  const fmt = (v, u = '', sf = 3) => { if (!isFinite(v)) return '–'; if (v === 0) return '0 ' + u; const a = Math.abs(v), p = PRE.find(([k]) => a >= k * 0.9995) || PRE[PRE.length - 1]; return +(v / p[0]).toPrecision(sf) + ' ' + p[1] + u; };
+  const deg = r => r * 180 / Math.PI, TAU = 2 * Math.PI;
+  const E12 = [1, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2];
+  const e12 = v => { const d = Math.pow(10, Math.floor(Math.log10(v))); let best = 10 * d; for (const e of E12.concat(10)) if (Math.abs(e * d - v) < Math.abs(best - v)) best = e * d; return best; };
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+
+  // ---------- complex numbers ----------
+  const C = (re, im = 0) => [re, im];
+  const add = (a, b) => [a[0] + b[0], a[1] + b[1]], sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+  const mul = (a, b) => [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]];
+  const div = (a, b) => { const d = b[0] * b[0] + b[1] * b[1]; return [(a[0] * b[0] + a[1] * b[1]) / d, (a[1] * b[0] - a[0] * b[1]) / d]; };
+  const mag = a => Math.hypot(a[0], a[1]), ang = a => Math.atan2(a[1], a[0]);
+
+  // ---------- modified nodal analysis ----------
+  // elements: R/C/L {t,a,b,v}; V source {t:'V',a:+,b:-,v}; ideal op-amp {t:'OA',p:+in,m:-in,o:out}. Node 0 is ground.
+  function solve(net, f) {
+    const w = TAU * f, n = net.n, els = net.els.filter(e => e.t === 'OA' || isFinite(e.v) && (e.t !== 'C' && e.t !== 'L' || e.v > 0));
+    let k = n; const ex = els.map(e => (e.t === 'V' || e.t === 'OA') ? k++ : -1), N = k;
+    const A = Array.from({ length: N }, () => Array.from({ length: N }, () => C(0))), B = Array.from({ length: N }, () => C(0));
+    const put = (i, j, y) => { if (i > 0 && j > 0) A[i - 1][j - 1] = add(A[i - 1][j - 1], y); };
+    els.forEach((e, i) => {
+      if (e.t === 'R' || e.t === 'C' || e.t === 'L') {
+        const y = e.t === 'R' ? C(1 / e.v) : e.t === 'C' ? (w ? C(0, w * e.v) : C(1e-12)) : (w ? C(0, -1 / (w * e.v)) : C(1e9));
+        put(e.a, e.a, y); put(e.b, e.b, y); put(e.a, e.b, [-y[0], -y[1]]); put(e.b, e.a, [-y[0], -y[1]]);
+      } else if (e.t === 'V') {
+        const r = ex[i];
+        if (e.a > 0) { A[e.a - 1][r] = add(A[e.a - 1][r], C(1)); A[r][e.a - 1] = add(A[r][e.a - 1], C(1)); }
+        if (e.b > 0) { A[e.b - 1][r] = sub(A[e.b - 1][r], C(1)); A[r][e.b - 1] = sub(A[r][e.b - 1], C(1)); }
+        B[r] = C(e.v);
+      } else if (e.t === 'OA') {
+        const r = ex[i];
+        A[e.o - 1][r] = add(A[e.o - 1][r], C(1));           // the output can source any current
+        if (e.p > 0) A[r][e.p - 1] = add(A[r][e.p - 1], C(1)); // ideal: V+ = V-
+        if (e.m > 0) A[r][e.m - 1] = sub(A[r][e.m - 1], C(1));
+      }
+    });
+    for (let c = 0; c < N; c++) {                              // Gaussian elimination with partial pivoting
+      let p = c; for (let r = c + 1; r < N; r++) if (mag(A[r][c]) > mag(A[p][c])) p = r;
+      if (mag(A[p][c]) < 1e-30) return null;
+      [A[c], A[p]] = [A[p], A[c]]; [B[c], B[p]] = [B[p], B[c]];
+      for (let r = c + 1; r < N; r++) { const m = div(A[r][c], A[c][c]); if (!m[0] && !m[1]) continue; for (let j = c; j < N; j++) A[r][j] = sub(A[r][j], mul(m, A[c][j])); B[r] = sub(B[r], mul(m, B[c])); }
+    }
+    const x = Array(N).fill(C(0));
+    for (let r = N - 1; r >= 0; r--) { let s = B[r]; for (let j = r + 1; j < N; j++) s = sub(s, mul(A[r][j], x[j])); x[r] = div(s, A[r][r]); }
+    return i => i === 0 ? C(0) : x[i - 1];
+  }
+
+  // ---------- schematic drawing (simple SVG parts) ----------
+  const L = (x1, y1, x2, y2) => `<path d="M${x1} ${y1}L${x2} ${y2}"/>`;
+  const T = (x, y, t, a = 'middle') => `<text x="${x}" y="${y}" text-anchor="${a}">${t}</text>`;
+  const Rh = (x, y, t) => `<path d="M${x} ${y}h14l3-6 6 12 6-12 6 12 6-12 6 12 3-6h14"/>` + T(x + 32, y - 10, t);
+  const Rv = (x, y, t) => `<path d="M${x} ${y}v14l-6 3 12 6-12 6 12 6-12 6 12 6-6 3v14"/>` + T(x + 12, y + 35, t, 'start');
+  const Ch = (x, y, t) => L(x, y, x + 28, y) + L(x + 28, y - 10, x + 28, y + 10) + L(x + 36, y - 10, x + 36, y + 10) + L(x + 36, y, x + 64, y) + T(x + 32, y - 14, t);
+  const Cv = (x, y, t) => L(x, y, x, y + 28) + L(x - 10, y + 28, x + 10, y + 28) + L(x - 10, y + 36, x + 10, y + 36) + L(x, y + 36, x, y + 64) + T(x + 14, y + 36, t, 'start');
+  const G = (x, y) => L(x, y, x, y + 6) + L(x - 9, y + 6, x + 9, y + 6) + L(x - 5, y + 10, x + 5, y + 10) + L(x - 2, y + 14, x + 2, y + 14);
+  const Src = (x, y, t) => L(x, y, x, y + 12) + `<circle cx="${x}" cy="${y + 26}" r="14"/><path d="M${x - 7} ${y + 26}q3.5-7 7 0t7 0"/>` + L(x, y + 40, x, y + 52) + G(x, y + 52) + T(x + 18, y + 34, t, 'start');
+  // op-amp: inputs at (x, y∓15), output at (x+52, y); plusTop puts the + input on top
+  const Op = (x, y, plusTop) => `<path d="M${x} ${y - 30}L${x} ${y + 30}L${x + 52} ${y}Z"/>` + T(x + 9, y - 11, plusTop ? '+' : '−', 'start') + T(x + 9, y + 19, plusTop ? '−' : '+', 'start');
+  const Dot = (x, y) => `<circle cx="${x}" cy="${y}" r="2.6" class="lbdot"/>`;
+  const Out = (x, y) => Dot(x, y) + T(x + 6, y + 4, 'V<tspan font-size="9">out</tspan>', 'start');
+  const svg = (w, h, body) => `<svg class="lbsch" viewBox="0 0 ${w} ${h}" role="img" aria-label="circuit diagram">${body}</svg>`;
+
+  // ---------- circuits ----------
+  const TPL = {
+    lp: { name: 'RC low-pass filter', p: { R: '1k', C: '100n' }, units: { R: 'Ω', C: 'F' },
+      net: p => ({ n: 2, els: [{ t: 'V', a: 1, b: 0, v: 1 }, { t: 'R', a: 1, b: 2, v: p.R }, { t: 'C', a: 2, b: 0, v: p.C }] }), out: 2,
+      sch: p => svg(330, 120, Src(30, 20, 'V<tspan font-size="9">in</tspan>') + L(30, 20, 70, 20) + Rh(70, 20, 'R') + L(134, 20, 190, 20) + Cv(190, 20, 'C') + G(190, 84) + Out(190, 20) + L(190, 20, 250, 20)),
+      facts: p => [`f<sub>c</sub> = 1/(2πRC) = <b>${fmt(1 / (TAU * p.R * p.C), 'Hz')}</b>`, 'Passes low frequencies; −20 dB/decade above f<sub>c</sub>; −45° at f<sub>c</sub>.'] },
+    hp: { name: 'RC high-pass filter', p: { C: '100n', R: '1k' }, units: { R: 'Ω', C: 'F' },
+      net: p => ({ n: 2, els: [{ t: 'V', a: 1, b: 0, v: 1 }, { t: 'C', a: 1, b: 2, v: p.C }, { t: 'R', a: 2, b: 0, v: p.R }] }), out: 2,
+      sch: p => svg(330, 120, Src(30, 20, 'V<tspan font-size="9">in</tspan>') + L(30, 20, 70, 20) + Ch(70, 20, 'C') + L(134, 20, 190, 20) + Rv(190, 20, 'R') + G(190, 84) + Out(190, 20) + L(190, 20, 250, 20)),
+      facts: p => [`f<sub>c</sub> = 1/(2πRC) = <b>${fmt(1 / (TAU * p.R * p.C), 'Hz')}</b>`, 'Blocks DC; +20 dB/decade below f<sub>c</sub>; +45° at f<sub>c</sub>.'] },
+    inv: { name: 'Inverting amplifier (add C<sub>f</sub> for an active low-pass)', p: { R1: '10k', Rf: '100k', Cf: '0' }, units: { R1: 'Ω', Rf: 'Ω', Cf: 'F' },
+      net: p => ({ n: 3, els: [{ t: 'V', a: 1, b: 0, v: 1 }, { t: 'R', a: 1, b: 2, v: p.R1 }, { t: 'R', a: 2, b: 3, v: p.Rf }, { t: 'C', a: 2, b: 3, v: p.Cf }, { t: 'OA', p: 0, m: 2, o: 3 }] }), out: 3,
+      sch: p => svg(380, 170, Src(30, 80, 'V<tspan font-size="9">in</tspan>') + L(30, 80, 60, 80) + Rh(60, 80, 'R1') + L(124, 80, 170, 80) + Dot(150, 80) + L(150, 80, 150, 40) + Rh(150, 40, 'R<tspan font-size="9">f</tspan>') + L(214, 40, 280, 40) + L(280, 40, 280, 95)
+        + (p.Cf > 0 ? L(150, 40, 150, 14) + L(150, 14, 211, 14) + L(211, 4, 211, 24) + L(219, 4, 219, 24) + L(219, 14, 280, 14) + L(280, 14, 280, 40) + T(250, 10, 'C<tspan font-size="9">f</tspan>') : '')
+        + Op(170, 95) + L(170, 110, 160, 110) + G(160, 110) + L(222, 95, 310, 95) + Dot(280, 95) + Out(310, 95)),
+      facts: p => { const g = p.Rf / p.R1; return [`Gain = −R<sub>f</sub>/R<sub>1</sub> = <b>${(-g).toPrecision(3)}</b> V/V (${(20 * Math.log10(g)).toFixed(1)} dB), input resistance = R<sub>1</sub> = ${fmt(p.R1, 'Ω')}`].concat(p.Cf > 0 ? [`With C<sub>f</sub>: f<sub>c</sub> = 1/(2πR<sub>f</sub>C<sub>f</sub>) = <b>${fmt(1 / (TAU * p.Rf * p.Cf), 'Hz')}</b>`] : []); } },
+    ninv: { name: 'Non-inverting amplifier with an input high-pass', p: { C: '100n', R: '10k', R1: '10k', Rf: '22k' }, units: { C: 'F', R: 'Ω', R1: 'Ω', Rf: 'Ω' },
+      net: p => ({ n: 4, els: [{ t: 'V', a: 1, b: 0, v: 1 }, { t: 'C', a: 1, b: 2, v: p.C }, { t: 'R', a: 2, b: 0, v: p.R }, { t: 'OA', p: 2, m: 3, o: 4 }, { t: 'R', a: 3, b: 0, v: p.R1 }, { t: 'R', a: 4, b: 3, v: p.Rf }] }), out: 4,
+      sch: p => svg(380, 190, Src(20, 55, 'V<tspan font-size="9">in</tspan>') + L(20, 55, 40, 55) + Ch(40, 55, 'C') + L(104, 55, 200, 55) + Dot(118, 55) + Rv(118, 55, 'R') + G(118, 119)
+        + Op(200, 70, true) + L(200, 85, 180, 85) + L(180, 85, 180, 140) + Dot(180, 100) + L(180, 100, 160, 100) + Rv(160, 100, '') + T(148, 138, 'R1', 'end') + G(160, 164)
+        + Rh(180, 140, 'R<tspan font-size="9">f</tspan>') + L(244, 140, 290, 140) + L(290, 140, 290, 70) + L(252, 70, 320, 70) + Dot(290, 70) + Out(320, 70)),
+      facts: p => { const g = 1 + p.Rf / p.R1; return [`Pass-band gain = 1 + R<sub>f</sub>/R<sub>1</sub> = <b>${g.toPrecision(3)}</b> V/V (${(20 * Math.log10(g)).toFixed(1)} dB)`, `Input high-pass: f<sub>c</sub> = 1/(2πRC) = <b>${fmt(1 / (TAU * p.R * p.C), 'Hz')}</b>`]; } },
+    thev: { name: 'Thévenin equivalent and maximum power', dc: true, p: { Vs: '10', R1: '1k', R2: '1k', RL: '500' }, units: { Vs: 'V', R1: 'Ω', R2: 'Ω', RL: 'Ω' },
+      net: p => ({ n: 2, els: [{ t: 'V', a: 1, b: 0, v: p.Vs }, { t: 'R', a: 1, b: 2, v: p.R1 }, { t: 'R', a: 2, b: 0, v: p.R2 }, { t: 'R', a: 2, b: 0, v: p.RL }] }), out: 2,
+      sch: p => svg(380, 130, Src(30, 20, 'V<tspan font-size="9">s</tspan>') + L(30, 20, 70, 20) + Rh(70, 20, 'R1') + L(134, 20, 260, 20) + Dot(170, 20) + Rv(170, 20, 'R2') + G(170, 84) + Rv(260, 20, 'R<tspan font-size="9">L</tspan>') + G(260, 84) + T(215, 14, 'a')),
+      facts: p => { const vth = p.Vs * p.R2 / (p.R1 + p.R2), rth = p.R1 * p.R2 / (p.R1 + p.R2), vl = vth * p.RL / (rth + p.RL);
+        return [`V<sub>Th</sub> = V<sub>s</sub>·R2/(R1+R2) = <b>${fmt(vth, 'V')}</b>, R<sub>Th</sub> = R1∥R2 = <b>${fmt(rth, 'Ω')}</b>`, `Load: V<sub>L</sub> = ${fmt(vl, 'V')}, P<sub>L</sub> = V<sub>L</sub>²/R<sub>L</sub> = <b>${fmt(vl * vl / p.RL, 'W')}</b>`, `Maximum power when R<sub>L</sub> = R<sub>Th</sub>: P<sub>max</sub> = V<sub>Th</sub>²/(4R<sub>Th</sub>) = <b>${fmt(vth * vth / (4 * rth), 'W')}</b>`]; } },
+    rc: { name: 'Series RC on AC (phasors)', p: { Vs: '10', f: '1k', R: '1k', C: '100n' }, units: { Vs: 'V', f: 'Hz', R: 'Ω', C: 'F' },
+      net: p => ({ n: 2, els: [{ t: 'V', a: 1, b: 0, v: p.Vs }, { t: 'R', a: 1, b: 2, v: p.R }, { t: 'C', a: 2, b: 0, v: p.C }] }), out: 2, gainRef: 'Vs',
+      sch: p => svg(330, 120, Src(30, 20, 'V<tspan font-size="9">s</tspan>') + L(30, 20, 70, 20) + Rh(70, 20, 'R') + L(134, 20, 190, 20) + Cv(190, 20, 'C') + G(190, 84) + T(160, 60, 'I →')),
+      facts: p => { const xc = 1 / (TAU * p.f * p.C), z = Math.hypot(p.R, xc), I = p.Vs / z, ph = Math.atan2(xc, p.R);
+        return [`X<sub>C</sub> = 1/(2πfC) = ${fmt(xc, 'Ω')}, Z = R − jX<sub>C</sub>, |Z| = √(R²+X<sub>C</sub>²) = <b>${fmt(z, 'Ω')}</b>`, `I = V<sub>s</sub>/Z = <b>${fmt(I, 'A')} ∠ +${deg(ph).toFixed(1)}°</b> (current leads the voltage)`, `V<sub>R</sub> = ${fmt(I * p.R, 'V')} ∠ +${deg(ph).toFixed(1)}°, V<sub>C</sub> = ${fmt(I * xc, 'V')} ∠ ${(deg(ph) - 90).toFixed(1)}°`]; } }
+  };
+
+  // ---------- Bode plot ----------
+  function bode(t, p) {
+    const pts = []; for (let i = 0; i <= 150; i++) { const f = Math.pow(10, i / 25); const v = solve(t.net(p), f); if (!v) continue; const h = div(v(t.out), C(t.gainRef ? p[t.gainRef] : 1)); pts.push([f, 20 * Math.log10(Math.max(mag(h), 1e-12)), deg(ang(h))]); }
+    if (!pts.length) return '';
+    const W = 560, H = 150, x = f => 46 + (Math.log10(f) / 6) * (W - 60), mx = Math.max(...pts.map(q => q[1])), lo = Math.min(...pts.map(q => q[1])), top = Math.ceil((mx + 3) / 10) * 10, bot = Math.max(Math.floor(lo / 10) * 10, top - 80);
+    const yd = d => 12 + (top - Math.max(d, bot)) / (top - bot) * (H - 30), yp = a => 12 + (180 - a) / 360 * (H - 30);
+    const grid = [0, 1, 2, 3, 4, 5, 6].map(i => `<path class="lbgrid" d="M${x(Math.pow(10, i))} 12V${H - 18}"/><text x="${x(Math.pow(10, i))}" y="${H - 4}" text-anchor="middle">${['1', '10', '100', '1k', '10k', '100k', '1M'][i]}</text>`).join('');
+    const cut = []; for (let i = 1; i < pts.length; i++) { const a = pts[i - 1][1] - (mx - 3.0103), b = pts[i][1] - (mx - 3.0103); if (a * b < 0) cut.push(pts[i - 1][0] * Math.pow(pts[i][0] / pts[i - 1][0], a / (a - b))); }
+    const ylab = []; for (let d = top; d >= bot; d -= 20) ylab.push(`<path class="lbgrid" d="M46 ${yd(d)}H${W - 14}"/><text x="40" y="${yd(d) + 4}" text-anchor="end">${d}</text>`);
+    const mag1 = svg(W, H, grid + ylab.join('') + `<polyline class="lbmag" points="${pts.map(q => x(q[0]) + ',' + yd(q[1])).join(' ')}"/>` + cut.map(f => `<path class="lbcut" d="M${x(f)} 12V${H - 18}"/>`).join('') + T(52, 24, 'gain (dB)', 'start'));
+    const ph1 = svg(W, H, grid + [180, 90, 0, -90, -180].map(a => `<path class="lbgrid" d="M46 ${yp(a)}H${W - 14}"/><text x="40" y="${yp(a) + 4}" text-anchor="end">${a}°</text>`).join('') + `<polyline class="lbph" points="${pts.map(q => x(q[0]) + ',' + yp(q[2])).join(' ')}"/>` + T(52, 24, 'phase', 'start'));
+    return `<div class="label">Bode plot (frequency in Hz)</div>${mag1}${ph1}<div class="meta">${cut.length ? '−3 dB point' + (cut.length > 1 ? 's' : '') + ': ' + cut.map(f => '<b>' + fmt(f, 'Hz') + '</b>').join(', ') + ' (dashed)' : 'No −3 dB point between 1 Hz and 1 MHz.'} Max gain ${mx.toFixed(1)} dB.</div>`;
+  }
+
+  // ---------- builder ----------
+  const LB = { mode: 'train', tpl: 'ninv', vals: {}, f: '1k', task: null, ans: {}, res: null, showSol: false };
+  const params = (t, vals) => { const p = {}; for (const k in t.p) p[k] = num(vals[k] ?? t.p[k]); if ('Cf' in p && !(p.Cf > 0)) p.Cf = 0; return p; };
+  function builderHTML() {
+    const t = TPL[LB.tpl], vals = LB.vals[LB.tpl] = LB.vals[LB.tpl] || { ...t.p }, p = params(t, vals), bad = Object.entries(p).filter(([k, v]) => !isFinite(v) || (v < 0) || (v === 0 && k !== 'Cf'));
+    let res = '';
+    if (bad.length) res = `<div class="lbwarn">Check ${bad.map(b => b[0]).join(', ')}: use a positive number, e.g. 4.7k, 100n, 2.2M.</div>`;
+    else {
+      const f = t.dc ? 0 : (LB.tpl === 'rc' ? p.f : num(LB.f)), v = solve(t.net(p), f);
+      const nodes = v ? Array.from({ length: t.net(p).n }, (_, i) => i + 1).map(i => `<span>node ${i}: <b>${fmt(mag(v(i)), 'V')}</b>${t.dc ? '' : ' ∠ ' + deg(ang(v(i))).toFixed(1) + '°'}</span>`).join('') : '';
+      const h = v && div(v(t.out), C(t.gainRef ? p[t.gainRef] : 1));
+      res = `<div class="lbfacts">${t.facts(p).map(x => `<div>${x}</div>`).join('')}</div>`
+        + (v ? `<div class="label">${t.dc ? 'DC solution' : 'At f = ' + fmt(f, 'Hz')}</div><div class="lbnodes">${nodes}</div>` + (t.dc ? '' : `<div class="meta" style="margin-top:6px">V<sub>out</sub>/V<sub>${t.gainRef ? 's' : 'in'}</sub> = ${mag(h).toPrecision(3)} (${(20 * Math.log10(mag(h))).toFixed(1)} dB) ∠ ${deg(ang(h)).toFixed(1)}°</div>`) : '<div class="lbwarn">This circuit has no solution with these values.</div>')
+        + (t.dc ? '' : bode(t, p));
+    }
+    return `<div class="lbtpls">${Object.entries(TPL).map(([k, x]) => `<button class="chip ${k === LB.tpl ? 'on' : ''}" data-lbt="${k}">${x.name.replace(/ \(add.*\)$/, '')}</button>`).join('')}</div>
+      <div class="lbgrid2"><div><div class="label">${t.name}</div>${t.sch(p)}
+        <div class="lbin">${Object.keys(t.p).map(k => `<label>${k}<input data-lbv="${k}" value="${esc(vals[k])}" spellcheck="false"><span class="meta">${t.units[k] || ''}</span></label>`).join('')}${t.dc || LB.tpl === 'rc' ? '' : `<label>f<input data-lbf value="${esc(LB.f)}"><span class="meta">Hz</span></label>`}</div>
+        <div class="meta">Type values like 4.7k, 100n, 2.2M, 10u. Op-amps are ideal (V+ = V−, no input current).</div></div>
+      <div id="lbRes">${res}</div></div>`;
+  }
+
+  // ---------- design trainer (exam-style tasks; your own values are simulated and marked) ----------
+  const tol = (got, want, pc) => isFinite(got) && Math.abs(got - want) <= Math.abs(want) * pc / 100;
+  const TASKS = [
+    () => { const fc = pick([100, 200, 500, 1000, 2000, 5000]), Cv = pick([10e-9, 22e-9, 47e-9, 100e-9, 220e-9]), R = 1 / (TAU * fc * Cv);
+      return { tpl: 'lp', title: 'RC low-pass filter design', text: `Design a first-order passive RC low-pass filter with a −3 dB frequency of ${fmt(fc, 'Hz')}. You must use a ${fmt(Cv, 'F')} capacitor. Find R.`,
+        fields: [['R', 'R', 'Ω']], build: a => ({ R: a.R, C: fmt(Cv, '').replace(' ', '') }),
+        check: a => { const got = 1 / (TAU * num(a.R) * Cv); return [[tol(got, fc, 5), `Your filter: f<sub>c</sub> = ${fmt(got, 'Hz')} (target ${fmt(fc, 'Hz')}, ±5%)`]]; },
+        sol: `f<sub>c</sub> = 1/(2πRC) ⇒ R = 1/(2π f<sub>c</sub> C) = 1/(2π × ${fmt(fc, 'Hz')} × ${fmt(Cv, 'F')}) = <b>${fmt(R, 'Ω')}</b>. Nearest E12 value: ${fmt(e12(R), 'Ω')} (gives ${fmt(1 / (TAU * e12(R) * Cv), 'Hz')}).` }; },
+    () => { const fc = pick([20, 50, 100, 200, 500]), R = pick([1e3, 4.7e3, 10e3, 22e3, 47e3]), Cv = 1 / (TAU * fc * R);
+      return { tpl: 'hp', title: 'RC high-pass (coupling) filter design', text: `A signal path needs a first-order RC high-pass filter that removes DC and has its −3 dB point at ${fmt(fc, 'Hz')}. The resistor is fixed at ${fmt(R, 'Ω')}. Find C.`,
+        fields: [['C', 'C', 'F']], build: a => ({ C: a.C, R: fmt(R, '').replace(' ', '') }),
+        check: a => { const got = 1 / (TAU * R * num(a.C)); return [[tol(got, fc, 5), `Your filter: f<sub>c</sub> = ${fmt(got, 'Hz')} (target ${fmt(fc, 'Hz')}, ±5%)`]]; },
+        sol: `C = 1/(2π f<sub>c</sub> R) = 1/(2π × ${fmt(fc, 'Hz')} × ${fmt(R, 'Ω')}) = <b>${fmt(Cv, 'F')}</b>. Nearest E12: ${fmt(e12(Cv), 'F')}.` }; },
+    () => { const dB = pick([6, 10, 14, 20, 26]), rin = pick([1e3, 4.7e3, 10e3]), g = Math.pow(10, dB / 20);
+      return { tpl: 'inv', title: 'Inverting amplifier design', text: `Design an inverting op-amp amplifier with a gain magnitude of ${dB} dB and an input resistance of at least ${fmt(rin, 'Ω')}. Find R1 and R<sub>f</sub>.`,
+        fields: [['R1', 'R1', 'Ω'], ['Rf', 'R<sub>f</sub>', 'Ω']], build: a => ({ R1: a.R1, Rf: a.Rf, Cf: '0' }),
+        check: a => { const r1 = num(a.R1), got = num(a.Rf) / r1; return [[tol(got, g, 5), `Your gain: −${isFinite(got) ? got.toPrecision(3) : '–'} V/V = ${isFinite(got) ? (20 * Math.log10(got)).toFixed(1) : '–'} dB (target ${dB} dB = ${g.toPrecision(3)} V/V)`], [r1 >= rin * 0.99, `Input resistance = R1 = ${fmt(r1, 'Ω')} (needs ≥ ${fmt(rin, 'Ω')})`]]; },
+        sol: `|A| = 10^(${dB}/20) = <b>${g.toPrecision(3)}</b> V/V. For an inverting amp, R<sub>in</sub> = R1, so take R1 = ${fmt(rin, 'Ω')}; then R<sub>f</sub> = |A|·R1 = <b>${fmt(g * rin, 'Ω')}</b> (E12: ${fmt(e12(g * rin), 'Ω')}).` }; },
+    () => { const dB = pick([6, 10, 12, 16, 20]), fc = pick([50, 100, 200, 500]), R = 10e3, R1 = 10e3, g = Math.pow(10, dB / 20), Rf = (g - 1) * R1, Cv = 1 / (TAU * fc * R);
+      return { tpl: 'ninv', title: 'Amplifier with a high-pass input (exam style)', text: `Design a non-inverting amplifier with a pass-band gain of ${dB} dB that also blocks low frequencies, with a −3 dB point of ${fmt(fc, 'Hz')}. Use an RC high-pass at the + input with R = ${fmt(R, 'Ω')}, and R1 = ${fmt(R1, 'Ω')} in the feedback divider. Find R<sub>f</sub> and C.`,
+        fields: [['Rf', 'R<sub>f</sub>', 'Ω'], ['C', 'C', 'F']], build: a => ({ Rf: a.Rf, C: a.C, R: '10k', R1: '10k' }),
+        check: a => { const gg = 1 + num(a.Rf) / R1, ff = 1 / (TAU * R * num(a.C)); return [[tol(gg, g, 5), `Your gain: ${isFinite(gg) ? gg.toPrecision(3) : '–'} V/V = ${isFinite(gg) ? (20 * Math.log10(gg)).toFixed(1) : '–'} dB (target ${dB} dB)`], [tol(ff, fc, 5), `Your −3 dB point: ${fmt(ff, 'Hz')} (target ${fmt(fc, 'Hz')})`]]; },
+        sol: `Gain: 1 + R<sub>f</sub>/R1 = 10^(${dB}/20) = ${g.toPrecision(3)} ⇒ R<sub>f</sub> = (${g.toPrecision(3)} − 1) × ${fmt(R1, 'Ω')} = <b>${fmt(Rf, 'Ω')}</b> (E12: ${fmt(e12(Rf), 'Ω')}). Filter: C = 1/(2π f<sub>c</sub> R) = <b>${fmt(Cv, 'F')}</b> (E12: ${fmt(e12(Cv), 'F')}). The op-amp's + input draws no current, so the RC high-pass is not loaded.` }; },
+    () => { const G = pick([2, 5, 10, 20]), fc = pick([500, 1000, 2000, 5000]), R1 = 10e3, Rf = G * R1, Cf = 1 / (TAU * fc * Rf);
+      return { tpl: 'inv', title: 'Op-amp with a capacitor: active low-pass', text: `Design an inverting active low-pass filter with a DC gain of −${G} and a −3 dB frequency of ${fmt(fc, 'Hz')}. R1 = ${fmt(R1, 'Ω')}. Find R<sub>f</sub> and the capacitor C<sub>f</sub> in parallel with it.`,
+        fields: [['Rf', 'R<sub>f</sub>', 'Ω'], ['Cf', 'C<sub>f</sub>', 'F']], build: a => ({ R1: '10k', Rf: a.Rf, Cf: a.Cf }),
+        check: a => { const rf = num(a.Rf), gg = rf / R1, ff = 1 / (TAU * rf * num(a.Cf)); return [[tol(gg, G, 5), `Your DC gain: −${isFinite(gg) ? gg.toPrecision(3) : '–'} (target −${G})`], [tol(ff, fc, 5), `Your −3 dB point: ${fmt(ff, 'Hz')} (target ${fmt(fc, 'Hz')})`]]; },
+        sol: `At DC the capacitor is open, so the gain is −R<sub>f</sub>/R1 ⇒ R<sub>f</sub> = ${G} × ${fmt(R1, 'Ω')} = <b>${fmt(Rf, 'Ω')}</b>. Z<sub>f</sub> = R<sub>f</sub> ∥ C<sub>f</sub> gives f<sub>c</sub> = 1/(2πR<sub>f</sub>C<sub>f</sub>) ⇒ C<sub>f</sub> = <b>${fmt(Cf, 'F')}</b> (E12: ${fmt(e12(Cf), 'F')}).` }; },
+    () => { const Vs = pick([5, 10, 12, 24]), R1 = pick([1e3, 2.2e3, 4.7e3, 10e3]), R2 = pick([1e3, 2.2e3, 4.7e3, 10e3]), vth = Vs * R2 / (R1 + R2), rth = R1 * R2 / (R1 + R2), pm = vth * vth / (4 * rth);
+      return { tpl: 'thev', title: 'Thévenin and maximum power transfer', text: `A ${Vs} V source feeds a divider: R1 = ${fmt(R1, 'Ω')} in series, R2 = ${fmt(R2, 'Ω')} from node a to ground. A load R<sub>L</sub> is connected from a to ground. Find the R<sub>L</sub> that takes maximum power, and that maximum power.`,
+        fields: [['RL', 'R<sub>L</sub>', 'Ω'], ['P', 'P<sub>max</sub>', 'W']], build: a => ({ Vs: String(Vs), R1: fmt(R1, '').replace(' ', ''), R2: fmt(R2, '').replace(' ', ''), RL: a.RL }),
+        check: a => [[tol(num(a.RL), rth, 2), `R<sub>L</sub> = ${fmt(num(a.RL), 'Ω')} (needs R<sub>Th</sub>, ±2%)`], [tol(num(a.P), pm, 2), `P<sub>max</sub> = ${fmt(num(a.P), 'W')} (±2%)`]],
+        sol: `Remove R<sub>L</sub>. V<sub>Th</sub> = ${Vs} × ${fmt(R2, 'Ω')}/(${fmt(R1, 'Ω')} + ${fmt(R2, 'Ω')}) = ${fmt(vth, 'V')}. Short the source: R<sub>Th</sub> = R1∥R2 = ${fmt(rth, 'Ω')}. Maximum power when R<sub>L</sub> = R<sub>Th</sub> = <b>${fmt(rth, 'Ω')}</b>, giving P<sub>max</sub> = V<sub>Th</sub>²/(4R<sub>Th</sub>) = <b>${fmt(pm, 'W')}</b>.` }; },
+    () => { const Vs = pick([5, 10, 12]), f = pick([50, 500, 1000, 2000]), R = pick([100, 470, 1e3, 2.2e3]), Cv = pick([1e-6, 470e-9, 100e-9, 10e-6]), xc = 1 / (TAU * f * Cv), z = Math.hypot(R, xc), I = Vs / z, ph = deg(Math.atan2(xc, R));
+      return { tpl: 'rc', title: 'Series RC on AC: phasors', text: `A ${Vs} V (amplitude), ${fmt(f, 'Hz')} sinusoidal source drives R = ${fmt(R, 'Ω')} in series with C = ${fmt(Cv, 'F')}. Taking the source as the reference (0°), find the amplitude of the current and its phase angle.`,
+        fields: [['I', '|I|', 'A'], ['ph', 'phase of I', '°']], build: () => ({ Vs: String(Vs), f: fmt(f, '').replace(' ', ''), R: fmt(R, '').replace(' ', ''), C: fmt(Cv, '').replace(' ', '') }),
+        check: a => [[tol(num(a.I), I, 2), `|I| = ${fmt(num(a.I), 'A')} (±2%)`], [isFinite(num(a.ph)) && Math.abs(num(a.ph) - ph) <= 1, `phase = ${isFinite(num(a.ph)) ? num(a.ph) + '°' : '–'} (±1°)`]],
+        sol: `X<sub>C</sub> = 1/(2πfC) = ${fmt(xc, 'Ω')}. Z = R − jX<sub>C</sub> = ${fmt(R, 'Ω')} − j${fmt(xc, 'Ω')}, |Z| = ${fmt(z, 'Ω')}, ∠Z = −${ph.toFixed(1)}°. I = V/Z = <b>${fmt(I, 'A')} ∠ +${ph.toFixed(1)}°</b>: the current leads the source voltage, as in any capacitive circuit.` }; }
+  ];
+  function trainerHTML() {
+    if (!LB.task) { LB.task = pick(TASKS)(); LB.ans = {}; LB.res = null; LB.showSol = false; }
+    const k = LB.task, r = LB.res;
+    return `<div class="card lbtask"><div class="label">${k.title}</div><p class="lbq">${k.text}</p>
+      ${TPL[k.tpl].sch(params(TPL[k.tpl], TPL[k.tpl].p))}
+      <div class="lbin">${k.fields.map(([f, l, u]) => `<label>${l}<input data-lba="${f}" value="${esc(LB.ans[f] || '')}" spellcheck="false" placeholder="e.g. 4.7k"><span class="meta">${u}</span></label>`).join('')}</div>
+      <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:10px"><button class="chip go" id="lbCheck">Check my design</button><button class="chip" id="lbSol">${LB.showSol ? 'Hide' : 'Show'} worked solution</button><button class="chip" id="lbBuild">Simulate my circuit</button><button class="chip" id="lbNew">New question</button></div>
+      ${r ? `<div class="lbres">${r.map(([ok, m]) => `<div>${ok ? '✅' : '❌'} ${m}</div>`).join('')}${r.every(x => x[0]) ? '<div class="meta" style="margin-top:6px">Full marks. In the exam, also show each formula, the substitution and the units, and say which standard (E12) parts you would buy.</div>' : ''}</div>` : ''}
+      ${LB.showSol ? `<div class="lbsol"><div class="label">Worked solution</div>${k.sol}</div>` : ''}</div>
+      <div class="meta">Design questions have many right answers: the checker simulates <i>your</i> values, so any design that meets the spec within tolerance is marked right.</div>`;
+  }
+
+  // ---------- page ----------
+  window.labRender = function labRender() {
+    const main = $('#main');
+    main.innerHTML = `<div class="card"><div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><div class="label" style="margin-top:0">Analogue Electronics 1 · Circuit lab</div>
+      <div class="meta">The December design exam (25%) asks two circuit-design questions from anywhere in the course. Practise designing, then check your circuit's behaviour.</div></div>
+      <div><button class="chip ${LB.mode === 'train' ? 'on' : ''}" data-lbm="train">Design trainer</button> <button class="chip ${LB.mode === 'build' ? 'on' : ''}" data-lbm="build">Circuit builder</button></div></div></div>
+      <div id="lbBody">${LB.mode === 'train' ? trainerHTML() : `<div class="card">${builderHTML()}</div>`}</div>`;
+    main.querySelectorAll('[data-lbm]').forEach(b => b.onclick = () => { LB.mode = b.dataset.lbm; labRender(); });
+    main.querySelectorAll('[data-lbt]').forEach(b => b.onclick = () => { LB.tpl = b.dataset.lbt; labRender(); });
+    let tm; const live = () => { clearTimeout(tm); tm = setTimeout(() => { const box = document.createElement('div'); box.innerHTML = builderHTML(); const nr = box.querySelector('#lbRes'), or = $('#lbRes'); if (nr && or) or.replaceWith(nr); const s1 = box.querySelector('.lbsch'), s0 = main.querySelector('.lbgrid2 .lbsch'); if (s1 && s0) s0.replaceWith(s1); }, 250); };
+    main.querySelectorAll('[data-lbv]').forEach(i => i.oninput = () => { LB.vals[LB.tpl][i.dataset.lbv] = i.value; live(); });
+    const fi = main.querySelector('[data-lbf]'); if (fi) fi.oninput = () => { LB.f = fi.value; live(); };
+    main.querySelectorAll('[data-lba]').forEach(i => i.oninput = () => { LB.ans[i.dataset.lba] = i.value; });
+    const on = (id, fn) => { const b = main.querySelector(id); if (b) b.onclick = fn; };
+    on('#lbCheck', () => { LB.res = LB.task.check(LB.ans); labRender(); });
+    on('#lbSol', () => { LB.showSol = !LB.showSol; labRender(); });
+    on('#lbNew', () => { LB.task = null; labRender(); });
+    on('#lbBuild', () => { const t = LB.task, b = t.build(LB.ans); LB.tpl = t.tpl; LB.vals[t.tpl] = { ...TPL[t.tpl].p, ...Object.fromEntries(Object.entries(b).filter(([, v]) => v)) }; LB.mode = 'build'; labRender(); });
+  };
+  })();
+</script>
+<!-- LAB END -->
 </body>
 </html>
