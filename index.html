@@ -2117,8 +2117,8 @@ function wireCalendar(main) {
       const groups = (s.chap && s.chap.length) ? s.chap.map(c => c.ids.map(id => UNITS[id]).filter(Boolean)) : [s.units];
       for (const us of groups) {
         const cand = us.flatMap(u => questionsOf(u).map(q => ({ ...q, u }))).filter(q => qSize(q) !== 'long');
-        const auto = cand.filter(q => q.t === 'mcq' || (q.t === 'calc' && typeof q.v === 'number')), real = auto.filter(q => q.past);
-        const from = real.length ? real : auto.length ? auto : cand;
+        const auto = cand.filter(q => q.t === 'mcq' || (q.t === 'calc' && typeof q.v === 'number')), real = auto.filter(q => q.past), realAny = cand.filter(q => q.past);
+        const from = real.length ? real : realAny.length ? realAny : auto.length ? auto : cand;   // official questions first, auto-marked ones preferred
         if (from.length) { const q = from[Math.floor(Math.random() * from.length)]; q._grp = us.map(u => u.id); picks.push(q); }
       }
     }
