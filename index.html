@@ -316,6 +316,7 @@ nav a:hover,nav a.on:hover{background:none;color:var(--text);border-bottom-color
 .lbfacts div,.lbres div{margin:4px 0;line-height:1.5}.lbnodes{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px}.lbq{font-size:16px;line-height:1.55}
 .lbres,.lbsol{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}.lbwarn{color:var(--orange)}
 .lbtask .row,.card .row{display:flex}
+.pp .pptypes{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.pp .pptypes .chip{text-align:left;padding:8px 12px}.pp .pptypes .chip.on{border-color:var(--accent,#6f62ff);background:color-mix(in srgb,var(--accent,#6f62ff) 18%,transparent)}
 </style>
 <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };</script>
 <script src="lib/tex-svg-full.js" defer></script>
@@ -677,10 +678,11 @@ function startQuiz(units, onlyWrong, onlyPast) {
   let pool = units.flatMap(u => questionsOf(u).map(q => ({ ...q, u })));
   if (onlyPast) pool = pool.filter(q => q.past);
   if (onlyWrong) pool = pool.filter(q => QS[q.id] === 'wrong');
+  if (window.tailorPool) pool = tailorPool(pool, onlyWrong, onlyPast);   // personal practice: chosen kinds, official questions first
   const band = q => !QS[q.id] ? 0 : QS[q.id] === 'wrong' ? 1 : 2;
   // more working-out than theory: problems (calculate, solve, show that…) come earlier, about 70/30, not a hard sort
   const work = q => q.t === 'calc' || /\b(calculate|find|determine|show that|solve|evaluate|derive|compute|work out|sketch|draw|design|prove|estimate|differentiate|integrate|expand|simplify)\b/i.test(q.q || '');
-  pool.forEach(q => (q.r = Math.random() * (work(q) ? 1 : 2.3))); pool.sort((a, b) => band(a) - band(b) || a.r - b.r);
+  pool.forEach(q => (q.r = Math.random() * (work(q) ? 1 : 2.3) * (window.unitWeight ? unitWeight(q) : 1))); pool.sort((a, b) => band(a) - band(b) || a.r - b.r);
   QZ.doneCf = 0; Object.assign(QZ, { queue: pool.slice(0, QZ.quick ? 10 : 40), i: 0, att: 1, text: '', res: null, tally: { right: 0, second: 0, wrong: 0 }, streak: 0, bestRun: 0, xpRun: 0, units, gain: 0, again: [units, onlyWrong, onlyPast] }); QZ.quick = false;
   if (!QZ.queue.length) { toast('No questions here yet'); return; }
   renderQuizMain(); scrollTo(0, 0);
@@ -2076,5 +2078,108 @@ function wireCalendar(main) {
   })();
 </script>
 <!-- LAB END -->
+<!-- PRACTICE START (source: site/practice.js) -->
+<script>
+/* ===== Personal practice: choose question types, level check (calibration), tailored order, official questions first; synced per account =====
+   Source file: .notes-crawler/site/practice.js, inlined into index.html between PRACTICE START / PRACTICE END. */
+(() => {
+  const API = 'https://unibrain-tutor.unibrain.workers.dev';
+  const P = Object.assign({ types: {}, cal: {}, updated: 0 }, (() => { try { return JSON.parse(localStorage.getItem('ub.me') || '{}'); } catch { return {}; } })());
+  const keep = () => { try { localStorage.setItem('ub.me', JSON.stringify(P)); } catch {} };
+  const save = () => { P.updated = Date.now(); keep(); soon(); };
+
+  // ---------- question kinds ----------
+  const TYPES = [['quick', '⚡ Quick', 'multiple choice and short answers'], ['work', '🧮 Working out', 'short calculations'], ['long', '📝 Long exam', '5+ marks, diagrams, SFD/BMD']];
+  const WORK_RX = /\b(calculate|find|determine|solve|evaluate|derive|compute|work out|estimate|differentiate|integrate|expand|simplify|show that)\b/i;
+  const LONG_RX = /\b(sketch|draw|diagram|SFD|BMD|shear force|bending moment|discuss|explain in detail|compare and contrast|design a)\b/i;
+  const qSize = q => { const m = +q.marks || 0, len = String(q.q || '').length;
+    if (q.t === 'mcq') return 'quick';
+    if (m >= 6 || len > 420 || LONG_RX.test(q.q || '')) return 'long';
+    if (q.t === 'calc' || WORK_RX.test(q.q || '')) return 'work';
+    return m >= 5 ? 'long' : 'quick'; };
+  let umod = null; const UMOD = () => umod || (umod = Object.fromEntries(D.mods.flatMap(m => m.secs.flatMap(s => s.units.map(u => [u.id, m.id])))));
+  const typesOf = mid => P.types[mid] || ['quick', 'work'];
+  const level = q => ((P.cal[UMOD()[q.u.id]] || {}).units || {})[q.u.id];
+
+  // called by startQuiz: chosen kinds only, then the official questions (tutorials, past papers, Moodle) until all are done, then the generated bank
+  window.tailorPool = (pool, onlyWrong) => {
+    if (onlyWrong || QZ.cal || QZ.calStart || !pool.length) return pool;
+    let p = pool.filter(q => typesOf(UMOD()[q.u.id]).includes(qSize(q))); if (!p.length) p = pool;
+    const real = p.filter(q => q.past); if (real.some(q => !QS[q.id])) p = real;
+    return p;
+  };
+  window.unitWeight = q => { const l = level(q); return l === 'weak' ? 0.5 : l === 'strong' ? 1.8 : 1; };   // weak topics come earlier, strong ones later
+
+  // ---------- level check ----------
+  function startCal(mid) {
+    const m = MODS[mid], picks = [];
+    for (const s of m.secs) {
+      const groups = (s.chap && s.chap.length) ? s.chap.map(c => c.ids.map(id => UNITS[id]).filter(Boolean)) : [s.units];
+      for (const us of groups) {
+        const cand = us.flatMap(u => questionsOf(u).map(q => ({ ...q, u }))).filter(q => qSize(q) !== 'long');
+        const auto = cand.filter(q => q.t === 'mcq' || (q.t === 'calc' && typeof q.v === 'number')), real = auto.filter(q => q.past);
+        const from = real.length ? real : auto.length ? auto : cand;
+        if (from.length) { const q = from[Math.floor(Math.random() * from.length)]; q._grp = us.map(u => u.id); picks.push(q); }
+      }
+    }
+    let qs = picks; if (qs.length > 12) { const step = qs.length / 12; qs = Array.from({ length: 12 }, (_, i) => picks[Math.floor(i * step)]); }
+    if (!qs.length) return toast('No questions to check yet');
+    QZ.calStart = true; startQuiz(m.secs.flatMap(s => s.units)); QZ.calStart = false;
+    Object.assign(QZ, { cal: mid, calSaved: false, queue: qs, i: 0, att: 1, text: '', res: null }); renderQuizMain();
+  }
+  const names = us => us.length ? us.slice(0, 6).map(u => esc(u.name)).join(', ') + (us.length > 6 ? ` and ${us.length - 6} more` : '') : '';
+  function calLine(mid) {
+    const cal = P.cal[mid]; if (!cal) return '';
+    const all = MODS[mid].secs.flatMap(s => s.units), weak = all.filter(u => cal.units[u.id] === 'weak'), strong = all.filter(u => cal.units[u.id] === 'strong');
+    return `Level check ${new Date(cal.at).toLocaleDateString('en-GB')}: <b>${cal.right}/${cal.n}</b> right. <span style="color:var(--orange)">Weak: ${names(weak) || 'none'}</span> · <span style="color:var(--green)">Strong: ${names(strong) || 'none yet'}</span>. Your quizzes now put weak topics first.`;
+  }
+
+  // ---------- quiz page hooks ----------
+  const baseStart = startQuiz; startQuiz = function (...a) { if (!QZ.calStart) QZ.cal = null; return baseStart.apply(this, a); };
+  const basePicker = quizPicker;
+  quizPicker = function () {
+    const h = basePicker(), m = MODS[QZ.mod]; if (!m) return h;
+    const qs = m.secs.flatMap(s => s.units).flatMap(u => questionsOf(u).map(q => ({ ...q, u }))), real = qs.filter(q => q.past), realDone = real.filter(q => QS[q.id]).length, gen = qs.length - real.length, ts = typesOf(m.id);
+    const card = `<div class="card pp"><div class="label" style="margin-top:0">Your practice · ${esc(m.name)}</div><div class="meta">Choose the kinds of question you want (saved to your account):</div>
+      <div class="pptypes">${TYPES.map(([k, t, d]) => `<button class="chip ${ts.includes(k) ? 'on' : ''}" data-ppt="${k}"><b>${t}</b> <span class="meta">${d} · ${qs.filter(q => qSize(q) === k).length}</span></button>`).join('')}</div>
+      <div class="meta" style="margin-top:8px">Official questions come first (tutorials, past papers, Moodle): <b>${realDone}/${real.length}</b> done.${gen ? (realDone >= real.length ? ` Extra practice questions unlocked (${gen}).` : ` ${gen} extra practice questions, written from these, unlock once you have done the official ones.`) : ''}</div>
+      <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:10px">${P.cal[m.id] ? `<button class="chip go" data-ppweak="${m.id}">Practise my weak topics</button>` : ''}<button class="chip ${P.cal[m.id] ? '' : 'go'}" data-ppcal="${m.id}">${P.cal[m.id] ? 'Redo my level check' : '🎯 Check my level (about 10 quick questions)'}</button></div>
+      <div class="meta" style="margin-top:8px">${calLine(m.id) || 'The level check asks one question from every chapter, then tailors your quizzes to what you need.'}</div></div>`;
+    return h.replace('<div class="modes">', card + '<div class="modes">');
+  };
+  const baseDone = quizDone;
+  quizDone = function () {
+    if (QZ.cal && !QZ.calSaved) {
+      QZ.calSaved = true; const units = {}; let right = 0;
+      for (const q of QZ.queue) { const o = QS[q.id], lv = o === 'right' ? 'strong' : o === 'second' ? 'ok' : o ? 'weak' : null; if (o && o !== 'wrong') right++; if (lv) for (const id of q._grp || [q.u.id]) units[id] = lv; }
+      P.cal[QZ.cal] = { at: Date.now(), n: QZ.queue.length, right, units }; save();
+    }
+    return (QZ.cal ? `<div class="card pp"><div class="label" style="margin-top:0">🎯 Level check saved</div><div class="meta">${calLine(QZ.cal)}</div><div class="row" style="gap:8px;margin-top:10px"><button class="chip go" data-ppweak="${QZ.cal}">Practise my weak topics</button></div></div>` : '') + baseDone();
+  };
+  const baseRender = renderQuizMain;
+  renderQuizMain = function () {
+    baseRender(); const main = $('#main');
+    main.querySelectorAll('[data-ppt]').forEach(b => b.onclick = () => { const k = b.dataset.ppt; let t = typesOf(QZ.mod).slice(); t = t.includes(k) ? t.filter(x => x !== k) : t.concat(k); if (!t.length) return toast('Pick at least one kind of question'); P.types[QZ.mod] = t; save(); renderQuizMain(); });
+    main.querySelectorAll('[data-ppcal]').forEach(b => b.onclick = () => startCal(b.dataset.ppcal));
+    main.querySelectorAll('[data-ppweak]').forEach(b => b.onclick = () => { const mid = b.dataset.ppweak, cal = P.cal[mid] || { units: {} }, us = MODS[mid].secs.flatMap(s => s.units).filter(u => cal.units[u.id] === 'weak'); if (!us.length) return toast('No weak topics: try a Marathon instead'); submitSession(); QZ.queue = []; startQuiz(us); });
+  };
+  const baseRecord = record; record = function (...a) { const r = baseRecord.apply(this, a); soon(); return r; };
+
+  // ---------- sync for signed-in players (D1 user_state key 'learn') ----------
+  const can = () => !!(ME && ME.id && ME.token);
+  const post = (path, body) => fetch(API + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.ok ? r.json() : Promise.reject(new Error('sync ' + r.status)));
+  function merge(rem) {
+    if (!rem) return false; let ch = false;
+    for (const [k, v] of Object.entries(rem.quiz || {})) if (!(k in QS)) { QS[k] = v; ch = true; }        // answers from other devices; this browser's own results win
+    const rm = rem.me || {}; if ((rm.updated || 0) > (P.updated || 0)) { P.types = rm.types || {}; P.cal = rm.cal || {}; P.updated = rm.updated; ch = true; }
+    if (ch) { saveQS(); keep(); } return ch;
+  }
+  let st, busy = false; function soon() { clearTimeout(st); st = setTimeout(push, 3000); }
+  async function push() { if (!can() || busy) return; busy = true; try { const r = await post('/sync/get', { player_id: ME.id, token: ME.token, keys: ['learn'] }); merge(r.learn && r.learn.value); await post('/sync/put', { player_id: ME.id, token: ME.token, key: 'learn', value: { me: P, quiz: QS } }); } catch (e) { console.warn(e.message); } finally { busy = false; } }
+  async function pull() { if (!can() || busy) return; busy = true; try { const r = await post('/sync/get', { player_id: ME.id, token: ME.token, keys: ['learn'] }); if (merge(r.learn && r.learn.value)) { if (location.hash === '#quiz' && !QZ.queue.length) renderQuizMain(); push(); } } catch (e) { console.warn(e.message); } finally { busy = false; } }
+  setTimeout(pull, 2500); addEventListener('focus', pull);
+})();
+</script>
+<!-- PRACTICE END -->
 </body>
 </html>
