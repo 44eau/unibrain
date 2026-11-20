@@ -317,6 +317,7 @@ nav a:hover,nav a.on:hover{background:none;color:var(--text);border-bottom-color
 .lbres,.lbsol{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}.lbwarn{color:var(--orange)}
 .lbtask .row,.card .row{display:flex}
 .pp .pptypes{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.pp .pptypes .chip{text-align:left;padding:8px 12px}.pp .pptypes .chip.on{border-color:var(--accent,#6f62ff);background:color-mix(in srgb,var(--accent,#6f62ff) 18%,transparent)}
+.ppplan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0}@media(max-width:620px){.ppplan{grid-template-columns:1fr}}.skpad{width:100%;height:auto;display:block;margin-top:8px;border:1px dashed var(--line);border-radius:10px;background:var(--panel2);touch-action:none;cursor:crosshair}.sk summary,.fy summary{cursor:pointer}.why textarea,.fy textarea,.fy select{margin-top:8px}
 </style>
 <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'global' }, startup: { typeset: false } };</script>
 <script src="lib/tex-svg-full.js" defer></script>
@@ -2135,7 +2136,7 @@ function wireCalendar(main) {
   }
 
   // ---------- quiz page hooks ----------
-  const baseStart = startQuiz; startQuiz = function (...a) { if (!QZ.calStart) QZ.cal = null; return baseStart.apply(this, a); };
+  const baseStart = startQuiz; startQuiz = function (...a) { if (!QZ.calStart) QZ.cal = null; const r = baseStart.apply(this, a); if (!QZ.calStart && QZ.queue.length > 2 && typeof interleave === 'function') { QZ.queue = interleave(QZ.queue); renderQuizMain(); } return r; };
   const basePicker = quizPicker;
   quizPicker = function () {
     const h = basePicker(), m = MODS[QZ.mod]; if (!m) return h;
@@ -2145,7 +2146,19 @@ function wireCalendar(main) {
       <div class="meta" style="margin-top:8px">Official questions come first (tutorials, past papers, Moodle): <b>${realDone}/${real.length}</b> done.${gen ? (realDone >= real.length ? ` Extra practice questions unlocked (${gen}).` : ` ${gen} extra practice questions, written from these, unlock once you have done the official ones.`) : ''}</div>
       <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:10px">${P.cal[m.id] ? `<button class="chip go" data-ppweak="${m.id}">Practise my weak topics</button>` : ''}<button class="chip ${P.cal[m.id] ? '' : 'go'}" data-ppcal="${m.id}">${P.cal[m.id] ? 'Redo my level check' : '🎯 Check my level (about 10 quick questions)'}</button></div>
       <div class="meta" style="margin-top:8px">${calLine(m.id) || 'The level check asks one question from every chapter, then tailors your quizzes to what you need.'}</div></div>`;
-    return h.replace('<div class="modes">', card + '<div class="modes">');
+    const due = dueQs(m.id), dueAll = dueQs(), weak = weakUnits(m.id), units = m.secs.flatMap(s => s.units), fyu = UNITS[QZ.fyUnit] || weak[0] || units[0];
+    const fyOpts = [...new Set(weak.concat(units))].map(u => `<option value="${u.id}" ${u === fyu ? 'selected' : ''}>${weak.includes(u) ? '⚠️ ' : ''}${esc(u.name)}</option>`).join('');
+    const plan = `<div class="card pp"><div class="label" style="margin-top:0">Your study plan today · ${esc(m.name)}</div>
+      <div class="ppplan"><button class="mode" data-ppdue="${m.id}"><b>🔁</b><span>Review due (${due.length || dueAll.length})</span><i>spaced repetition${due.length ? (dueAll.length > due.length ? ` · ${dueAll.length} in all modules` : '') : dueAll.length ? ' · from all modules' : ' · nothing due yet'}</i></button>
+        <button class="mode" data-ppmix="${m.id}"><b>🔀</b><span>Mixed practice</span><i>${weak.length ? 'your ' + Math.min(weak.length, 8) + ' weakest topics, interleaved' : 'whole module, interleaved'}</i></button>
+        <button class="mode" data-ppfy><b>🧑‍🏫</b><span>Explain it simply</span><i>Feynman · ${esc(fyu ? fyu.name : '')}</i></button></div>
+      ${!P.cal[m.id] ? '<div class="meta">Do the level check below first, so this plan knows your weak topics.</div>' : ''}
+      <details class="fy" ${QZ.fyOpen ? 'open' : ''}><summary class="meta">🧑‍🏫 Explain a topic as if teaching a beginner (Feynman technique)</summary>
+        <select data-fyu class="search">${fyOpts}</select>
+        <textarea id="fyText" class="search" rows="5" placeholder="Close your notes. Explain this topic in plain words to a friend who has never seen it, and explain every technical word you use.">${esc(((P.feyn || {})[fyu && fyu.id] || {}).t || '')}</textarea>
+        <button class="chip go" data-fygo>Check my explanation</button><div id="fyOut" style="margin-top:8px"></div></details>
+      <details><summary class="meta">How these methods help you learn</summary><div class="meta" style="line-height:1.7;margin-top:6px">🧠 <b>Practice testing</b>: pulling answers from memory beats rereading. 🔁 <b>Spaced repetition</b>: each question comes back after 1, 3, 7, 16 then 35 days while you keep getting it right, and within a day if you miss it. 🔀 <b>Interleaving</b>: mixing topics trains you to spot which method a question needs. 🤔 <b>Why?</b> prompts tie facts to the reasons behind them. ✏️ <b>Sketch first</b> pairs a picture with the words. 🧑‍🏫 <b>Feynman</b>: if you can't explain it simply, you have found your gap.</div></details></div>`;
+    return h.replace('<div class="modes">', plan + card + '<div class="modes">');
   };
   const baseDone = quizDone;
   quizDone = function () {
@@ -2161,9 +2174,83 @@ function wireCalendar(main) {
     baseRender(); const main = $('#main');
     main.querySelectorAll('[data-ppt]').forEach(b => b.onclick = () => { const k = b.dataset.ppt; let t = typesOf(QZ.mod).slice(); t = t.includes(k) ? t.filter(x => x !== k) : t.concat(k); if (!t.length) return toast('Pick at least one kind of question'); P.types[QZ.mod] = t; save(); renderQuizMain(); });
     main.querySelectorAll('[data-ppcal]').forEach(b => b.onclick = () => startCal(b.dataset.ppcal));
+    main.querySelectorAll('[data-ppdue]').forEach(b => b.onclick = () => { const d = dueQs(b.dataset.ppdue); runQueue(d.length ? d : dueQs(), 'due'); });
+    main.querySelectorAll('[data-ppmix]').forEach(b => b.onclick = () => { const mid = b.dataset.ppmix, ws = weakUnits(mid).slice(0, 8), us = ws.length ? ws : MODS[mid].secs.flatMap(s => s.units);
+      const pool = tailorPool(ALLQ().filter(q => us.includes(q.u)), false), band = q => !QS[q.id] ? 0 : QS[q.id] === 'wrong' ? 1 : 2; pool.forEach(q => (q._r = Math.random())); pool.sort((a, c) => band(a) - band(c) || a._r - c._r); runQueue(pool.slice(0, 20)); });
+    main.querySelectorAll('[data-ppfy]').forEach(b => b.onclick = () => { QZ.fyOpen = true; const d = main.querySelector('details.fy'); if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'center' }); } });
+    const fyd = main.querySelector('details.fy'); if (fyd) fyd.ontoggle = () => { QZ.fyOpen = fyd.open; };
+    const fys = main.querySelector('[data-fyu]'); if (fys) fys.onchange = () => { QZ.fyUnit = fys.value; QZ.fyOpen = true; renderQuizMain(); };
+    const fyg = main.querySelector('[data-fygo]'); if (fyg) fyg.onclick = () => feynCheck(main);
+    wireSketch(main);
     main.querySelectorAll('[data-ppweak]').forEach(b => b.onclick = () => { const mid = b.dataset.ppweak, cal = P.cal[mid] || { units: {} }, us = MODS[mid].secs.flatMap(s => s.units).filter(u => cal.units[u.id] === 'weak'); if (!us.length) return toast('No weak topics: try a Marathon instead'); submitSession(); QZ.queue = []; startQuiz(us); });
   };
-  const baseRecord = record; record = function (...a) { const r = baseRecord.apply(this, a); soon(); return r; };
+  const baseRecord = record; record = function (...a) { const r = baseRecord.apply(this, a); srsUpdate(a[0], a[1]); save(); return r; };
+
+  // ================= evidence-based study techniques, tailored per student =================
+  // 1) Practice testing: every quiz, level check, "why" prompt and Feynman explanation is retrieval from memory.
+  // 2) Distributed practice: each answered question gets a review date; the gap grows each time you get it right (1, 3, 7, 16, 35 days).
+  const DAY = 864e5, GAPS = [0, 1, 3, 7, 16, 35];
+  P.srs = P.srs || {};
+  function srsUpdate(q, o) {
+    if (!q || !q.id || !o) return; const s = P.srs[q.id] || { b: 0, n: 0 };
+    s.b = o === 'right' ? Math.min(s.b + 1, GAPS.length - 1) : o === 'second' ? 1 : 0;
+    s.d = Date.now() + (o === 'wrong' ? DAY / 2 : GAPS[s.b] * DAY); s.n++; P.srs[q.id] = s;
+  }
+  let allq = null; const ALLQ = () => allq || (allq = D.mods.flatMap(m => m.secs.flatMap(s => s.units.flatMap(u => questionsOf(u).map(q => ({ ...q, u }))))));
+  const dueQs = mid => ALLQ().filter(q => (!mid || UMOD()[q.u.id] === mid) && P.srs[q.id] && P.srs[q.id].d <= Date.now()).sort((a, b) => P.srs[a.id].d - P.srs[b.id].d);
+  // 3) Interleaving: never two questions from the same topic in a row when there is a choice.
+  const interleave = qs => { const left = qs.slice(), out = []; while (left.length) { const last = out.length ? out[out.length - 1].u.id : null; let i = left.findIndex(q => q.u.id !== last); if (i < 0) i = 0; out.push(left.splice(i, 1)[0]); } return out; };
+  function runQueue(qs, why) {
+    if (!qs.length) return toast(why === 'due' ? 'Nothing is due for review: well done' : 'No questions here yet');
+    submitSession(); QZ.calStart = true; startQuiz([...new Set(qs.map(q => q.u))]); QZ.calStart = false;
+    Object.assign(QZ, { cal: null, queue: interleave(qs).slice(0, 30), i: 0, att: 1, text: '', res: null }); renderQuizMain();
+  }
+  // weakest topics for this student: level check + recent wrong answers
+  function weakUnits(mid) {
+    const cal = (P.cal[mid] || {}).units || {}, score = {};
+    for (const q of ALLQ()) { if (UMOD()[q.u.id] !== mid) continue; const s = (score[q.u.id] = score[q.u.id] || { u: q.u, w: 0 }); if (QS[q.id] === 'wrong') s.w += 2; if (QS[q.id] === 'second') s.w += 1; }
+    for (const [id, l] of Object.entries(cal)) if (score[id]) score[id].w += l === 'weak' ? 3 : l === 'ok' ? 1 : -2;
+    return Object.values(score).filter(s => s.w > 0).sort((a, b) => b.w - a.w).map(s => s.u);
+  }
+  // 4) Elaborative interrogation: after answering, a "why / how" question from the same topic's notes.
+  function whyFor(q) {
+    if (q.kind === 'Why / how') return null;
+    const rq = (q.u.notes || []).flatMap(n => n.rq || []); if (rq.length) { const [wq, wa] = rq[(QZ.i * 7 + q.u.id.length) % rq.length]; return { q: wq, a: wa }; }
+    return { q: 'Why does this method work here? In one or two sentences, name the principle the model answer uses and why it applies.', a: '' };
+  }
+  // 5) Dual coding: sketch before you calculate, with a module-specific prompt.
+  const sketchHint = name => /static/i.test(name) ? 'draw a free-body diagram: every force, its direction and the distances' : /analog|electr/i.test(name) ? 'draw the circuit and label every node voltage and current' : /math/i.test(name) ? 'sketch the graph, vectors or a labelled diagram' : /material/i.test(name) ? 'sketch the structure, the stress–strain curve or the phase diagram' : /design/i.test(name) ? 'sketch the product and label the key requirements' : 'draw a labelled diagram of the problem';
+  const baseQuestion = quizQuestion;
+  quizQuestion = function () {
+    let h = baseQuestion(); const q = QZ.queue[QZ.i], r = QZ.res; if (!q) return h;
+    const mod = MODS[UMOD()[q.u.id]] || { name: '' };
+    if (!(r && r.final) && qSize(q) !== 'quick') h += `<details class="card sk" ${QZ.sketchOpen ? 'open' : ''}><summary>✏️ <b>Sketch it first</b> <span class="meta">(dual coding): ${sketchHint(mod.name)}</span></summary><canvas class="skpad" width="900" height="320"></canvas><div class="row" style="gap:8px;margin-top:6px"><button class="chip" data-skclear>Clear</button><span class="meta">Draw with your mouse, finger or pen. A diagram plus words is remembered better than words alone.</span></div></details>`;
+    if (r && r.final) { const w = whyFor(q), weak = level(q) === 'weak'; if (w && (!r.ok || weak || QZ.i % 3 === 0)) h += `<div class="card why"><div class="label" style="margin-top:0">🤔 Why? <span class="meta">(elaborative interrogation${!r.ok ? ': you missed this one, so explain the idea behind it' : weak ? ': a weak topic for you' : ''})</span></div><div class="lbq">${esc(w.q)}</div><textarea class="search" rows="2" placeholder="Answer in your own words before you look…"></textarea>${w.a ? `<details><summary class="meta">Compare with your notes</summary><div style="margin-top:6px">${esc(w.a)}</div></details>` : '<div class="meta">Then check your reasoning against the model answer above.</div>'}</div>`; }
+    return h;
+  };
+  function wireSketch(main) {
+    const c = main.querySelector('.skpad'); if (!c) return; const x = c.getContext('2d'), det = c.closest('details');
+    det.ontoggle = () => { QZ.sketchOpen = det.open; };
+    if (QZ.sketch && QZ.sketchFor === QZ.i) { const im = new Image(); im.onload = () => x.drawImage(im, 0, 0); im.src = QZ.sketch; } else { QZ.sketch = null; QZ.sketchFor = QZ.i; }
+    x.lineWidth = 2.5; x.lineCap = 'round'; x.strokeStyle = getComputedStyle(document.body).color;
+    let on = false; const pt = e => { const b = c.getBoundingClientRect(); return [(e.clientX - b.left) * c.width / b.width, (e.clientY - b.top) * c.height / b.height]; };
+    c.onpointerdown = e => { on = true; c.setPointerCapture(e.pointerId); x.beginPath(); x.moveTo(...pt(e)); };
+    c.onpointermove = e => { if (!on) return; x.lineTo(...pt(e)); x.stroke(); };
+    c.onpointerup = () => { on = false; QZ.sketch = c.toDataURL(); QZ.sketchFor = QZ.i; };
+    const cl = main.querySelector('[data-skclear]'); if (cl) cl.onclick = () => { x.clearRect(0, 0, c.width, c.height); QZ.sketch = null; };
+  }
+  // 6) Feynman technique: explain a topic in plain words; the free tutor checks it against the course notes.
+  const unitText = u => [u.name, u.ov || '', (u.must || []).join('; ')].concat((u.notes || []).map(n => [n.t, (n.pts || []).join('; '), (n.defs || []).map(d => Array.isArray(d) ? d.join(': ') : d).join('; '), (n.eqs || []).map(e => Array.isArray(e) ? e.join(' ') : e).join('; ')].join(' | '))).join('\n').slice(0, 6000);
+  const FEYN_SYS = 'You check a first-year Mechanical Engineering student\'s plain-language explanation of one topic (the Feynman technique) against their own course notes, given below. Reply in Markdown with these short sections: **✅ Clear and correct**, **⚠️ Gaps or vague bits** (name the exact missing idea), **❌ Mistakes** (give the correct statement), **🗣️ Jargon you did not explain**, then **A plain-words version** of 3–4 sentences. Be strict like an examiner but encouraging. Use only the notes; if they explain something correct that the notes do not cover, accept it.';
+  async function feynCheck(main) {
+    const sel = main.querySelector('[data-fyu]'), ta = main.querySelector('#fyText'), out = main.querySelector('#fyOut'), u = UNITS[sel.value];
+    if (!u || (ta.value || '').trim().length < 40) return toast('Write at least a few sentences first');
+    P.feyn = P.feyn || {}; P.feyn[u.id] = { t: ta.value, at: Date.now() }; save();
+    out.innerHTML = '<div class="meta">Checking your explanation…</div>';
+    const msgs = [{ role: 'user', content: `COURSE NOTES for "${u.name}":\n${unitText(u)}\n\nMY EXPLANATION (as if teaching a beginner):\n${ta.value}` }];
+    try { const t = await ttAsk(FEYN_SYS, msgs, FEYN_SYS, msgs); out.innerHTML = `<div class="lbsol">${ttMd(t)}</div>`; typeset(out); }
+    catch (e) { out.innerHTML = `<div class="lbwarn">${esc(e.message || 'The tutor is busy. Try again in a minute.')}</div>`; }
+  }
 
   // ---------- sync for signed-in players (D1 user_state key 'learn') ----------
   const can = () => !!(ME && ME.id && ME.token);
@@ -2171,7 +2258,7 @@ function wireCalendar(main) {
   function merge(rem) {
     if (!rem) return false; let ch = false;
     for (const [k, v] of Object.entries(rem.quiz || {})) if (!(k in QS)) { QS[k] = v; ch = true; }        // answers from other devices; this browser's own results win
-    const rm = rem.me || {}; if ((rm.updated || 0) > (P.updated || 0)) { P.types = rm.types || {}; P.cal = rm.cal || {}; P.updated = rm.updated; ch = true; }
+    const rm = rem.me || {}; if ((rm.updated || 0) > (P.updated || 0)) { P.types = rm.types || {}; P.cal = rm.cal || {}; P.srs = rm.srs || P.srs || {}; P.feyn = rm.feyn || P.feyn || {}; P.updated = rm.updated; ch = true; }
     if (ch) { saveQS(); keep(); } return ch;
   }
   let st, busy = false; function soon() { clearTimeout(st); st = setTimeout(push, 3000); }
