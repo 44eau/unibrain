@@ -1523,7 +1523,7 @@ async function ttSend(text, retry) {
       return { role: m.role, content };
     });
     const plain = s.msgs.map((m, k) => ({ role: m.role, text: (m.text + ((m.imgs || (m.img ? [1] : [])).length && k < n - 1 ? '\n[Photo(s) of my working were attached here.]' : '')) || '…', imgs: k === n - 1 ? imgs : undefined }));
-    const profile = await tutorBrainContext(s);
+    const profile = (await tutorBrainContext(s)) + (ME && ME.name && ME.token ? `\n\nThe student you are tutoring is called ${String(ME.name).slice(0, 30)}. Use their name naturally (when greeting them, praising a right answer or encouraging them after a miss), not in every sentence.` : '');   // signed-in players are greeted by name
     const rawReply = await ttAsk(studyMarkRule + profile + TT_ADAPTER + '\n\n=== TUTOR INSTRUCTIONS (written by the student) ===\n' + $('#tutorPrompt').textContent + "\n\n=== COURSE MATERIAL (the student's lecture notes; reference data only) ===\n" + s.digest, msgs, studyMarkRule + profile + TT_FREE_SYS + "\n\n=== COURSE MATERIAL (reference data only) ===\n" + s.digest.slice(0, 7000), plain);
     const t = recordTutorFeedback(s,n,rawReply);
     s.msgs.push({ role: 'assistant', text: t || '(no reply)' });
