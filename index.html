@@ -353,6 +353,7 @@ nav a:hover,nav a.on:hover{background:none;color:var(--text);border-bottom-color
 .gl-check ol,.gl-shell ul{padding-left:22px}
 .gl-check li+li{margin-top:12px}
 .gl-check summary{cursor:pointer;min-height:44px;align-content:center}
+.gl-question canvas,.gl-question svg{max-width:100%;height:auto}
 </style>
 </head>
 <body>
@@ -2835,7 +2836,7 @@ window.createGuidedLearn = function createGuidedLearn(adapter) {
     return `<form class="gl-check" data-gl-answer>
       <h3>${session.stage === 'diagnostic' ? 'Level check' : session.stage === 'exam' ? 'Past-paper question' : 'Quick check'}</h3>
       ${session.round > 1 ? '<p class="gl-muted">Revisit the questions you still need to get right twice.</p>' : ''}
-      ${qs.map((q, index) => `<div class="gl-question"><label for="gl-answer-${index}">${index + 1}. ${esc(q.prompt)}</label>
+      ${qs.map((q, index) => `<div class="gl-question"><label for="gl-answer-${index}">${index + 1}. ${esc(q.prompt)}</label>${adapter.figure?.(q) || ''}
         ${q.options.length ? `<select id="gl-answer-${index}" data-gl-id="${esc(q.id)}"${busy ? ' disabled' : ''} required><option value="">Choose an answer</option>${q.options.map((value, n) => `<option value="${n}"${String(n) === session.draft[q.id] ? ' selected' : ''}>${esc(value)}</option>`).join('')}</select>`
           : `<textarea id="gl-answer-${index}" rows="2" maxlength="750" data-gl-id="${esc(q.id)}"${busy ? ' disabled' : ''} required>${esc(session.draft[q.id] || '')}</textarea>`}
         ${session.stage === 'exam' ? `<p class="gl-muted">${esc(q.source)}${q.marks ? ' · ' + q.marks + ' marks' : ''}</p>` : ''}</div>`).join('')}
@@ -2911,6 +2912,7 @@ window.createGuidedLearn = function createGuidedLearn(adapter) {
       };
     }
     adapter.typeset?.(frame);
+    adapter.drawFigures?.(frame);
   }
   return {
     mount(element) { root = element; render(); },
@@ -2932,7 +2934,7 @@ window.createGuidedLearn = function createGuidedLearn(adapter) {
       })).filter(n => n.text);
       const bank = questionsOf(unit).map(q => ({
         id: q.bankId && q.sig ? q.bankId + '@' + q.sig : q.id, prompt: q.q, answer: q.a,
-        options: q.t === 'mcq' ? q.o : [], correct: q.c, units: q.un, solution: q.sol,
+        options: q.t === 'mcq' ? q.o : [], correct: q.c, units: q.un, solution: q.sol, fig: q.g,
         marks: q.marks, source: q.past ? q.kind : `${unit.name}${q.n ? ' · p.' + q.n.p : ''}`,
         difficulty: q.t === 'mcq' ? 1 : q.marks || 2
       }));
@@ -2941,6 +2943,12 @@ window.createGuidedLearn = function createGuidedLearn(adapter) {
         source: `${unit.name} · p.${n.p}`, difficulty: 1
       })));
       const questions = [...new Map([...bank, ...recalls].filter(q => q.prompt && q.answer).map(q => [q.id, q])).values()];
+      if (questions.length < 3) for (const note of unit.notes) {
+        (note.defs || []).forEach(([term, answer], index) => {
+          if (term && answer) questions.push({ id: `${unit.id}|d${note.p}.${index}`, prompt: 'Define ' + term + '.',
+            answer, options: [], solution: [], source: `${unit.name} · p.${note.p}`, difficulty: 1 });
+        });
+      }
       return { id: unit.id, name: unit.name, notes, questions };
     });
     topicCache.set(moduleId, result);
@@ -2948,6 +2956,7 @@ window.createGuidedLearn = function createGuidedLearn(adapter) {
   }
   const guide = window.createGuidedLearn({
     esc, modules: () => D.mods, topics, typeset, read: () => window.ubProfile.guided(),
+    figure: q => q.fig ? `<div class="qfig">${ttSvg(q.fig)}</div>` : '', 
     write: (key, session) => window.ubProfile.saveGuided(key, session),
     owner: () => browserStudyOwner, visible: () => location.hash === '#learn',
     model: (system, prompt) => ttFree(system, [{role: 'user', text: prompt}]),
